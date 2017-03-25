@@ -39,11 +39,36 @@ public class TextTranslater {
     private TextTranslater() {
 
     }
-    public void translate(Context context, final String sortranslate, final String destranslate, final String text, final VolleyCallback translateResponse)  {
+    public void translate(final Context context, final String sortranslate, final String destranslate, final String text, final VolleyCallback translateResponse)  {
         final String[] translated = {""};
 
+        String baseUrl = "https://translation.googleapis.com/language/translate/v2?";
+        String key = "key=AIzaSyDDsoz6NW5CJekFVAI34OjrjeEsYvrDoFw";
+        String target = "&target="+destranslate;
+        String query = "&q="+text;
+        String url = baseUrl+key+target+query;
+        JSONParser jsonParser = new JSONParser(context);
+        jsonParser.parseVolleyStringRequest(url, new VolleyCallback() {
+            @Override
+            public void backResponse(String response) {
+                if(response.equalsIgnoreCase("")){
+                    translateResponse.backResponse(text);
+                }else {
+                    try {
+                        String text = new JSONObject(response)
+                                .getJSONObject("data")
+                                .getJSONArray("translations")
+                                .getJSONObject(0)
+                                .getString("translatedText");
+                        translateResponse.backResponse(text);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
 
-        new AsyncTask<Void, Integer, String>() {
+        /*new AsyncTask<Void, Integer, String>() {
             @Override
             protected String doInBackground(Void... voids) {
                 try {
@@ -132,7 +157,7 @@ public class TextTranslater {
                 super.onProgressUpdate(values);
              //   progressBar.setProgress(values[0]);
             }
-        }.execute();
+        }.execute();*/
 
     }
 

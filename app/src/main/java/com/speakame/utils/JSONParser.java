@@ -7,6 +7,7 @@ import com.android.volley.AuthFailureError;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.speakame.AppController;
 
 import org.apache.http.HttpEntity;
@@ -178,6 +179,28 @@ public class JSONParser {
         } else {
             M.log("", "Invalid Request Method");
         }
+    }
+
+    public void parseVolleyStringRequest(String url, final VolleyCallback h) {
+
+        Log.d("Response url", url);
+
+        StringRequest stringRequest = new StringRequest(url, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                Log.d("Response", response);
+                h.backResponse(response);
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.d("Response", "null");
+                h.backResponse("");
+            }
+        });
+
+        AppController.getInstance().
+                addToRequestQueue(stringRequest);
     }
 
 
