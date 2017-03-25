@@ -60,18 +60,7 @@ public class TextTranslater {
                     HttpGet hg = new HttpGet(url);
                     final HttpResponse hr = hc.execute(hg);
                     Log.d("translate", hr.getEntity().getContentLength()+"\n"+hr.getEntity().toString());
-                   /* BufferedReader rd = new BufferedReader(new InputStreamReader(
-                            hr.getEntity().getContent()));
-                    long content = hr.getEntity().getContentLength();
-//Do not need 'String line'
-                    String line = "";
-                    StringBuilder htmlBuilder = new StringBuilder();
-                    long bytesRead = 0;
-                    while ((line = rd.readLine()) != null) {
-                        htmlBuilder.append(line);
-                        bytesRead = bytesRead + line.getBytes().length + 2;
-                        publishProgress(new Integer[]{(int) (((double) bytesRead / (double) content) * 100)});
-                    }*/
+
 
                     new Handler(Looper.getMainLooper()).post(new Runnable() {
 
