@@ -105,6 +105,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
             DataUpdate.UpdateContactName(db, recivername, reciver);
     }
+    public void UpdateGroupImage(String image, String groupId) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+            DataUpdate.UpdateGroupImage(db, image, groupId);
+    }
+    public void UpdateGroupName(String name, String groupId) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+            DataUpdate.UpdateGroupName(db, name, groupId);
+    }
     public void UpdateFileName(String filename, String msgId) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 

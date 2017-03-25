@@ -234,7 +234,7 @@ public class GroupMemberList_Activity extends AnimRootActivity implements Volley
             e.printStackTrace();
         }
         JSONParser jsonParser = new JSONParser(GroupMemberList_Activity.this);
-        jsonParser.parseVollyJsonArray(AppConstants.COMMONURL, 1, jsonArray, new VolleyCallback() {
+        jsonParser.parseVollyJsonArray(AppConstants.USERGROUPURL, 1, jsonArray, new VolleyCallback() {
             @Override
             public void backResponse(String response) {
 

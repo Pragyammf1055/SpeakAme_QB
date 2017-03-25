@@ -262,4 +262,5 @@
     <string name="title_activity_country_list">CountryListActivity</string>
     <string name="title_activity_alert_days_speakame">Remaining Days</string>
     <string name="title_activity_instruction_change_number">Change Number</string>
+    <string name="title_activity_edit_name">EditNameActivity</string>
 </resources>

@@ -1,11 +1,17 @@
 package com.speakame.Activity;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.ContactsContract;
+import android.provider.MediaStore;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
@@ -18,7 +24,11 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.google.gson.JsonObject;
 import com.speakame.Adapter.GroupMemberList_Adapter;
 import com.speakame.Beans.AllBeans;
 import com.speakame.Classes.AnimRootActivity;
@@ -26,9 +36,11 @@ import com.speakame.Database.DatabaseHelper;
 import com.speakame.R;
 import com.speakame.Services.XmppConneceted;
 import com.speakame.Xmpp.ChatMessage;
+import com.speakame.Xmpp.CommonMethods;
 import com.speakame.Xmpp.MediaAdapter;
 import com.speakame.utils.AppConstants;
 import com.speakame.utils.AppPreferences;
+import com.speakame.utils.Function;
 import com.speakame.utils.JSONParser;
 import com.speakame.utils.VolleyCallback;
 import com.squareup.picasso.Picasso;
@@ -36,23 +48,27 @@ import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 
 import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.XMPPException;
+import org.jivesoftware.smack.packet.Message;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import dmax.dialog.SpotsDialog;
 
-public class ViewGroupDetail_Activity extends AnimRootActivity implements VolleyCallback {
+public class ViewGroupDetail_Activity extends AnimRootActivity implements VolleyCallback, View.OnClickListener {
+    private static final int SELECTIMAGE = 1;
+    private static final int SELECTNAME = 2;
     TextView toolbartitle, text_groupdate, alerttextview, editstatus;
     TextView edit_groupname;
     ImageView image_group;
     Button deleteGroup;
     RecyclerView recyclerView;
     GroupMemberList_Adapter groupMemberList_adapter;
-    String Groupid, Groupname, Groupdate, Grouptime, GroupImage;
+    String Groupid, Groupname, Groupdate, Grouptime, GroupImage, groupJid, reciverlanguages;
     AlertDialog mProgressDialog;
     AllBeans allBeans;
     ArrayList<AllBeans> friendlist;
@@ -60,6 +76,7 @@ public class ViewGroupDetail_Activity extends AnimRootActivity implements Volley
     private MediaAdapter mediaAdapter;
     private ArrayList<ChatMessage> chatlist;
     ArrayList<Integer> stringArrayList;
+    private Random random;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,6 +88,8 @@ public class ViewGroupDetail_Activity extends AnimRootActivity implements Volley
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_arrow_back_white_24dp);
         initview();
+
+        random = new Random();
 
         toolbartitle.setText("Group Title");
         Typeface tf1 = Typeface.createFromAsset(getAssets(), "Raleway-Regular.ttf");
@@ -91,6 +110,8 @@ public class ViewGroupDetail_Activity extends AnimRootActivity implements Volley
         Groupdate = intent.getStringExtra("GroupDate");
         Grouptime = intent.getStringExtra("GroupTime");
         GroupImage = intent.getStringExtra("GroupImage");
+        groupJid = intent.getStringExtra("groupJid");
+        reciverlanguages = intent.getStringExtra("reciverlanguages");
         toolbartitle.setText(Groupname);
         edit_groupname.setText(Groupname);
         text_groupdate.setText("Group created" + " " + Groupdate + " " + Grouptime);
@@ -184,6 +205,9 @@ public class ViewGroupDetail_Activity extends AnimRootActivity implements Volley
         editstatus = (TextView) findViewById(R.id.editstatus);
         deleteGroup = (Button) findViewById(R.id.deleteGroup);
 
+        image_group.setOnClickListener(this);
+        edit_groupname.setOnClickListener(this);
+
     }
 
     @Override
@@ -271,6 +295,28 @@ public class ViewGroupDetail_Activity extends AnimRootActivity implements Volley
 
     }
 
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()){
+            case R.id.image_group:
+                changeGImage();
+                break;
+            case R.id.edit_title:
+                Intent intent = new Intent(ViewGroupDetail_Activity.this, EditNameActivity.class);
+                intent.putExtra("Groupid", Groupid);
+                startActivityForResult(intent, SELECTNAME);
+                break;
+        }
+    }
+
+
+
+    private void changeGImage(){
+        Intent intent = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
+        intent.setType("image/*");
+        startActivityForResult(Intent.createChooser(intent, "Select Picture"), SELECTIMAGE);
+    }
+
     public class SpacesItemDecoration extends RecyclerView.ItemDecoration {
         private int space;
 
@@ -308,4 +354,124 @@ public class ViewGroupDetail_Activity extends AnimRootActivity implements Volley
             outRect.bottom = mVerticalSpaceHeight;
         }
     }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        Uri picUri;
+        if (resultCode == RESULT_OK) {
+            if (requestCode == SELECTIMAGE) {
+                picUri = data.getData();
+
+                try {
+                    //We get the file path from the media info returned by the content resolver
+                    String[] filePathColumn = {MediaStore.Images.Media.DATA};
+                    Cursor cursor = getContentResolver().query(picUri, filePathColumn, null, null, null);
+                    cursor.moveToFirst();
+                    int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+
+                    String filePath = cursor.getString(columnIndex);
+
+                    String fileString = Function.encodeFileToBase64Binary(filePath);
+
+                    JSONObject jsonObject = new JSONObject();
+                    jsonObject.put("method",AppConstants.GROUP_IMAGE_UPDATE);
+                    jsonObject.put("user_id",AppPreferences.getLoginId(ViewGroupDetail_Activity.this));
+                    jsonObject.put("group_id",Groupid);
+                    jsonObject.put("group_image",fileString);
+                    JSONArray jsonArray = new JSONArray();
+                    jsonArray.put(jsonObject);
+
+                    final ProgressDialog progressDialog  = ProgressDialog.show(ViewGroupDetail_Activity.this, "", "Group Image updating.....", false);
+
+                    JSONParser jsonParser = new JSONParser(ViewGroupDetail_Activity.this);
+                    jsonParser.parseVollyJsonArray(AppConstants.USERGROUPURL, 1, jsonArray, new VolleyCallback() {
+                        @Override
+                        public void backResponse(String response) {
+                            try {
+                                JSONObject object = new JSONObject(response);
+                                if(object.getString("status").equalsIgnoreCase("200")){
+                                    JSONArray array = object.getJSONArray("result");
+                                    JSONObject object1 = array.getJSONObject(0);
+                                    String group_image = object1.getString("group_image");
+                                    Picasso.with(getApplicationContext()).load(group_image).error(R.drawable.user_icon)
+                                            .resize(200, 200)
+                                            .into(image_group);
+                                    DatabaseHelper.getInstance(ViewGroupDetail_Activity.this).UpdateGroupImage(group_image,Groupid);
+
+                                    XmppConneceted activity = new XmppConneceted();
+                                    ChatMessage chatMessage = new ChatMessage(AppPreferences.getMobileuser(ViewGroupDetail_Activity.this), AppPreferences.getFirstUsername(ViewGroupDetail_Activity.this),
+                                            groupJid, groupJid,
+                                            Groupname, "Group Image changed by "+ AppPreferences.getFirstUsername(ViewGroupDetail_Activity.this),
+                                            "" + random.nextInt(1000), "", false);
+                                    chatMessage.setMsgID();
+                                    chatMessage.Date = CommonMethods.getCurrentDate();
+                                    chatMessage.Time = CommonMethods.getCurrentTime();
+                                    chatMessage.type = Message.Type.groupchat.name();
+                                    chatMessage.groupid = Groupid;
+                                    chatMessage.Groupimage = group_image;
+                                    chatMessage.senderlanguages = AppPreferences.getUSERLANGUAGE(ViewGroupDetail_Activity.this);
+                                    chatMessage.reciverlanguages = reciverlanguages;
+                                    chatMessage.formID = String.valueOf(AppPreferences.getLoginId(ViewGroupDetail_Activity.this));
+                                    chatMessage.lastseen = new DatabaseHelper(ViewGroupDetail_Activity.this).getLastSeen(groupJid);
+
+                                    activity.getmService().xmpp.groupUpdate(chatMessage);
+
+                                }else if(object.getString("status").equalsIgnoreCase("200")){
+                                    Toast.makeText(ViewGroupDetail_Activity.this, "Server not respond", Toast.LENGTH_LONG).show();
+                                }else{
+                                    JSONArray array = object.getJSONArray("result");
+                                    JSONObject object1 = array.getJSONObject(0);
+                                    Toast.makeText(ViewGroupDetail_Activity.this, object1.getString("msg"), Toast.LENGTH_LONG).show();
+                                }
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                            if(progressDialog.isShowing())
+                                progressDialog.dismiss();
+                        }
+                    });
+
+                    //imagePath = decodeFile(filePath, 200, 200);
+                    // imagePath = filePath;
+
+                    //  imageView.setImageDrawable(Drawable.createFromPath(filePath));
+                    cursor.close();
+                } catch (Exception e) {
+                }
+
+
+                //performCrop(picUri);
+            }else if(requestCode == SELECTNAME){
+
+                String name = data.getStringExtra("name");
+
+                edit_groupname.setText(name);
+                toolbartitle.setText(name);
+                DatabaseHelper.getInstance(ViewGroupDetail_Activity.this).UpdateGroupName(name, Groupid);
+
+                XmppConneceted activity = new XmppConneceted();
+                ChatMessage chatMessage = new ChatMessage(AppPreferences.getMobileuser(ViewGroupDetail_Activity.this), AppPreferences.getFirstUsername(ViewGroupDetail_Activity.this),
+                        groupJid, groupJid,
+                        name, "Group name changed by "+ AppPreferences.getFirstUsername(ViewGroupDetail_Activity.this),
+                        "" + random.nextInt(1000), "", false);
+                chatMessage.setMsgID();
+                chatMessage.Date = CommonMethods.getCurrentDate();
+                chatMessage.Time = CommonMethods.getCurrentTime();
+                chatMessage.type = Message.Type.groupchat.name();
+                chatMessage.groupid = Groupid;
+                chatMessage.Groupimage = GroupImage;
+                chatMessage.senderlanguages = AppPreferences.getUSERLANGUAGE(ViewGroupDetail_Activity.this);
+                chatMessage.reciverlanguages = reciverlanguages;
+                chatMessage.formID = String.valueOf(AppPreferences.getLoginId(ViewGroupDetail_Activity.this));
+                chatMessage.lastseen = new DatabaseHelper(ViewGroupDetail_Activity.this).getLastSeen(groupJid);
+
+                activity.getmService().xmpp.groupUpdate(chatMessage);
+            }
+
+        }
+
+    }
+
+
 }

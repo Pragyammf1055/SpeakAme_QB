@@ -27,6 +27,7 @@ import android.widget.Toast;
 import com.google.gson.Gson;
 import com.speakame.Activity.ChatActivity;
 import com.speakame.Activity.TwoTab_Activity;
+import com.speakame.Activity.ViewGroupDetail_Activity;
 import com.speakame.Beans.AllBeans;
 import com.speakame.Classes.TimeAgo;
 import com.speakame.Database.DatabaseHelper;
@@ -37,6 +38,7 @@ import com.speakame.utils.DownloadFile;
 import com.speakame.utils.ListCountry;
 import com.speakame.utils.TextTranslater;
 import com.speakame.utils.VolleyCallback;
+import com.squareup.picasso.Picasso;
 
 import org.jivesoftware.smack.ConnectionConfiguration;
 import org.jivesoftware.smack.ConnectionListener;
@@ -136,6 +138,9 @@ import java.util.Random;
 import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static com.speakame.Activity.ChatActivity.conversationimage;
+import static com.speakame.Activity.ChatActivity.toolbartext;
 
 
 /**
@@ -1995,6 +2000,13 @@ public class MyXMPP extends Service {
                 @Override
                 public void run() {
                     if (ChatActivity.instance != null) {
+                        if(chatMessage.body.contains("Image changed by")){
+                            Picasso.with(context).load(chatMessage.Groupimage).error(R.drawable.user_icon)
+                                    .resize(200, 200)
+                                    .into(conversationimage);
+                        }else if(chatMessage.body.contains("name changed by")){
+                            toolbartext.setText(chatMessage.groupName);
+                        }
                         ChatActivity.chatlist.add(chatMessage);
                         ChatActivity.mRecyclerView.scrollToPosition(ChatActivity.chatAdapter.getItemCount()-1);
                         // ChatActivity.mLayoutManager.scrollToPosition(ChatActivity.chatlist.size());
@@ -2078,6 +2090,8 @@ public class MyXMPP extends Service {
                // processGroupMessage(chatMessage);
 
                 if (checkUserBlock(chatMessage.sender)) {
+
+
                     final String langu = chatMessage.senderlanguages;
                     final String Mylangu = AppPreferences.getUSERLANGUAGE(context);
 
@@ -2202,6 +2216,26 @@ public class MyXMPP extends Service {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    public void groupUpdate(ChatMessage chatMessage){
+
+        MultiUserChatManager multiUserChatManager = MultiUserChatManager.getInstanceFor(connection);
+        Log.d("groupChatName", chatMessage.receiver + "@conference."
+                + context.getString(R.string.server));
+        MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(chatMessage.receiver + "@conference."
+                + context.getString(R.string.server));
+
+        Message message1 = new Message();
+        String body = gson.toJson(chatMessage);
+        message1.setBody(body);
+        message1.setType(Message.Type.groupchat);
+
+        try {
+            multiUserChat.sendMessage(message1);
+        } catch (NotConnectedException e) {
+            e.printStackTrace();
         }
     }
 

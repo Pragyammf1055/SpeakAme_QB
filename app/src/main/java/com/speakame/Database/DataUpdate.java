@@ -104,6 +104,26 @@ public class DataUpdate {
         //Log.d("UpdateLastSeen", ":::"+id);
         db.close();
     }
+    public static void UpdateGroupImage(SQLiteDatabase db,String image, String groupId) {
+
+        ContentValues initialValues = new ContentValues();
+        initialValues.put(DBTable.KEY_GROUPIMAGE, image);
+
+        db.update(DBTable.TBL_CHAT, initialValues, DBTable.KEY_GROUPID + " = ?",
+                new String[]
+                        {groupId});
+        db.close();
+    }
+    public static void UpdateGroupName(SQLiteDatabase db,String name, String groupId) {
+
+        ContentValues initialValues = new ContentValues();
+        initialValues.put(DBTable.KEY_GROUPNAME, name);
+
+        db.update(DBTable.TBL_CHAT, initialValues, DBTable.KEY_GROUPID + " = ?",
+                new String[]
+                        {groupId});
+        db.close();
+    }
     public static void UpdateContactName(SQLiteDatabase db,String recivername, String reciver) {
 
         ContentValues initialValues = new ContentValues();

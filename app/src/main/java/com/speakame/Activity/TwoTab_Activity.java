@@ -338,7 +338,7 @@ public class TwoTab_Activity extends AnimRootActivity implements VolleyCallback 
                     adapter = new BroadcastnewgroupAdapter(instance, chatMessageList);
                     chatlist.setAdapter(adapter);
 
-                    Log.d("query>>>>", chatMessageList.toString());
+                    Log.d("chatMessageList", chatMessageList.toString());
 
             }
         });
@@ -361,7 +361,7 @@ public class TwoTab_Activity extends AnimRootActivity implements VolleyCallback 
                     adapter = new BroadcastnewgroupAdapter(instance, chatMessageList);
                     chatlist.setAdapter(adapter);
 
-
+                Log.d("chatMessageList", chatMessageList.toString());
 
             }
         });

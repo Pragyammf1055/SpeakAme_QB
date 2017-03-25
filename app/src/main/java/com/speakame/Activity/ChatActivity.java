@@ -128,10 +128,12 @@ public class ChatActivity extends AnimRootActivity implements View.OnClickListen
     //keep track of cropping intent
     final int PIC_CROP = 2;
     public String FriendMobile;
-    TextView toolbartext, status;
+    public static TextView toolbartext;
+    TextView status;
     String lastseen = "";
     Toolbar toolbar;
-    ImageView img_eye, smily_img, conversationimage;
+    ImageView img_eye, smily_img;
+    public static ImageView conversationimage;
     AllBeans allBeans;
     String FriendStatus, reciverlanguages = "", FriendName, FriendImage, FriendId, senderName, groupName, groupId;
     Dialog markerDialog;
@@ -774,6 +776,8 @@ public class ChatActivity extends AnimRootActivity implements View.OnClickListen
                                 intent.putExtra("GroupTime", "");
                                 intent.putExtra("GroupImage", GroupImage);
                                 intent.putExtra("value", "");
+                                intent.putExtra("groupJid", FriendMobile);
+                                intent.putExtra("reciverlanguages", reciverlanguages);
                                 startActivity(intent);
                             }
 
@@ -804,6 +808,8 @@ public class ChatActivity extends AnimRootActivity implements View.OnClickListen
                                 intent.putExtra("GroupTime", "");
                                 intent.putExtra("GroupImage", "");
                                 intent.putExtra("value", "1");
+                                intent.putExtra("groupJid", FriendMobile);
+                                intent.putExtra("reciverlanguages", reciverlanguages);
                                 startActivity(intent);
                             }
                             break;
@@ -1313,7 +1319,6 @@ chatlist.remove();
         chatMessage.formID = String.valueOf(AppPreferences.getLoginId(ChatActivity.this));
         chatMessage.senderlanguages = AppPreferences.getUSERLANGUAGE(ChatActivity.this);
         chatMessage.reciverlanguages = reciverlanguages;
-        chatMessage.type = Message.Type.groupchat.name();
         chatMessage.groupid = groupId;
         chatMessage.Groupimage = GroupImage;
         chatMessage.lastseen = new DatabaseHelper(ChatActivity.this).getLastSeen(user2);
