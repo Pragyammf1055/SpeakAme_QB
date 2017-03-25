@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/rounded_corner_dialog"
+    android:gravity="center"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/_50sdp"
+            android:background="@color/colorPrimary">
+
+            <TextView
+                android:id="@+id/textView4"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="@dimen/_10sdp"
+                android:gravity="center"
+                android:text="Speakame"
+                android:textColor="@color/colorwhite"
+                android:textSize="@dimen/_15sdp" />
+        </LinearLayout>
+
+        <AutoCompleteTextView
+            android:id="@+id/country"
+            android:layout_width="match_parent"
+            android:layout_height="45dp"
+            android:layout_marginTop="15dp"
+            android:background="@color/editbg"
+            android:gravity="center"
+            android:hint="Country"
+            android:singleLine="true"
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="15dp"
+            android:inputType="text"
+            android:textColor="@color/inputeditcolor" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="15dp"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/cntrycode"
+                android:layout_width="wrap_content"
+                android:layout_height="45dp"
+                android:layout_marginTop="15dp"
+                android:layout_weight="0.5"
+                android:background="@color/editbg"
+                android:gravity="center"
+                android:hint="+91"
+                android:cursorVisible="false"
+                android:focusableInTouchMode="false"
+                android:inputType="number"
+                android:maxLength="6"
+                android:singleLine="true"
+                android:textColor="@color/inputeditcolor" />
+
+            <EditText
+                android:id="@+id/mobileno"
+                android:layout_width="wrap_content"
+                android:layout_height="45dp"
+                android:layout_marginTop="15dp"
+                android:layout_weight="1"
+                android:background="@color/editbg"
+                android:gravity="center"
+                android:hint="Mobile number"
+                android:inputType="phone"
+                android:maxLength="12"
+                android:singleLine="true"
+                android:textColor="@color/inputeditcolor" />
+
+        </LinearLayout>
+
+
+
+
+
+        <fr.ganfra.materialspinner.MaterialSpinner
+            android:id="@+id/spinner"
+            android:layout_width="match_parent"
+            android:layout_height="45dp"
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="15dp"
+            android:layout_marginTop="15dp"
+            android:background="@color/editbg"
+            android:gravity="center"
+            app:ms_alignLabels="false"
+            app:ms_arrowColor="@color/inputeditcolor"
+            app:ms_arrowSize="16dp"
+            app:ms_enableErrorLabel="false"
+            app:ms_enableFloatingLabel="false"
+            app:ms_floatingLabelText="floating label"
+            app:ms_hint="Select Language"
+            app:ms_multiline="false"
+            app:ms_thickness="2dp"
+            app:ms_typeface="OpenSans-Regular.ttf" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="45dp"
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="15dp"
+            android:layout_marginTop="15dp"
+            android:background="@color/colorPrimary"
+            android:orientation="horizontal"
+            android:weightSum="2">
+
+
+            <Button
+                android:id="@+id/btn_submit"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:background="@null"
+                android:gravity="center"
+                android:text="Submit"
+                android:textColor="@color/colorwhite"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

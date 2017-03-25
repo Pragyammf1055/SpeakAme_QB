@@ -1,0 +1,265 @@
+<resources>
+
+    <string name="app_name">SpeakAme</string>
+    <string name="signin">SIGN IN</string>
+    <string name="register" translatable="false">REGISTER</string>
+    <string name="helpful">Helpful Hints</string>
+    <string name="title_activity_sign_in_">Login</string>
+    <string name="title_activity_sign_up_">Register</string>
+    <string name="title_activity_forgot__password">Verify</string>
+    <string name="text_forgotscreen">We have sent your OTP</string>
+    <string name="text_forgotscreensecond">You will recieve an text message containing</string>
+    <string name="text_forgotscreenthird">your one time password.</string>
+    <string name="text_recetepaas">Resend OTP</string>
+    <string name="title_activity_main_screen">SpeakAme</string>
+    <string name="title_activity_addnewcontact_activity">Add New Contact</string>
+    <string name="title_activity_refer_friend_">Refer a Friend</string>
+    <string name="title_activity_referfrnd_activity">Refer a Friend</string>
+    <string name="title_activity_two_tab_">Speakame</string>
+    <string name="title_activity_privacy_">Privacy</string>
+    <string name="title_activity_help_feedback_">Help &amp; feedback</string>
+    <string name="title_activity_account_">Account</string>
+    <string name="title_activity_attach"></string>
+    <string name="title_activity_edit_status">EditStatusActivity</string>
+    <string name="title_activity_chat"></string>
+    <string name="title_activity_contact_display">ContactDisplayActivity</string>
+    <string name="title_activity_create_group_chat">CreateGroupChatActivity</string>
+    <string name="title_activity_social_contact">SocialContactActivity</string>
+    <string name="title_activity_setting">Setting</string>
+    <string name="title_activity_delete_account_">Delete my account</string>
+    <string name="title_activity_change_number_">Change Number</string>
+    <string name="title_activity_payment_info_">Payment Info</string>
+    <string name="title_activity_notification_">Notifications</string>
+    <string name="title_activity_contactus_">Contact us</string>
+    <string name="title_activity_add_new_card_">Add New Credit Card</string>
+    <string name="title_activity_chat_list_">"Chat"</string>
+    <string name="title_activity_view_contact__detail">Detail Contact</string>
+    <string name="title_activity_calling_">User name</string>
+    <string name="title_activity_favoirite_">Favourites</string>
+    <string name="title_activity_languagelearn_activity">Language Learning</string>
+    <string name="title_activity_group_chat_">Group Title</string>
+    <string name="title_activity_edit_profile_">Edit Profile</string>
+    <string name="title_activity_contact_list_">Add Contacts</string>
+    <string name="title_activity_demo">Demo</string>
+    <string name="title_activity_view_group_detail_">Group Title</string>
+    <string name="title_activity_demo_two">DemoTwoActivity</string>
+    <string name="title_activity_edit_card_detail_">Edit New Credit Card</string>
+
+    <string name="error_invalid_email">This email address is invalid</string>
+    <string name="error_invalid_password">This password is too short</string>
+    <string name="error_incorrect_password">This password is incorrect</string>
+    <string name="error_field_required">This field is required</string>
+    <string name="error_field_required_length">Mobile number is invalid</string>
+    <string name="error_field_password_lenght">Password length should be Minimum 6 digit</string>
+    <string name="error_dont_match_password">Password does not match</string>
+    <string name="prompt_log_out">You want to Log off from the application?</string>
+    <string name="alert">Alert !</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="title_activity_contact_import_">Contact</string>
+    <string name="server">ip-172-31-30-231</string>
+    <string name="serverandresorces">\@ip-172-31-30-231/Smack</string>
+    <!--<string name="server">speakame</string>-->
+    <string name="facebook_app_id">190401661364045</string>
+
+    <string name="msg_notify">Yo have received a new notification</string>
+    <string name="title_activity_send_image">Send photo</string>
+    <!--<string-array name="country">
+        <item>Afrikaans</item>
+        <item>Albanian</item>
+        <item>Arabic</item>
+        <item>Azerbaijani</item>
+        <item>Basque</item>
+        <item>Bengali</item>
+        <item>Belarusian</item>
+        <item>Bulgarian</item>
+        <item>Catalan</item>
+        <item>Chinese Simplified</item>
+        <item>Chinese Traditional</item>
+        <item>Croatian</item>
+        <item>Danish</item>
+        <item>Dutch</item>
+        <item>English</item>
+        <item>Esperanto</item>
+        <item>Estonian</item>
+        <item>Filipino</item>
+        <item>Finnish</item>
+        <item>French</item>
+        <item>Galician</item>
+        <item>Georgian</item>
+        <item>German</item>
+        <item>Greek</item>
+        <item>Gujarati</item>
+        <item>Haitian Creole</item>
+        <item>Hebrew</item>
+        <item>Hindi</item>
+        <item>Hungarian</item>
+        <item>Icelandic</item>
+        <item>Indonesian</item>
+        <item>Irish</item>
+        <item>Italian</item>
+        <item>Japanese</item>
+        <item>Kannada</item>
+        <item>Korean</item>
+        <item>Latin</item>
+        <item>Latvian</item>
+        <item>Lithuanian</item>
+        <item>Macedonian</item>
+        <item>Malaysia</item>
+        <item>Maltese</item>
+        <item>Norwegian</item>
+        <item>Persian</item>
+        <item>Polish</item>
+        <item>Portuguese</item>
+        <item>Romanian</item>
+        <item>Russian</item>
+        <item>Serbian</item>
+        <item>Slovak</item>
+        <item>Slovenian</item>
+        <item>Spanish</item>
+        <item>Swahili</item>
+        <item>Swedish</item>
+        <item>Tamil</item>
+        <item>Telugu</item>
+        <item>Thai</item>
+        <item>Turkish</item>
+        <item>Ukrainian</item>
+        <item>Urdu</item>
+        <item>Vietnamese</item>
+        <item>Welsh</item>
+        <item>Yiddish</item>
+    </string-array>
+    <string-array name="countryCode">
+        <item>af</item>
+        <item>sq</item>
+        <item>ar</item>
+        <item>az</item>
+        <item>eu</item>
+        <item>bn</item>
+        <item>be</item>
+        <item>bg</item>
+        <item>ca</item>
+        <item>zh-CN</item>
+        <item>zh-TW</item>
+        <item>hr</item>
+        <item>cs</item>
+        <item>da</item>
+        <item>nl</item>
+        <item>en</item>
+        <item>eo</item>
+        <item>et</item>
+        <item>tl</item>
+        <item>fi</item>
+        <item>fr</item>
+        <item>gl</item>
+        <item>ka</item>
+        <item>de</item>
+        <item>el</item>
+        <item>gu</item>
+        <item>ht</item>
+        <item>iw</item>
+        <item>hi</item>
+        <item>hu</item>
+        <item>is</item>
+        <item>id</item>
+        <item>ga</item>
+        <item>it</item>
+        <item>ja</item>
+        <item>kn</item>
+        <item>ko</item>
+        <item>la</item>
+        <item>lv</item>
+        <item>lt</item>
+        <item>mk</item>
+        <item>ms</item>
+        <item>mt</item>
+        <item>no</item>
+        <item>fa</item>
+        <item>pl</item>
+        <item>pt</item>
+        <item>ro</item>
+        <item>ru</item>
+        <item>sr</item>
+        <item>sk</item>
+        <item>sl</item>
+        <item>es</item>
+        <item>sw</item>
+        <item>sv</item>
+        <item>ta</item>
+        <item>te</item>
+        <item>th</item>
+        <item>tr</item>
+        <item>uk</item>
+        <item>ur</item>
+        <item>vi</item>
+        <item>cy</item>
+        <item>yi</item>
+    </string-array>-->
+
+    <string name="alert_number">The phone number you entered doesnt match your accounts</string>
+    <string name="ok">Ok</string>
+    ​
+    <string name="title_activity_confirm_delet__account">Delete my account</string>
+
+    <string-array name="reason">
+        <item>I am changing my device</item>
+        <item>i am changing my phone number</item>
+        <item>I am changing my account temporarily</item>
+        <item>Some missing feature</item>
+        <item>Not working properly</item>
+    </string-array>
+    <string name="title_activity_media">MediaActivity</string>
+    <string name="title_activity_forgot_paasword">Forgot Password</string>
+    <string name="title_activity_chat_setting">Chat</string>
+
+
+    <string name="date_util_term_less">less than</string>
+    <string name="date_util_term_a">a</string>
+    <string name="date_util_term_an">an</string>
+
+    <string name="date_util_unit_second">second</string>
+    <string name="date_util_unit_seconds">seconds</string>
+    <string name="date_util_unit_minute">minute</string>
+    <string name="date_util_unit_minutes">minutes</string>
+    <string name="date_util_unit_hour">hour</string>
+    <string name="date_util_unit_hours">hours</string>
+    <string name="date_util_unit_day">day</string>
+    <string name="date_util_unit_days">days</string>
+    <string name="date_util_unit_month">month</string>
+    <string name="date_util_unit_months">months</string>
+    <string name="date_util_unit_year">year</string>
+    <string name="date_util_unit_years">years</string>
+
+    <string name="date_util_prefix_lt">less than a</string>
+    <string name="date_util_prefix_about">about</string>
+    <string name="date_util_prefix_over">over</string>
+    <string name="date_util_prefix_almost">almost</string>
+
+    <string name="date_util_suffix">ago</string>
+
+    <!--<string name="time_ago_prefix"></string>
+    <string name="time_ago_suffix">ago</string>
+    <string name="time_ago_seconds">less than %d minute</string>
+    <string name="time_ago_minute">about a minute</string>
+    <string name="time_ago_minutes">%d minutes</string>
+    <string name="time_ago_hour">about an hour</string>
+    <string name="time_ago_hours">about %d hours</string>
+    <string name="time_ago_day">a day</string>
+    <string name="time_ago_days">%d days</string>
+    <string name="time_ago_month">about a month</string>
+    <string name="time_ago_months">%d months</string>
+    <string name="time_ago_year">about a year</string>
+    <string name="time_ago_years">%d years</string>-->
+    <string name="button_description">Emoticons Button</string>
+    <string name="post">Post</string>
+    <string name="back">Back</string>
+
+    <string name="selected_count">%1$s selected</string>
+    <string name="title_activity_forward">Forward To...</string>
+    <string name="title_activity_alert_speakame">Speakame</string>
+
+    <string name="privacy_string">If you dont share your Last Seen, you\nwon\'t be able to see other people\'s Last\nSeen</string>
+    <string name="title_activity_country_list">CountryListActivity</string>
+    <string name="title_activity_alert_days_speakame">Remaining Days</string>
+    <string name="title_activity_instruction_change_number">Change Number</string>
+</resources>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:background="@color/colorPrimary"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:id="@+id/lin_heading"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:weightSum="3">
+
+        <ImageView
+            android:id="@+id/backarrow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1.25"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_arrow_back_white_24dp" />
+
+
+
+        <TextView
+            android:id="@+id/headtext"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/home_header_height"
+            android:layout_weight="0.5"
+            android:textSize="18dp"
+            android:textColor="@color/colorwhite"
+            android:gravity="center"
+            android:text="Login" />
+
+        <ImageView
+            android:id="@+id/skipbtn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1.25"
+            android:layout_gravity="center"
+            android:src="@drawable/skip" />
+
+    </LinearLayout>
+</LinearLayout>

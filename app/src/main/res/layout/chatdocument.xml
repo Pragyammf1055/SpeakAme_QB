@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/bubble_layout_parent"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:id="@+id/bubble_layout"
+        android:layout_width="@dimen/_160sdp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bubble1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/message_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/_5sdp"
+            android:drawableLeft="@drawable/pdf_icon"
+            android:singleLine="true"
+            android:gravity="center_vertical"
+            android:text="Hi! new message "
+            android:textColor="@android:color/primary_text_light" />
+
+        <TextView
+            android:id="@+id/time_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:maxEms="12"
+            android:text="12:00 pm"
+            android:textColor="@android:color/primary_text_light"
+            android:textSize="@dimen/_8sdp" />
+
+</LinearLayout>
+</RelativeLayout>

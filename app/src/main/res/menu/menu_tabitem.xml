@@ -1,0 +1,25 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".BaseActivity">
+
+
+    <item
+        android:id="@+id/creategroup"
+        android:orderInCategory="2"
+        android:title="New Group"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/addcontact"
+        android:orderInCategory="3"
+        android:title="Add Contacts"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/helpfedback"
+        android:orderInCategory="4"
+        android:title="Help Feedback"
+        app:showAsAction="never" />
+
+
+</menu>

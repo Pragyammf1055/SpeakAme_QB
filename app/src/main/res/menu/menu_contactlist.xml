@@ -1,0 +1,15 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".BaseActivity">
+
+    <item
+        android:id="@+id/action_contact"
+        android:orderInCategory="1"
+        android:icon="@drawable/right_menu_icon"
+        android:title="Add Contacts"
+        app:showAsAction="always" />
+
+
+
+</menu>

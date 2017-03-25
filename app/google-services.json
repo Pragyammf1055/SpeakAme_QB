@@ -1,0 +1,119 @@
+{
+  "project_info": {
+    "project_number": "467759138007",
+    "firebase_url": "https://vaulted-algebra-111206.firebaseio.com",
+    "project_id": "vaulted-algebra-111206",
+    "storage_bucket": "vaulted-algebra-111206.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:467759138007:android:72db0f371972c2a9",
+        "android_client_info": {
+          "package_name": "com.yberry.dinehawaii"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "467759138007-b7sai9bt2b9nnutu6j61ctb0eqsibal0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDk6h0wRI1QbiY8ZeLY1Le4BaIbBFr97Y4"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "467759138007-b7sai9bt2b9nnutu6j61ctb0eqsibal0.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:467759138007:android:c493159205b7af64",
+        "android_client_info": {
+          "package_name": "co.restia"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "467759138007-b7sai9bt2b9nnutu6j61ctb0eqsibal0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDk6h0wRI1QbiY8ZeLY1Le4BaIbBFr97Y4"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "467759138007-b7sai9bt2b9nnutu6j61ctb0eqsibal0.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:467759138007:android:f23cd101c5326eb7",
+        "android_client_info": {
+          "package_name": "com.speakame"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "467759138007-b7sai9bt2b9nnutu6j61ctb0eqsibal0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDk6h0wRI1QbiY8ZeLY1Le4BaIbBFr97Y4"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "467759138007-b7sai9bt2b9nnutu6j61ctb0eqsibal0.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

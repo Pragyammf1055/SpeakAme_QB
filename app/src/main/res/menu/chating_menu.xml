@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/user"
+        android:icon="@drawable/call"
+        android:orderInCategory="1"
+        android:title="call"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/attach"
+        android:icon="@drawable/attachwhite"
+        android:orderInCategory="2"
+        android:title="attachted"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/overflow"
+        android:icon="@drawable/right_menu_icon"
+        android:orderInCategory="3"
+        android:title="Menu"
+        app:showAsAction="always" />
+
+
+</menu>
