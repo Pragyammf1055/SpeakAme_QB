@@ -41,12 +41,7 @@ public class TextTranslater {
     }
     public void translate(Context context, final String sortranslate, final String destranslate, final String text, final VolleyCallback translateResponse)  {
         final String[] translated = {""};
-       /* final ProgressBar progressBar = new ProgressBar(context, null, android.R.attr.progressBarStyleHorizontal);
-        progressBar.setMax(100);
-        progressBar.setProgress(0);
-        progressBar.setProgressDrawable(context.getResources().getDrawable(R.drawable.progressbarbg));
-        progressBar.setIndeterminate(false);
-        progressBar.setSecondaryProgress(100);*/
+
 
         new AsyncTask<Void, Integer, String>() {
             @Override
