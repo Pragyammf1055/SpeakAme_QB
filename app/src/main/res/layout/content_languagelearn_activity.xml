@@ -49,7 +49,7 @@
                 <EditText
                     android:id="@+id/edit1"
                     android:layout_width="match_parent"
-                    android:layout_height="@dimen/_50sdp"
+                    android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/_10sdp"
                     android:background="@android:color/transparent"
                     android:hint="Type content" />
@@ -86,8 +86,9 @@
                 <TextView
                     android:id="@+id/edit2"
                     android:layout_width="match_parent"
-                    android:layout_height="@dimen/_50sdp"
+                    android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/_10sdp"
+                    android:textSize="@dimen/_12sdp"
                     android:gravity="center|left"
                     android:hint="Change Content"
                     android:scrollbars="vertical" />

@@ -10,13 +10,19 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
 import com.speakame.Activity.Languagelearn_activity;
+import com.speakame.AppController;
 import com.speakame.R;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONException;
@@ -25,6 +31,7 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
 /**
@@ -45,9 +52,50 @@ public class TextTranslater {
         String baseUrl = "https://translation.googleapis.com/language/translate/v2?";
         String key = "key=AIzaSyDDsoz6NW5CJekFVAI34OjrjeEsYvrDoFw";
         String target = "&target="+destranslate;
-        String query = "&q="+text;
+        String query = "";
+        try {
+            query = "&q="+ URLEncoder.encode(text, "utf-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
         String url = baseUrl+key+target+query;
-        JSONParser jsonParser = new JSONParser(context);
+
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, url, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+
+                Log.d("Response", response);
+                if(response.equalsIgnoreCase("")){
+                    translateResponse.backResponse(text);
+                }else {
+                    try {
+                        String text = new JSONObject(response)
+                                .getJSONObject("data")
+                                .getJSONArray("translations")
+                                .getJSONObject(0)
+                                .getString("translatedText");
+                        translateResponse.backResponse(text);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError volleyError) {
+                System.out.println("Response volley Error .................");
+                translateResponse.backResponse("");
+            }
+        }) {
+
+        };
+
+        AppController.getInstance().
+                addToRequestQueue(stringRequest);
+
+        /*JSONParser jsonParser = new JSONParser(context);
         jsonParser.parseVolleyStringRequest(url, new VolleyCallback() {
             @Override
             public void backResponse(String response) {
@@ -66,7 +114,7 @@ public class TextTranslater {
                     }
                 }
             }
-        });
+        });*/
 
         /*new AsyncTask<Void, Integer, String>() {
             @Override

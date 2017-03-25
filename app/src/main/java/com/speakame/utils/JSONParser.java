@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.Log;
 
 import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
@@ -185,19 +186,39 @@ public class JSONParser {
 
         Log.d("Response url", url);
 
-        StringRequest stringRequest = new StringRequest(url, new Response.Listener<String>() {
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+
+                Log.d("Response", response);
+                h.backResponse(response);
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError volleyError) {
+                System.out.println("Response volley Error .................");
+                h.backResponse("");
+            }
+        }) {
+
+        };
+
+        /*StringRequest stringRequest = new StringRequest(url, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 Log.d("Response", response);
                 h.backResponse(response);
             }
+
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
                 Log.d("Response", "null");
                 h.backResponse("");
             }
-        });
+
+        });*/
 
         AppController.getInstance().
                 addToRequestQueue(stringRequest);
