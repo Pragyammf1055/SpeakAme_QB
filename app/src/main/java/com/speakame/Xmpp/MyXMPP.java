@@ -16,6 +16,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.provider.Contacts;
 import android.provider.ContactsContract;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
@@ -1962,7 +1963,7 @@ public class MyXMPP extends Service {
             if (chatMessage.fileName == null) {
 
             } else if (!chatMessage.fileName.equalsIgnoreCase("")) {
-
+//dddddd
                 /*String fileExte = MimeTypeMap.getFileExtensionFromUrl(chatMessage.fileName);
                 String folderType;
 
@@ -1995,6 +1996,11 @@ public class MyXMPP extends Service {
             Log.d("processGroupMessage", chatMessage.toString());
             DatabaseHelper.getInstance(context).insertChat(chatMessage);
 
+            if(chatMessage.body.contains("Remove by :")) {
+                userExitFromGroup(chatMessage.receiver);
+            }else if(chatMessage.body.contains("Subadmin :")) {
+
+            }
             new Handler(Looper.getMainLooper()).post(new Runnable() {
 
                 @Override
@@ -2235,6 +2241,55 @@ public class MyXMPP extends Service {
         try {
             multiUserChat.sendMessage(message1);
         } catch (NotConnectedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void userExitFromGroup(String receiver){
+
+        MultiUserChatManager multiUserChatManager = MultiUserChatManager.getInstanceFor(connection);
+        Log.d("groupChatName", receiver + "@conference."
+                + context.getString(R.string.server));
+        MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(receiver + "@conference."
+                + context.getString(R.string.server));
+
+        /*Message message1 = new Message();
+        String body = gson.toJson(chatMessage);
+        message1.setBody(body);
+        message1.setType(Message.Type.groupchat);*/
+
+        try {
+            //multiUserChat.sendMessage(message1);
+            multiUserChat.leave();
+        } catch (NotConnectedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void userSelfExit(ChatMessage chatMessage){
+
+
+
+        MultiUserChatManager multiUserChatManager = MultiUserChatManager.getInstanceFor(connection);
+        Log.d("groupChatName", chatMessage.receiver + "@conference."
+                + context.getString(R.string.server));
+        MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(chatMessage.receiver + "@conference."
+                + context.getString(R.string.server));
+
+        Message message1 = new Message();
+        String body = gson.toJson(chatMessage);
+        message1.setBody(body);
+        message1.setType(Message.Type.groupchat);
+
+        try {
+            multiUserChat.sendMessage(message1);
+            //multiUserChat.leave();
+            multiUserChat.banUser(loginUser+ "@" + context.getString(R.string.server)+"/Smack", "I am remove");
+        } catch (NotConnectedException e) {
+            e.printStackTrace();
+        } catch (XMPPException.XMPPErrorException e) {
+            e.printStackTrace();
+        } catch (SmackException.NoResponseException e) {
             e.printStackTrace();
         }
     }

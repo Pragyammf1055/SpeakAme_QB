@@ -106,17 +106,42 @@
             android:layout_margin="@dimen/padding"
             android:scrollbars="vertical" />
 
-        <Button
-            android:id="@+id/deleteGroup"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
             android:layout_marginTop="@dimen/_15sdp"
-            android:background="@color/colorPrimary"
-            android:padding="@dimen/_8sdp"
-            android:text="Delete Group"
-            android:textColor="@color/colorwhite"
-            android:textStyle="bold" />
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/exitGroup"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@color/colorPrimary"
+                android:padding="@dimen/_8sdp"
+                android:text="Exit Group"
+                android:textColor="@color/colorwhite"
+                android:textStyle="bold" />
+
+            <View
+                android:layout_width="@dimen/_10sdp"
+                android:layout_height="match_parent"
+                android:background="@color/colorwhite"/>
+
+            <Button
+                android:id="@+id/deleteGroup"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@color/colorPrimary"
+                android:padding="@dimen/_8sdp"
+                android:text="Delete Group"
+                android:textColor="@color/colorwhite"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+
 
 
     </LinearLayout>
