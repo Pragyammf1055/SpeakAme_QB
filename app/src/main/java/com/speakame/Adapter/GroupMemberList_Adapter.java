@@ -119,7 +119,7 @@ public class GroupMemberList_Adapter extends RecyclerView.Adapter<GroupMemberLis
     private void ShowLongPressDialog(final AllBeans allBeans){
 
         final List<String> itemList = new ArrayList<String>();
-        itemList.add("Make "+allBeans.getFriendname()+" Subadmin");
+        //itemList.add("Make "+allBeans.getFriendname()+" Subadmin");
         itemList.add("Remove "+ allBeans.getFriendname());
         final CharSequence[] items = itemList.toArray(new String[itemList.size()]);
 
