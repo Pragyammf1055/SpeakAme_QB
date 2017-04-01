@@ -8,13 +8,11 @@ import android.os.Handler;
 import android.util.Base64;
 import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.View;
 import android.webkit.WebView;
 
 import com.speakame.Classes.AnimRootActivity;
 import com.speakame.R;
 import com.speakame.utils.AppPreferences;
-import com.speakame.utils.Function;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -33,8 +31,7 @@ public class Splash_Activity extends AnimRootActivity {
         WebView webview1 = (WebView) findViewById(R.id.webview1);
         DisplayMetrics displaymetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
-        Function.contactPermisstion(Splash_Activity.this, 1);
-
+        //Function.contactPermisstion(Splash_Activity.this, 1);
 
 
         sslgenration();
@@ -49,6 +46,13 @@ public class Splash_Activity extends AnimRootActivity {
         }
 
 
+        startAction();
+
+
+    }
+
+
+    public void startAction() {
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -70,35 +74,6 @@ public class Splash_Activity extends AnimRootActivity {
 
             }
         }, Splash_time);
-
-
-
-
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[],
-                                           int[] grantResults) {
-        switch (requestCode) {
-
-            case 1: {
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                } else {
-                }
-                return;
-            }
-
-            case 2: {
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-                } else {
-
-                }
-            }
-
-        }
     }
 
     public void sslgenration() {

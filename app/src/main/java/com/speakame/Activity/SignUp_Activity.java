@@ -291,7 +291,7 @@ public class SignUp_Activity extends AnimRootActivity implements VolleyCallback,
                     JSONArray jsonArray = new JSONArray();
 
                     try {
-                        jsonObj.put("method", "user_signup");
+                        jsonObj.put("method", AppConstants.USER_SIGNUP);
                         jsonObj.put("userImage", Encoded_userimage);
                         jsonObj.put("username", Name);
                         jsonObj.put("email", Email);
@@ -312,8 +312,8 @@ public class SignUp_Activity extends AnimRootActivity implements VolleyCallback,
                         e.printStackTrace();
                     }
                     JSONParser jsonParser = new JSONParser(getApplicationContext());
-                    jsonParser.parseVollyJsonArray(AppConstants.DEMOCOMMONURL, 1, jsonArray, SignUp_Activity.this);
-                    System.out.println("AppConstants.URL.REGISTER" + AppConstants.DEMOCOMMONURL);
+                    jsonParser.parseVollyJsonArray(AppConstants.REGISTER_LOG, 1, jsonArray, SignUp_Activity.this);
+                    System.out.println("AppConstants.URL.REGISTER_LOG" + AppConstants.REGISTER_LOG);
                     System.out.println("jsonObject" + jsonObj);
 
 
@@ -472,26 +472,33 @@ public class SignUp_Activity extends AnimRootActivity implements VolleyCallback,
                         user_id = jsonObject2.getString("userId");
 //                        System.out.println("user_id" + user_id);
 
+                        //String mobileNo = jsonObject2.getString("mobile").replace("");
+
                         AppPreferences.setLoginId(SignUp_Activity.this, Integer.parseInt(jsonObject2.getString("userId")));
                         AppPreferences.setMobileuser(SignUp_Activity.this, jsonObject2.getString("mobile"));
-                        AppPreferences.setPassword(SignUp_Activity.this, jsonObject2.getString("password"));
+                       /* AppPreferences.setPassword(SignUp_Activity.this, jsonObject2.getString("password"));
                         AppPreferences.setFirstUsername(SignUp_Activity.this, jsonObject2.getString("username"));
                         AppPreferences.setUserprofile(SignUp_Activity.this, jsonObject2.getString("userImage"));
                         AppPreferences.setEmail(SignUp_Activity.this, jsonObject2.getString("email"));
                         AppPreferences.setUsercity(SignUp_Activity.this, jsonObject2.getString("country"));
                         AppPreferences.setCountrycode(SignUp_Activity.this, jsonObject2.getString("countrycode"));
                         AppPreferences.setUSERLANGUAGE(SignUp_Activity.this, jsonObject2.getString("language"));
-                        AppPreferences.setUsergender(SignUp_Activity.this, jsonObject2.getString("gender"));
+                        AppPreferences.setUsergender(SignUp_Activity.this, jsonObject2.getString("gender"));*/
 
-                        User user = new User();
+                        /*User user = new User();
                         user.setName(jsonObject2.getString("username"));
-                        user.setMobile(jsonObject2.getString("mobile"));
+                        user.setMobile(jsonObject2.getString("country_with_mobile").replace(" ","").replace("+",""));
                         user.setPassword(jsonObject2.getString("password"));
 
-                        DatabaseHelper.getInstance(SignUp_Activity.this).insertUser(user);
+                        DatabaseHelper.getInstance(SignUp_Activity.this).insertUser(user);*/
 
-                        new AddmemberAsynch().execute(jsonObject2.getString("mobile"), jsonObject2.getString("password"),
-                                jsonObject2.getString("username"), jsonObject2.getString("email"));
+                        Intent intent = new Intent(getApplicationContext(), Verify_numberActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK
+                                | Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(intent);
+
+                       /* new AddmemberAsynch().execute(jsonObject2.getString("country_with_mobile"), jsonObject2.getString("password"),
+                                jsonObject2.getString("username"), jsonObject2.getString("email"));*/
 
                     }
 
@@ -527,116 +534,6 @@ public class SignUp_Activity extends AnimRootActivity implements VolleyCallback,
 
 //////////getlanguage//////////////
 
-    private class AddmemberAsynch extends AsyncTask<String, Void, String> {
-        ArrayList<Integer> catogariesid;
-        private ProgressDialog mProgressDialog;
-        private JSONObject jsonObj;
-        private int status = 0;
-
-        public AddmemberAsynch() {
-        }
-
-        @Override
-        protected void onPreExecute() {
-            // TODO Auto-generated method stub
-            super.onPreExecute();
-            mProgressDialog = new ProgressDialog(SignUp_Activity.this);
-            mProgressDialog.setMessage("Please wait...");
-            mProgressDialog.show();
-
-        }
-
-        @Override
-        protected String doInBackground(String... params) {
-            try {
-                HttpParams httpParameters = new BasicHttpParams();
-                ConnManagerParams.setTimeout(httpParameters,
-                        AppConstants.NETWORK_TIMEOUT_CONSTANT);
-                HttpConnectionParams.setConnectionTimeout(httpParameters,
-                        AppConstants.NETWORK_CONNECTION_TIMEOUT_CONSTANT);
-                HttpConnectionParams.setSoTimeout(httpParameters,
-                        AppConstants.NETWORK_SOCKET_TIMEOUT_CONSTANT);
-
-                HttpClient httpclient = new DefaultHttpClient();
-                System.out.println("registartion value : ------------ "
-                        + AppConstants.XMPPURL);
-                HttpPost httppost = new HttpPost(AppConstants.XMPPURL);
-                jsonObj = new JSONObject();
-
-                jsonObj.put("username", params[0]);
-                jsonObj.put("password", params[0]);
-                jsonObj.put("name", params[2]);
-                jsonObj.put("email", params[3]);
-
-
-//                JSONArray jsonArray = new JSONArray();
-//                jsonArray.put(jsonObj);
-
-                Log.d("json Data", jsonObj.toString());
-
-                httppost.setHeader("Authorization", "speakme");
-                httppost.setHeader("Content-type", "application/json");
-                StringEntity se = null;
-                try {
-                    se = new StringEntity(jsonObj.toString());
-
-                    se.setContentEncoding(new BasicHeader(
-                            HTTP.CONTENT_ENCODING, "UTF-8"));
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                }
-                Log.v("json : ", jsonObj.toString(2));
-                System.out.println("Sent JSON is : " + jsonObj.toString());
-                httppost.setEntity(se);
-                HttpResponse response = null;
-
-                response = httpclient.execute(httppost);
-
-                BufferedReader reader = null;
-                try {
-                    reader = new BufferedReader(new InputStreamReader(response
-                            .getEntity().getContent(), "UTF-8"));
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                } catch (IllegalStateException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                String jsonString = "";
-                try {
-                    jsonString = reader.readLine();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                System.out.println("JSONString response is : " + jsonString);
-                if (jsonString != null) {
-
-                }
-
-            } catch (ConnectTimeoutException e) {
-                System.out.println("Time out");
-                status = 600;
-            } catch (SocketTimeoutException e) {
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return "";
-        }
-
-        @Override
-        protected void onPostExecute(String result) {
-            super.onPostExecute(result);
-            mProgressDialog.dismiss();
-            Intent intent = new Intent(getApplicationContext(), Verify_numberActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    | Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
-            finish();
-
-        }
-
-    }
 
 
     ////////////////////////////////

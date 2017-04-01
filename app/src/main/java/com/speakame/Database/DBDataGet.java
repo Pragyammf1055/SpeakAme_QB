@@ -159,14 +159,36 @@ public class DBDataGet {
                     byte[] fileData = new byte[0];
                     boolean isMINE = false;
 
-                    String filename = cursor.getString(cursor.getColumnIndex(DBTable.KEY_FILENAME));
+                    String filename = cursor.getString(cursor.getColumnIndex(DBTable.KEY_FILE));
                     String messageString = cursor.getString(cursor.getColumnIndex(DBTable.KEY_BODY));
 
                     String fileName = MimeTypeMap.getFileExtensionFromUrl(filename);
 
                     String msg = messageString;
                     Log.d("Filename", ">>" + fileName);
-                    if ((fileName.equalsIgnoreCase("png") || fileName.equalsIgnoreCase("jpg") || fileName.equalsIgnoreCase("jpeg")) && msg.contains(AppConstants.KEY_CONTACT)) {
+
+                    /*>>>>>>>>>>*/
+
+                    if (!filename.equalsIgnoreCase("") && msg.contains(AppConstants.KEY_CONTACT)) {
+                    }else if (filename.equalsIgnoreCase("")) {
+                    } else {
+
+                        Sender = cursor.getString(cursor.getColumnIndex(DBTable.KEY_SENDER));
+                        Receiver = cursor.getString(cursor.getColumnIndex(DBTable.KEY_RECEIVER));
+                        SenderName = cursor.getString(cursor.getColumnIndex(DBTable.KEY_SENDERNAME));
+                        ReciverName = cursor.getString(cursor.getColumnIndex(DBTable.KEY_RECIVERNAME));
+                        RecLanguage = cursor.getString(cursor.getColumnIndex(DBTable.KEY_RECLANGUAGE));
+                        SendLanguage = cursor.getString(cursor.getColumnIndex(DBTable.KEY_SENDLANGUAGE));
+                        file = cursor.getString(cursor.getColumnIndex(DBTable.KEY_FILE));
+                        fileData = cursor.getBlob(cursor.getColumnIndex(DBTable.KEY_FILEDATA));
+                        DateTime = cursor.getString(cursor.getColumnIndex(DBTable.KEY_TIME));
+                        MID = cursor.getString(cursor.getColumnIndex(DBTable.KEY_MSGID));
+                        MSGTYPE = cursor.getString(cursor.getColumnIndex(DBTable.KEY_MSGTYPE));
+                        GroupName = cursor.getString(cursor.getColumnIndex(DBTable.KEY_GROUPNAME));
+                        isMINE = cursor.getInt(cursor.getColumnIndex(DBTable.KEY_ISMINE)) > 0;
+                    }
+                    /*>>>>>>>>>>*/
+                    /*if ((fileName.equalsIgnoreCase("png") || fileName.equalsIgnoreCase("jpg") || fileName.equalsIgnoreCase("jpeg")) && msg.contains(AppConstants.KEY_CONTACT)) {
 
                     } else if (fileName.equalsIgnoreCase("png") || fileName.equalsIgnoreCase("jpg") || fileName.equalsIgnoreCase("jpeg")
                             || fileName.equalsIgnoreCase("mp4") || fileName.equalsIgnoreCase("3gp")) {
@@ -183,7 +205,7 @@ public class DBDataGet {
                         MSGTYPE = cursor.getString(cursor.getColumnIndex(DBTable.KEY_MSGTYPE));
                         GroupName = cursor.getString(cursor.getColumnIndex(DBTable.KEY_GROUPNAME));
                         isMINE = cursor.getInt(cursor.getColumnIndex(DBTable.KEY_ISMINE)) > 0;
-                    }
+                    }*/
 
 
                     ChatMessage chatMessage = new ChatMessage(Sender, SenderName, Receiver, ReciverName, GroupName, messageString, MID, file, isMINE);
@@ -612,7 +634,8 @@ public class DBDataGet {
 
         List<ChatMessage> arrayList = new ArrayList<ChatMessage>();
         try {
-            String query = "select * from " + DBTable.TBL_CHAT + " WHERE 1 AND " + DBTable.KEY_GROUPNAME + " IS NOT NULL AND " + DBTable.KEY_GROUPNAME + " != '' GROUP BY " + DBTable.KEY_GROUPNAME + " ORDER BY " + DBTable.KEY_ID + " DESC";
+           // String query = "select * from " + DBTable.TBL_CHAT + " WHERE 1 AND " +DBTable.KEY_GROUPID +" != 'null'"+" AND " + DBTable.KEY_GROUPNAME + " IS NOT NULL AND " + DBTable.KEY_GROUPNAME + " != '' GROUP BY " + DBTable.KEY_GROUPNAME + " ORDER BY " + DBTable.KEY_ID + " DESC";
+            String query = "select * from " + DBTable.TBL_CHAT + " WHERE 1 AND " +DBTable.KEY_GROUPID +" != 'null'"+" AND " + DBTable.KEY_GROUPNAME + " IS NOT NULL AND " + DBTable.KEY_GROUPNAME + " != '' GROUP BY " + DBTable.KEY_GROUPID + " ORDER BY " + DBTable.KEY_ID + " DESC";
             System.out.println("query : " + query);
             Cursor cursor = db.rawQuery(query, null);
             if (cursor == null) {

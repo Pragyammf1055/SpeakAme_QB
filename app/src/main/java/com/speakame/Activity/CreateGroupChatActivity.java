@@ -194,7 +194,7 @@ public class CreateGroupChatActivity extends AnimRootActivity implements VolleyC
                     JSONArray jsonArray = new JSONArray();
 
                     try {
-                        jsonObj.put("method", "createGroup");
+                        jsonObj.put("method", AppConstants.CREATEGROUP);
                         jsonObj.put("userId", AppPreferences.getLoginId(getApplicationContext()));
                         jsonObj.put("group_image", GroupProfileImage);
                         jsonObj.put("group_title", GroupName);

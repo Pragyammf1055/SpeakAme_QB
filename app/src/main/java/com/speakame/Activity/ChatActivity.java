@@ -110,7 +110,7 @@ import static com.speakame.Xmpp.MyXMPP.numMessages;
 
 
 public class ChatActivity extends AnimRootActivity implements View.OnClickListener, EmojiconGridFragment.OnEmojiconClickedListener,
-        EmojiconsFragment.OnEmojiconBackspaceClickedListener, RecyclerView.OnItemTouchListener, ActionMode.Callback {
+        EmojiconsFragment.OnEmojiconBackspaceClickedListener, RecyclerView.OnItemTouchListener, ActionMode.Callback, ChatAdapter.OnLongClickPressListener {
     private static final String TAG = "ChatActivity";
     private static final int PICK_CONTACT = 1000;
     private static final int TypingInterval = 1000;
@@ -313,6 +313,8 @@ public class ChatActivity extends AnimRootActivity implements View.OnClickListen
     public void setOnTypingModified(OnTypingModified typingChangedListener) {
         this.typingChangedListener = typingChangedListener;
     }
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -624,14 +626,13 @@ public class ChatActivity extends AnimRootActivity implements View.OnClickListen
         }
 
         Log.d("CHATLISTSS", chatlist.toString());
-        chatAdapter = new ChatAdapter(ChatActivity.this, chatlist);
+        chatAdapter = new ChatAdapter(ChatActivity.this, chatlist, this);
         mRecyclerView.setAdapter(chatAdapter);
         isStoragePermissionGranted();
 
         //mRecyclerView.addOnItemTouchListener(this);
 
-        gestureDetector =
-                new GestureDetectorCompat(this, new RecyclerViewDemoOnGestureListener());
+        gestureDetector = new GestureDetectorCompat(this, new RecyclerViewDemoOnGestureListener());
 
         final ChatMessage chatMessage = new ChatMessage(user1, AppPreferences.getFirstUsername(ChatActivity.this), user1, AppPreferences.getFirstUsername(ChatActivity.this),
                 groupName, "Start chat with " + FriendName, "" + 1, "", true);
@@ -718,11 +719,14 @@ public class ChatActivity extends AnimRootActivity implements View.OnClickListen
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.chating_menu, menu);
 
+        MenuItem menuItem = menu.findItem(R.id.user);
+        menuItem.setVisible(false);//
+        /*
         if (groupId  != null &&  groupName  != null){
             MenuItem menuItem = menu.findItem(R.id.user);
             menuItem.setVisible(false);//
 
-        }
+        }*/
         return true;
 
     }
@@ -1124,11 +1128,11 @@ chatlist.remove();
     public void PriviewmsgDialog(String sorcountry, String descountry, final String message) {
 
         ListCountry country = new ListCountry();
-        String sorcountrycode = country.getCode(sorcountry.trim());
+        String sorcountrycode = country.getCode(ChatActivity.this,sorcountry.trim());
         if(sorcountrycode.equalsIgnoreCase("")){
             sorcountrycode = "en";
         }
-        String descountrycode = country.getCode(descountry.trim());
+        String descountrycode = country.getCode(ChatActivity.this,descountry.trim());
         if(descountrycode.equalsIgnoreCase("")){
             descountrycode = "en";
         }
@@ -1300,7 +1304,7 @@ chatlist.remove();
         }*/
         DatabaseHelper.getInstance(ChatActivity.this).insertChat(chatMessage);
         DatabaseHelper.getInstance(ChatActivity.this).UpdateMsgRead("1", chatMessage.receiver);
-        chatAdapter.add(chatMessage, chatAdapter.getItemCount() + 1);
+        chatAdapter.add(chatMessage, chatAdapter.getItemCount() - 1);
         mRecyclerView.scrollToPosition(chatAdapter.getItemCount()- 1);
 
     }
@@ -1378,49 +1382,7 @@ chatlist.remove();
         chatAdapter.add(chatMessage, chatAdapter.getItemCount() + 1);
         mRecyclerView.scrollToPosition(chatAdapter.getItemCount()- 1);
 
-        /*chatAdapter.add(chatMessage, chatAdapter.getItemCount() + 1);
-        mRecyclerView.scrollToPosition(chatAdapter.getItemCount() + 1);
-        //TwoTab_Activity activity = new TwoTab_Activity();
-        XmppConneceted activity = new XmppConneceted();
-        activity.getmService().xmpp.sendGroupMessage(chatMessage);
 
-        chatMessage.msgStatus = "0";
-
-        if (!fileName.equalsIgnoreCase("")) {
-
-            String fileExte = MimeTypeMap.getFileExtensionFromUrl(fileName);
-            String folderType;
-
-            String msg = chatMessage.body;
-            if ((fileExte.equalsIgnoreCase("png") || fileExte.equalsIgnoreCase("jpg") || fileExte.equalsIgnoreCase("jpeg")) && msg.contains(AppConstants.KEY_CONTACT)) {
-                folderType = "contact";
-            } else if (fileExte.equalsIgnoreCase("png") || fileExte.equalsIgnoreCase("jpg") || fileExte.equalsIgnoreCase("jpeg")) {
-                folderType = "image";
-            } else if (fileExte.equalsIgnoreCase("mp4") || fileExte.equalsIgnoreCase("3gp")) {
-                folderType = "video";
-            } else if (fileExte.equalsIgnoreCase("pdf")) {
-                folderType = "document";
-            } else {
-                folderType = "test";
-            }
-
-            File SpeakaMe = Environment.getExternalStorageDirectory();
-            File SpeakaMeDirectory = new File(SpeakaMe + "/SpeakaMe/" + folderType + "/send");
-            if (!SpeakaMeDirectory.exists()) {
-                SpeakaMeDirectory.mkdirs();
-            }
-            // File file1 = new File(SpeakaMeDirectory, transfer.getFileName());
-
-            try {
-                File file2 = Function.decodeBase64BinaryToFile(SpeakaMeDirectory.toString(), fileName, file);
-                chatMessage.fileName = file2.getAbsolutePath();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-        }
-
-        DatabaseHelper.getInstance(ChatActivity.this).insertChat(chatMessage);*/
 
     }
 
@@ -1460,7 +1422,7 @@ chatlist.remove();
                 innerContainer.setTransitionName("innerContainer" + "_" + data.msgid);
 
                 if (actionMode != null) {
-                    myToggleSelection(innerContainer, idx);
+                    myToggleSelection(idx);
                     return;
                 }
 
@@ -1514,7 +1476,7 @@ chatlist.remove();
 
                 // MEDIA GALLERY
                 String selectedImagePath = getPath(selectedImageUri);
-                selectedImagePath = selectedImagePath.replace(" ","");
+                //selectedImagePath = selectedImagePath.replace(" ","");
                 if (selectedImagePath != null) {
                     message = "";
                     filePath = selectedImagePath;
@@ -1668,7 +1630,7 @@ chatlist.remove();
                 // MEDIA GALLERY
                 //String selectedImagePath = getPathFile(ChatActivity.this, selectedImageUri);
                 String selectedImagePath = GetFilePath.getPath(ChatActivity.this, selectedImageUri);
-                selectedImagePath = selectedImagePath.replace(" ","");
+                //selectedImagePath = selectedImagePath.replace(" ","");
                 Log.d("selectedImagePath", selectedImagePath);
                 if (selectedImagePath != null) {
                     File file1 = new File(selectedImagePath);
@@ -1957,7 +1919,7 @@ chatlist.remove();
     @Override
     protected void onPause() {
         super.onPause();
-        instance = null;
+
        /* XmppConneceted activity = new XmppConneceted();
 
         MyXMPP.Composing composing = MyXMPP.Composing.inactive;
@@ -1997,8 +1959,8 @@ chatlist.remove();
                 .commit();
     }
 
-    private void myToggleSelection(View view, int idx) {
-        chatAdapter.toggleSelection(view, idx);
+    private void myToggleSelection( int idx) {
+        chatAdapter.toggleSelection(idx);
         @SuppressLint("StringFormatMatches") String title = getString(R.string.selected_count, chatAdapter.getSelectedCount());
         actionMode.setTitle(title);
     }
@@ -2190,6 +2152,37 @@ chatlist.remove();
 
     }
 
+    @Override
+    public void onItemClicked(int position) {
+        if (actionMode != null) {
+            toggleSelection(position);
+        } else {
+            //adapter.removeItem(position);
+        }
+    }
+
+    @Override
+    public boolean onItemLongClicked(int position) {
+        if (actionMode == null) {
+            actionMode = startActionMode(this);
+        }
+
+        toggleSelection(position);
+        return true;
+    }
+
+    private void toggleSelection(int position) {
+        chatAdapter.toggleSelection(position);
+        int count = chatAdapter.getSelectedCount();
+
+        if (count == 0) {
+            actionMode.finish();
+        } else {
+            actionMode.setTitle(String.valueOf(count));
+            actionMode.invalidate();
+        }
+    }
+
     public interface OnTypingModified {
         public void onIsTypingModified(EditText view, boolean isTyping);
     }
@@ -2213,7 +2206,7 @@ chatlist.remove();
 //            ChatMessage data = chatAdapter.getItem(idx);
             View innerContainer = view.findViewById(R.id.bubble_layout);
             //innerContainer.setTransitionName("innerContainer"+ "_" + data.msgid);
-            myToggleSelection(innerContainer, idx);
+            myToggleSelection( idx);
             super.onLongPress(e);
         }
     }

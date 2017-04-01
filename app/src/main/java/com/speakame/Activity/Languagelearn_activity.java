@@ -86,7 +86,7 @@ public class Languagelearn_activity extends AnimRootActivity {
 
        // String[] ITEMS = getResources().getStringArray(R.array.country);
         ListCountry country = new ListCountry();
-        List<String> ITEMS = country.getAllLanguages();
+        List<String> ITEMS = country.getAllLanguages(Languagelearn_activity.this);
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, ITEMS);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner1.setAdapter(adapter);
@@ -233,11 +233,11 @@ public class Languagelearn_activity extends AnimRootActivity {
     public void priviewlanguage(String sorcountry, String descountry, final String message) {
 
         ListCountry country = new ListCountry();
-        String sorcountrycode = country.getCode(sorcountry.trim());
+        String sorcountrycode = country.getCode(Languagelearn_activity.this,sorcountry.trim());
         if(sorcountrycode.equalsIgnoreCase("")){
             sorcountrycode = "en";
         }
-        String descountrycode = country.getCode(descountry.trim());
+        String descountrycode = country.getCode(Languagelearn_activity.this,descountry.trim());
         if(descountrycode.equalsIgnoreCase("")){
             descountrycode = "en";
         }

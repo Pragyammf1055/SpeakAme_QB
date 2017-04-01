@@ -1,10 +1,14 @@
 package com.speakame.Adapter;
 
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.database.Cursor;
 import android.graphics.Typeface;
+import android.provider.ContactsContract;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +16,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.speakame.Activity.TwoTab_Activity;
 import com.speakame.Activity.ViewGroupDetail_Activity;
 import com.speakame.Beans.AllBeans;
 import com.speakame.Database.DatabaseHelper;
@@ -20,6 +25,9 @@ import com.speakame.Services.XmppConneceted;
 import com.speakame.Xmpp.ChatMessage;
 import com.speakame.Xmpp.CommonMethods;
 import com.speakame.utils.AppPreferences;
+import com.speakame.utils.Contactloader.Contact;
+import com.speakame.utils.Contactloader.ContactFetcher;
+import com.speakame.utils.Contactloader.ContactPhone;
 import com.squareup.picasso.Picasso;
 
 import org.jivesoftware.smack.packet.Message;
@@ -49,6 +57,7 @@ public class GroupMemberList_Adapter extends RecyclerView.Adapter<GroupMemberLis
         this.contactList = contactList;
         this.context = context;
         random = new Random();
+
     }
 
     @Override
@@ -63,7 +72,12 @@ public class GroupMemberList_Adapter extends RecyclerView.Adapter<GroupMemberLis
     public void onBindViewHolder(MyViewHolder holder, int position) {
         AllBeans allBeans = contactList.get(position);
         holder.allBeans = allBeans;
-        holder.name.setText(allBeans.getFriendname());
+        if(allBeans.getFriendname().equalsIgnoreCase("you")){
+            holder.name.setText(allBeans.getFriendname());
+        }else{
+            holder.name.setText(getContactName(allBeans.getFriendmobile()));
+        }
+
 
         if (allBeans.getFriendStatus().equalsIgnoreCase("")) {
             holder.status.setText("Can't talk speakame only");
@@ -165,6 +179,22 @@ public class GroupMemberList_Adapter extends RecyclerView.Adapter<GroupMemberLis
         AlertDialog alertDialogObject = dialogBuilder.create();
         //Show the dialog
         alertDialogObject.show();
+    }
+
+    public String getContactName(String number) {
+        String name = number;
+        ArrayList<Contact> listContacts = new ContactFetcher(context).fetchAll();
+        for(Contact contact : listContacts){
+            for(ContactPhone phone : contact.numbers){
+                Log.d("ContactFetch", contact.name +"::"+ phone.number);
+                if(number.equalsIgnoreCase( phone.number)){
+                    return contact.name;
+                }
+            }
+
+        }
+
+        return name;
     }
 }
 

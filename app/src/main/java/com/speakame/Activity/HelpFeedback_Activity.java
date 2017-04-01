@@ -2,6 +2,7 @@ package com.speakame.Activity;
 
 import android.content.Intent;
 import android.graphics.Typeface;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
@@ -50,9 +51,20 @@ public class HelpFeedback_Activity extends AnimRootActivity {
         text_refer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(HelpFeedback_Activity.this, Invitefrnd_activity.class);
+                /*Intent intent = new Intent(HelpFeedback_Activity.this, Invitefrnd_activity.class);
                 startActivity(intent);
-                finish();
+                finish();*/
+
+                String text = "Just See this app...";
+               // Uri uri = Uri.parse("android.resource://com.speakame/mipmap/ic_launcher.png");
+                //Uri pictureUri = Uri.parse("file://my_picture");
+                Intent shareIntent = new Intent();
+                shareIntent.setAction(Intent.ACTION_SEND);
+                shareIntent.putExtra(Intent.EXTRA_TEXT, text);
+               // shareIntent.putExtra(Intent.EXTRA_STREAM, uri);
+                shareIntent.setType("text/*");
+                shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                startActivity(Intent.createChooser(shareIntent, "Invite Friend"));
             }
         });
 

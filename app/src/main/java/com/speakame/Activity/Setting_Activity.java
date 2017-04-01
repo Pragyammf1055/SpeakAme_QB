@@ -378,7 +378,7 @@ public class Setting_Activity extends AnimRootActivity {
         btn_cancel.setTypeface(tf3);
         //String[] ITEMS = getResources().getStringArray(R.array.country);
         ListCountry country = new ListCountry();
-        List<String> ITEMS = country.getAllLanguages();
+        List<String> ITEMS = country.getAllLanguages(Setting_Activity.this);
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, ITEMS);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         final SearchableSpinner spinner = (SearchableSpinner) markerDialog.findViewById(R.id.spinner);

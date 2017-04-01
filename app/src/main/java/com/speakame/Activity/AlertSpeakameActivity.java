@@ -96,7 +96,7 @@ public class AlertSpeakameActivity extends AnimRootActivity {
                                 JSONObject jsonObject2 = orderArray.getJSONObject(i);
 
 
-                                String loginId = jsonObject2.getString("userId");
+                                /*String loginId = jsonObject2.getString("userId");
                                 AppPreferences.setLoginId(AlertSpeakameActivity.this, Integer.parseInt(jsonObject2.getString("userId")));
                                 AppPreferences.setSocialId(AlertSpeakameActivity.this, jsonObject2.getString("social_id"));
                                 AppPreferences.setMobileuser(AlertSpeakameActivity.this, jsonObject2.getString("mobile"));
@@ -125,7 +125,7 @@ public class AlertSpeakameActivity extends AnimRootActivity {
                                 user.setMobile(jsonObject2.getString("mobile"));
                                 user.setPassword(jsonObject2.getString("password"));
 
-                                DatabaseHelper.getInstance(AlertSpeakameActivity.this).insertUser(user);
+                                DatabaseHelper.getInstance(AlertSpeakameActivity.this).insertUser(user);*/
 
 
                             }
@@ -138,8 +138,13 @@ public class AlertSpeakameActivity extends AnimRootActivity {
 
 
                         } else if (mainObject.getString("status").equalsIgnoreCase("400")) {
-                            Toast.makeText(getApplicationContext(), "Already Verify", Toast.LENGTH_LONG).show();
 
+                            Intent intent = new Intent(AlertSpeakameActivity.this, MainScreenActivity.class);
+                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK
+                                    | Intent.FLAG_ACTIVITY_NEW_TASK);
+
+                            startActivity(intent);
+                            finish();
                         } else if (mainObject.getString("status").equalsIgnoreCase("100")) {
                             Toast.makeText(getApplicationContext(), "Check network connection", Toast.LENGTH_LONG).show();
                         }

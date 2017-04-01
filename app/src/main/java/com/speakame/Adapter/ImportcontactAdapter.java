@@ -418,7 +418,7 @@ public class ImportcontactAdapter extends RecyclerView.Adapter<ImportcontactAdap
 
             XmppConneceted activity = new XmppConneceted();
             try {
-                activity.getmService().xmpp.createRoster(contactList.get(getPosition()).getFriendmobile() + "@" + context.getString(R.string.server),
+                activity.getmService().xmpp.createRoster(contactList.get(getPosition()).getFriendmobile().replace(" ","").replace("+","") + "@" + context.getString(R.string.server),
                         contactList.get(getPosition()).getFriendname(), new String[]{"Friends"});
             } catch (SmackException.NotLoggedInException e) {
                 e.printStackTrace();
@@ -429,8 +429,8 @@ public class ImportcontactAdapter extends RecyclerView.Adapter<ImportcontactAdap
             } catch (SmackException.NoResponseException e) {
                 e.printStackTrace();
             }
-            if (activity.getmService().xmpp.checkUserBlock(contactList.get(getPosition()).getFriendmobile())) {
-                activity.getmService().xmpp.unBlockedUser(contactList.get(getPosition()).getFriendmobile());
+            if (activity.getmService().xmpp.checkUserBlock(contactList.get(getPosition()).getFriendmobile().replace(" ","").replace("+",""))) {
+                activity.getmService().xmpp.unBlockedUser(contactList.get(getPosition()).getFriendmobile().replace(" ","").replace("+",""));
             }
             Intent intent = new Intent(context, ChatActivity.class);
             intent.putExtra("value", contactList.get(getPosition()));

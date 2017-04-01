@@ -40,7 +40,8 @@ public class HomeService extends IntentService {
         super.onCreate();
 
         //Function.importcontact(HomeService.this);
-        checklogin();
+        if(!AppPreferences.getMobileuser(HomeService.this).equalsIgnoreCase(""))
+         checklogin();
 
     }
 
@@ -49,7 +50,8 @@ public class HomeService extends IntentService {
     public int onStartCommand(Intent intent, int flags, int startId) {
         System.out.println("***********service command******************");
         // new TimelineAsynch().execute();
-        checklogin();
+        if(!AppPreferences.getMobileuser(HomeService.this).equalsIgnoreCase(""))
+         checklogin();
         return super.onStartCommand(intent, flags, startId);
 
     }
@@ -66,8 +68,8 @@ public class HomeService extends IntentService {
 
         //  tripIdList = db.getTripId();
         System.out.println("***********service******************");
-
-        checklogin();
+        if(!AppPreferences.getMobileuser(HomeService.this).equalsIgnoreCase(""))
+         checklogin();
 
     }
 
@@ -82,8 +84,8 @@ public class HomeService extends IntentService {
 
         timer.scheduleAtFixedRate(task = new TimerTask() {
             public void run() {
-
-                checklogin();
+                if(!AppPreferences.getMobileuser(HomeService.this).equalsIgnoreCase(""))
+                 checklogin();
                 if (shouldContinue == false) {
                     timer.cancel();
                     task.cancel();
@@ -156,7 +158,7 @@ public class HomeService extends IntentService {
 
                         } else if (mainObject.getString("status").equalsIgnoreCase("400")) {
                             // Toast.makeText(getApplicationContext(), "Alerady accepted", Toast.LENGTH_LONG).show();
-                            AppPreferences.setEmail(HomeService.this, "");
+                           /* AppPreferences.setEmail(HomeService.this, "");
                             AppPreferences.setMobileuser(HomeService.this, "");
                             AppPreferences.setFirstUsername(HomeService.this, "");
                             AppPreferences.setLoginId(HomeService.this, 0);
@@ -170,7 +172,7 @@ public class HomeService extends IntentService {
                             Intent intent = new Intent(HomeService.this, Main_Activity.class);
                             stopSelf();
                             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-                            startActivity(intent);
+                            startActivity(intent);*/
 
 
                         }

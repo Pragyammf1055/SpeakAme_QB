@@ -35,6 +35,9 @@ import com.speakame.Database.DatabaseHelper;
 import com.speakame.R;
 import com.speakame.utils.AppPreferences;
 import com.speakame.utils.CallBackUi;
+import com.speakame.utils.Contactloader.Contact;
+import com.speakame.utils.Contactloader.ContactFetcher;
+import com.speakame.utils.Contactloader.ContactPhone;
 import com.speakame.utils.DownloadFile;
 import com.speakame.utils.ListCountry;
 import com.speakame.utils.TextTranslater;
@@ -119,6 +122,8 @@ import org.jivesoftware.smackx.sharedgroups.packet.SharedGroupsInfo;
 import org.jivesoftware.smackx.shim.provider.HeaderProvider;
 import org.jivesoftware.smackx.shim.provider.HeadersProvider;
 import org.jivesoftware.smackx.si.provider.StreamInitiationProvider;
+import org.jivesoftware.smackx.vcardtemp.VCardManager;
+import org.jivesoftware.smackx.vcardtemp.packet.VCard;
 import org.jivesoftware.smackx.vcardtemp.provider.VCardProvider;
 import org.jivesoftware.smackx.xdata.Form;
 import org.jivesoftware.smackx.xdata.FormField;
@@ -129,6 +134,8 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -237,7 +244,8 @@ public class MyXMPP extends Service {
 
             Date date = new Date();
             date.setSeconds((int) (lastActivity.getIdleTime()));
-            Log.d("LastActivity", lastActivity.message + "\n" + lastActivity.lastActivity + "\n" + lastActivity.getStatusMessage() + "\n" +
+            Log.d("LastActivity", lastActivity.message + "\n" + lastActivity.lastActivity + "\n" +
+                    lastActivity.getStatusMessage() + "\n" +
                     lastActivity.getIdleTime() * 1000 + "\n" + new TimeAgo(context).timeAgo(date));
             return new TimeAgo(context).timeAgo(date);
         } catch (SmackException.NoResponseException e) {
@@ -261,7 +269,8 @@ public class MyXMPP extends Service {
         String number = matcher.replaceAll("");
         return number;
     }
-    public MultiUserChat createGroupChat(String chatRoom, String groupid, String user, List<AllBeans> mobileList, String GroupPicture) {
+    public MultiUserChat createGroupChat(String chatRoom, String groupid, String user,
+                                         List<AllBeans> mobileList, String GroupPicture) {
         MultiUserChatManager manager = MultiUserChatManager.getInstanceFor(connection);
 
         String service = "conference.ip-172-31-30-231";//services.get(0);
@@ -311,7 +320,8 @@ public class MyXMPP extends Service {
                 }
             });
 
-            ChatMessage chatMessage = new ChatMessage(AppPreferences.getMobileuser(context), AppPreferences.getFirstUsername(context),
+            ChatMessage chatMessage = new ChatMessage(AppPreferences.getMobileuser(context),
+                    AppPreferences.getFirstUsername(context),
                     chatRoomId, chatRoomId,
                     chatRoom, "Hi welcome to " + chatRoom + " group", "" + random.nextInt(1000), "", true);
             chatMessage.setMsgID();
@@ -344,9 +354,9 @@ public class MyXMPP extends Service {
                 message.setBody(body);
                 // message.setType(Message.Type.groupchat);
                 try {
-                    muc.invite(mobileList.get(i).getFriendmobile() + "@" + context.getString(R.string.server), message.getBody());
+                    muc.invite(mobileList.get(i).getFriendmobile().replace(" ","").replace("+","") + "@" + context.getString(R.string.server), message.getBody());
 
-                    Log.d("groupchat  invite>>", mobileList.get(i).getFriendmobile() + "@" + context.getString(R.string.server));
+                    Log.d("groupchat  invite>>", mobileList.get(i).getFriendmobile().replace(" ","").replace("+","") + "@" + context.getString(R.string.server));
                 } catch (NotConnectedException e) {
                     e.printStackTrace();
                 }
@@ -867,32 +877,14 @@ public class MyXMPP extends Service {
 
     public String getContactName(String number) {
         String name = number;
-
-        ContentResolver cr = context.getContentResolver(); //Activity/Application android.content.Context
-        Cursor cursor = cr.query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
-        // jsonContacts = new JSONArray();
-        if (cursor.moveToFirst()) {
-
-            //jsonContacts = new JSONObject();
-            do {
-                String id = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID));
-
-                if (Integer.parseInt(cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER))) > 0) {
-                    Cursor pCur = cr.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?", new String[]{id}, null);
-                    while (pCur.moveToNext()) {
-                        String contactNumber = pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-                        String contactname = pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
-                        if (contactNumber.equalsIgnoreCase(number)) {
-                            name = (contactname);
-                        }
-
-                        break;
-
-                    }
-                    pCur.close();
+        ArrayList<Contact> listContacts = new ContactFetcher(context).fetchAll();
+        for(Contact contact : listContacts){
+            for(ContactPhone phone : contact.numbers){
+                Log.d("ContactFetch", contact.name +"::"+ phone.number);
+                if(number.contains( phone.number)){
+                    return contact.name;
                 }
-
-            } while (cursor.moveToNext());
+            }
         }
         return name;
     }
@@ -1232,9 +1224,9 @@ public class MyXMPP extends Service {
             message.setBody("Hi welcome to" + chatRoom + "group");
             // message.setType(Message.Type.groupchat);
             try {
-                muc.invite(mobileList.get(i).getFriendmobile() + "@" + context.getString(R.string.server), message.getBody());
+                muc.invite(mobileList.get(i).getFriendmobile().replace(" ","").replace("+","") + "@" + context.getString(R.string.server), message.getBody());
 
-                Log.d("groupchat  invite>>", mobileList.get(i).getFriendmobile() + "@" + context.getString(R.string.server));
+                Log.d("groupchat  invite>>", mobileList.get(i).getFriendmobile().replace(" ","").replace("+","") + "@" + context.getString(R.string.server));
             } catch (NotConnectedException e) {
                 e.printStackTrace();
             }
@@ -1468,7 +1460,17 @@ public class MyXMPP extends Service {
                             final ChatMessage chatMessage = gson.fromJson(request.getDescription(), ChatMessage.class);
                             chatMessage.files = file.getAbsolutePath();
 
-                            processImage(chatMessage);
+                            new Handler(Looper.getMainLooper()).post(new Runnable() {
+
+                                @Override
+                                public void run() {
+
+                                    processImage(chatMessage);
+                                }
+                            });
+
+
+
 
                         }
 
@@ -1738,7 +1740,6 @@ public class MyXMPP extends Service {
                     && message.getBody() != null) {
                 final ChatMessage chatMessage = gson.fromJson(message.getBody(), ChatMessage.class);
 
-
                 if (checkUserBlock(chatMessage.sender)) {
                     final String langu = chatMessage.senderlanguages;
                     final String Mylangu = AppPreferences.getUSERLANGUAGE(context);
@@ -1746,7 +1747,7 @@ public class MyXMPP extends Service {
                     //String[] languageCode = context.getResources().getStringArray(R.array.countryCode);
 
                     ListCountry country = new ListCountry();
-                    String sorcountrycode = country.getCode(langu.trim());
+                    String sorcountrycode = country.getCode(context, langu.trim());
                     if(sorcountrycode.equalsIgnoreCase("")){
                      sorcountrycode = "en";
                     }
@@ -1755,7 +1756,7 @@ public class MyXMPP extends Service {
                             sorcountrycode = languageCode[i];
                         }
                     }*/
-                    String descountrycode = country.getCode(Mylangu.trim());
+                    String descountrycode = country.getCode(context, Mylangu.trim());
                     if(descountrycode.equalsIgnoreCase("")){
                         descountrycode = "en";
                     }
@@ -1768,7 +1769,14 @@ public class MyXMPP extends Service {
                     String msgId = new DatabaseHelper(context).getMsgId(chatMessage.msgid);
                     if (msgId.equalsIgnoreCase("")) {
                         if (langu.equalsIgnoreCase(Mylangu)) {
-                            processMessages(chatMessage);
+                            new Handler(Looper.getMainLooper()).post(new Runnable() {
+
+                                @Override
+                                public void run() {
+
+                                    processMessages(chatMessage);
+                                }
+                            });
 
                         } else {
 
@@ -1786,7 +1794,14 @@ public class MyXMPP extends Service {
                                             chatMessage.body = response;
                                             // chatMessage.body = (chatMessage.body + "\n" + Mylangu + ":\n" + response);
                                         }
-                                        processMessages(chatMessage);
+                                        new Handler(Looper.getMainLooper()).post(new Runnable() {
+
+                                            @Override
+                                            public void run() {
+
+                                                processMessages(chatMessage);
+                                            }
+                                        });
 
 
                                     }
@@ -1845,46 +1860,6 @@ public class MyXMPP extends Service {
             message.msgStatus = "10";
 
 
-            // File file1 = new File(SpeakaMeDirectory, transfer.getFileName());
-
-            if (!chatMessage.files.equalsIgnoreCase("")) {
-
-                /*String fileExte = Function.getFileExtention(chatMessage.files);
-                String folderType;
-
-                String msg = chatMessage.body;
-                if ((fileExte.equalsIgnoreCase("png") || fileExte.equalsIgnoreCase("jpg") || fileExte.equalsIgnoreCase("jpeg")) && msg.contains(AppConstants.KEY_CONTACT)) {
-                    folderType = "contact";
-                } else if (fileExte.equalsIgnoreCase("png") || fileExte.equalsIgnoreCase("jpg") || fileExte.equalsIgnoreCase("jpeg")) {
-                    folderType = "image";
-                } else if (fileExte.equalsIgnoreCase("mp4") || fileExte.equalsIgnoreCase("3gp")) {
-                    folderType = "video";
-                } else if (fileExte.equalsIgnoreCase("pdf")) {
-                    folderType = "document";
-                } else {
-                    folderType = "test";
-                }
-
-                chatMessage.files = chatMessage.files.replace("\"","");
-
-                File SpeakaMe = Function.createFolder(folderType,"recive");
-                Log.d("backResponse>>", chatMessage.files);
-                String fileName = Function.getFileName(chatMessage.files);
-
-                message.fileName = fileName;*/
-
-               /* try {
-                    File file2 = Function.decodeBase64BinaryToFile(SpeakaMeDirectory.toString(), chatMessage.fileName, chatMessage.files);
-                    message.fileName = file2.getAbsolutePath();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-*/
-
-
-            }else{
-               // DatabaseHelper.getInstance(context).insertChat(message);
-            }
 
             DatabaseHelper.getInstance(context).insertChat(message);
 
@@ -1947,7 +1922,7 @@ public class MyXMPP extends Service {
     private void processGroupMessage(final ChatMessage chatMessage) {
 
         // groupNotification(chatMessage.groupName, chatMessage.body);
-
+        chatMessage.senderName = getContactName(chatMessage.sender);
         chatMessage.isMine = false;
         chatMessage.Date = CommonMethods.getCurrentDate();
         chatMessage.Time = CommonMethods.getCurrentTime();
@@ -1963,49 +1938,22 @@ public class MyXMPP extends Service {
             if (chatMessage.fileName == null) {
 
             } else if (!chatMessage.fileName.equalsIgnoreCase("")) {
-//dddddd
-                /*String fileExte = MimeTypeMap.getFileExtensionFromUrl(chatMessage.fileName);
-                String folderType;
 
-                String msg = chatMessage.body;
-                if ((fileExte.equalsIgnoreCase("png") || fileExte.equalsIgnoreCase("jpg") || fileExte.equalsIgnoreCase("jpeg")) && msg.contains(AppConstants.KEY_CONTACT)) {
-                    folderType = "contact";
-                } else if (fileExte.equalsIgnoreCase("png") || fileExte.equalsIgnoreCase("jpg") || fileExte.equalsIgnoreCase("jpeg")) {
-                    folderType = "image";
-                } else if (fileExte.equalsIgnoreCase("mp4") || fileExte.equalsIgnoreCase("3gp")) {
-                    folderType = "video";
-                } else if (fileExte.equalsIgnoreCase("pdf")) {
-                    folderType = "document";
-                } else {
-                    folderType = "test";
-                }
-
-                File SpeakaMe = Environment.getExternalStorageDirectory();
-                File SpeakaMeDirectory = new File(SpeakaMe + "/SpeakaMe/" + folderType + "/recive");
-                if (!SpeakaMeDirectory.exists()) {
-                    SpeakaMeDirectory.mkdirs();
-                }
-
-                try {
-                    File file2 = Function.decodeBase64BinaryToFile(SpeakaMeDirectory.toString(), chatMessage.fileName, chatMessage.files);
-                    chatMessage.fileName = file2.getAbsolutePath();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }*/
             }
             Log.d("processGroupMessage", chatMessage.toString());
             DatabaseHelper.getInstance(context).insertChat(chatMessage);
 
-            if(chatMessage.body.contains("Remove by :")) {
+           /* if(chatMessage.body.contains("Remove by :")) {
                 userExitFromGroup(chatMessage.receiver);
             }else if(chatMessage.body.contains("Subadmin :")) {
 
-            }
+            }*/
             new Handler(Looper.getMainLooper()).post(new Runnable() {
 
                 @Override
                 public void run() {
                     if (ChatActivity.instance != null) {
+                        DatabaseHelper.getInstance(context).UpdateMsgRead("1", chatMessage.sender);
                         if(chatMessage.body.contains("Image changed by")){
                             Picasso.with(context).load(chatMessage.Groupimage).error(R.drawable.user_icon)
                                     .resize(200, 200)
@@ -2102,15 +2050,25 @@ public class MyXMPP extends Service {
                     final String Mylangu = AppPreferences.getUSERLANGUAGE(context);
 
                     ListCountry country = new ListCountry();
-                    String sorcountrycode = country.getCode(langu.trim());
-                    if(sorcountrycode.equalsIgnoreCase("")){
-                        sorcountrycode = "en";
-                    }
+                    String sorcountrycode = "en";
+                    String descountrycode = "en";
 
-                    String descountrycode = country.getCode(Mylangu.trim());
-                    if(descountrycode.equalsIgnoreCase("")){
-                        descountrycode = "en";
-                    }
+                    try {
+
+                        sorcountrycode = country.getCode(context, langu.replace(" ",""));
+
+                        if(sorcountrycode.equalsIgnoreCase("")){
+                            sorcountrycode = "en";
+                        }
+
+                        descountrycode = country.getCode(context, Mylangu.trim());
+                        if(descountrycode.equalsIgnoreCase("")){
+                            descountrycode = "en";
+                        }
+
+                    }catch (NullPointerException e){}
+
+
 
                   /*  String[] languages = context.getResources().getStringArray(R.array.country);
                     String[] languageCode = context.getResources().getStringArray(R.array.country);
@@ -2130,7 +2088,15 @@ public class MyXMPP extends Service {
                     String msgId = new DatabaseHelper(context).getMsgId(chatMessage.msgid);
                     if (msgId.equalsIgnoreCase("")) {
                         if (langu.equalsIgnoreCase(Mylangu)) {
-                            processGroupMessage(chatMessage);
+                            new Handler(Looper.getMainLooper()).post(new Runnable() {
+
+                                @Override
+                                public void run() {
+
+                                    processGroupMessage(chatMessage);
+                                }
+                            });
+
 
                         } else {
                             try {
@@ -2146,7 +2112,14 @@ public class MyXMPP extends Service {
                                             chatMessage.body = response;
                                             // chatMessage.body = (chatMessage.body + "\n" + Mylangu + ":\n" + response);
                                         }
-                                        processGroupMessage(chatMessage);
+                                        new Handler(Looper.getMainLooper()).post(new Runnable() {
+
+                                            @Override
+                                            public void run() {
+
+                                                processGroupMessage(chatMessage);
+                                            }
+                                        });
 
 
                                     }
@@ -2189,8 +2162,9 @@ public class MyXMPP extends Service {
 
                 Log.d("groupchat join >>", AppPreferences.getMobileuser(context));
                 String chatRoomId = room.getRoom().replace("@conference.ip-172-31-30-231", "");
+                String inviter1 = inviter.replace("@ip-172-31-30-231", "");
                 String roomName = chatRoomId.replace("_", " ");
-                ChatMessage chatMessage = new ChatMessage(inviter, inviter,
+                ChatMessage chatMessage = new ChatMessage(jsonObject.getString("sender"), jsonObject.getString("senderName"),
                         chatRoomId, chatRoomId,
                         jsonObject.getString("groupName"), jsonObject.getString("body"), "" + message.getStanzaId(), "", false);
                 chatMessage.setMsgID();
@@ -2269,7 +2243,6 @@ public class MyXMPP extends Service {
     public void userSelfExit(ChatMessage chatMessage){
 
 
-
         MultiUserChatManager multiUserChatManager = MultiUserChatManager.getInstanceFor(connection);
         Log.d("groupChatName", chatMessage.receiver + "@conference."
                 + context.getString(R.string.server));
@@ -2324,6 +2297,17 @@ public class MyXMPP extends Service {
                 }
             });
         }
+    }
+
+
+    public void updateProfile(ChatMessage chatMessage) throws NotConnectedException {
+        String body = gson.toJson(chatMessage);
+        Presence.Type type =  Presence.Type.available ;
+        Presence presence = new Presence(type,body,42, Presence.Mode.valueOf("picupdate"));
+        connection.sendPacket(presence);
+    }
+    public void updateProfilePicAndStatus()  {
+
     }
 
 }

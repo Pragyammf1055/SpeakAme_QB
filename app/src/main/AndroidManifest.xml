@@ -280,7 +280,8 @@
         <activity
             android:name=".Activity.EditNameActivity"
             android:label="@string/title_activity_edit_name"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
+
     </application>
 
 </manifest>

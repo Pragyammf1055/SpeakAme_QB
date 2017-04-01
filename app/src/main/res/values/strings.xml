@@ -263,4 +263,15 @@
     <string name="title_activity_alert_days_speakame">Remaining Days</string>
     <string name="title_activity_instruction_change_number">Change Number</string>
     <string name="title_activity_edit_name">EditNameActivity</string>
+    <string name="title_activity_login">Sign in</string>
+
+    <!-- Strings related to login -->
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Password (optional)</string>
+    <string name="action_sign_in">Sign in or register</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="permission_rationale">"Contacts permissions are needed for providing email
+        completions."
+    </string>
+    <string name="label_error_incorrect_phone">Incorrect phone</string>
 </resources>

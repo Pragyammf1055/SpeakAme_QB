@@ -28,6 +28,8 @@ import android.widget.Toast;
 
 import com.speakame.Classes.AnimRootActivity;
 import com.speakame.R;
+import com.speakame.Services.XmppConneceted;
+import com.speakame.Xmpp.ChatMessage;
 import com.speakame.utils.AppConstants;
 import com.speakame.utils.AppPreferences;
 import com.speakame.utils.Function;
@@ -605,12 +607,17 @@ public class EditProfile_Activity extends AnimRootActivity {
                             AppPreferences.setUsergender(EditProfile_Activity.this, jsonObject2.getString("gender"));
                             AppPreferences.setUserstatus(EditProfile_Activity.this, jsonObject2.getString("userProfileStatus"));
                         }
+                        XmppConneceted activity = new XmppConneceted();
+                        ChatMessage chatMessage = new ChatMessage();
+                        chatMessage.receiver = String.valueOf(AppPreferences.getLoginId(EditProfile_Activity.this));
+                        chatMessage.ReciverFriendImage = resultArray.getJSONObject(0).getString("userImage");
+                        chatMessage.msgStatus = resultArray.getJSONObject(0).getString("userProfileStatus");
+                        activity.getmService().xmpp.updateProfile(chatMessage);
                     } else if (jsonObj.getString("status").equalsIgnoreCase("400")) {
                         status = "400";
                     } else if (jsonObj.getString("status").equalsIgnoreCase("500")) {
                         status = "500";
                     } else if (jsonObj.getString("status").equalsIgnoreCase("600")) {
-
                         status = "600";
                     }
                 }
@@ -618,6 +625,7 @@ public class EditProfile_Activity extends AnimRootActivity {
             } catch (ConnectTimeoutException e) {
 
             } catch (SocketTimeoutException e) {
+
             } catch (Exception e) {
                 e.printStackTrace();
             }

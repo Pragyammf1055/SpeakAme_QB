@@ -31,6 +31,9 @@ import com.speakame.R;
 import com.speakame.utils.AppConstants;
 import com.speakame.utils.AppPreferences;
 import com.speakame.utils.ConnectionDetector;
+import com.speakame.utils.Contactloader.Contact;
+import com.speakame.utils.Contactloader.ContactFetcher;
+import com.speakame.utils.Contactloader.ContactPhone;
 import com.speakame.utils.Function;
 import com.speakame.utils.JSONParser;
 import com.speakame.utils.VolleyCallback;
@@ -103,7 +106,17 @@ public class ContactImport_Activity extends AnimRootActivity {
 
         /////////getiingallcontact in list///////////
 
-        ContentResolver cr = getApplicationContext().getContentResolver(); //Activity/Application android.content.Context
+        ArrayList<Contact> listContacts = new ContactFetcher(ContactImport_Activity.this).fetchAll();
+        for(Contact contact : listContacts){
+            for(ContactPhone phone : contact.numbers){
+                Log.d("ContactFetch", contact.name +"::"+ phone.number);
+                alContactsnumber.put( phone.number);
+                alContactsname.put(contact.name);
+            }
+
+        }
+
+        /*ContentResolver cr = getApplicationContext().getContentResolver(); //Activity/Application android.content.Context
         Cursor cursor = cr.query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
         // jsonContacts = new JSONArray();
         if (cursor.moveToFirst()) {
@@ -134,7 +147,7 @@ public class ContactImport_Activity extends AnimRootActivity {
                 }
 
             } while (cursor.moveToNext());
-        }
+        }*/
         ///////endcontactimport////////////////////////
 
         if (AppPreferences.getAckwnoledge(ContactImport_Activity.this).equalsIgnoreCase("1")) {
@@ -232,6 +245,18 @@ public class ContactImport_Activity extends AnimRootActivity {
                             finish();
                             break;
                         case R.id.refresh:
+                            alContactsnumber = new JSONArray();
+                            alContactsname = new JSONArray();
+
+                            ArrayList<Contact> listContacts = new ContactFetcher(ContactImport_Activity.this).fetchAll();
+                            for(Contact contact : listContacts){
+                                for(ContactPhone phone : contact.numbers){
+                                    Log.d("ContactFetch", contact.name +"::"+ phone.number);
+                                    alContactsnumber.put( phone.number);
+                                    alContactsname.put(contact.name);
+                                }
+
+                            }
                             sendallcontact();
                             break;
 
@@ -255,8 +280,7 @@ public class ContactImport_Activity extends AnimRootActivity {
         JSONObject jsonObject = new JSONObject();
         JSONArray jsonArray = new JSONArray();
         try {
-
-            jsonObject.put("method", "checkList");
+            jsonObject.put("method", AppConstants.CHECKLIST);
             jsonObject.put("contactNumber", alContactsnumber);
             jsonObject.put("contactName", alContactsname);
             jsonObject.put("user_id", AppPreferences.getLoginId(ContactImport_Activity.this));
@@ -266,12 +290,11 @@ public class ContactImport_Activity extends AnimRootActivity {
             jsonArray.put(jsonObject);
             System.out.println("sendallcontact>>>>>" + jsonArray);
 
-
         } catch (JSONException e) {
             e.printStackTrace();
         }
         JSONParser jsonParser = new JSONParser(ContactImport_Activity.this);
-        jsonParser.parseVollyJsonArray(AppConstants.DEMOCOMMONURL, 1, jsonArray, new VolleyCallback() {
+        jsonParser.parseVollyJsonArray(AppConstants.USER_CONNECTION_APIS, 1, jsonArray, new VolleyCallback() {
             @Override
             public void backResponse(String response) {
                 Log.d("responseallcontact>>>>>", response);
@@ -325,7 +348,7 @@ public class ContactImport_Activity extends AnimRootActivity {
         JSONArray jsonArray = new JSONArray();
         try {
 
-            jsonObject.put("method", "getCheckList");
+            jsonObject.put("method", AppConstants.GETCHECKLIST);
             jsonObject.put("user_id", AppPreferences.getLoginId(ContactImport_Activity.this));
             jsonObject.put("mobile_uniquekey", Function.getAndroidID(ContactImport_Activity.this));
 
@@ -336,7 +359,7 @@ public class ContactImport_Activity extends AnimRootActivity {
             e.printStackTrace();
         }
         JSONParser jsonParser = new JSONParser(ContactImport_Activity.this);
-        jsonParser.parseVollyJsonArray(AppConstants.DEMOCOMMONURL, 1, jsonArray, new VolleyCallback() {
+        jsonParser.parseVollyJsonArray(AppConstants.USER_CONNECTION_APIS, 1, jsonArray, new VolleyCallback() {
             @Override
             public void backResponse(String response) {
 
@@ -355,7 +378,7 @@ public class ContactImport_Activity extends AnimRootActivity {
                                 allBeans = new AllBeans();
                                 allBeans.setFriendid(topObject.getString("speaka_id"));
                                 allBeans.setFriendname(topObject.getString("person_name"));
-                                allBeans.setFriendmobile(topObject.getString("speaka_number"));
+                                allBeans.setFriendmobile(topObject.getString("speaka_number").replace(" ","").replace("+",""));
                                 allBeans.setFriendimage(topObject.getString("user_image"));
                                 allBeans.setFriendStatus(topObject.getString("userProfileStatus"));
                                 allBeans.setFavriouteFriend(topObject.getString("faviroute"));

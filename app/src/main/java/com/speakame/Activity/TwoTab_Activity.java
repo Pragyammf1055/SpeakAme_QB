@@ -36,6 +36,9 @@ import com.speakame.Services.XmppConneceted;
 import com.speakame.Xmpp.ChatMessage;
 import com.speakame.utils.AppPreferences;
 import com.speakame.utils.CallBackUi;
+import com.speakame.utils.Contactloader.Contact;
+import com.speakame.utils.Contactloader.ContactFetcher;
+import com.speakame.utils.Contactloader.ContactPhone;
 import com.speakame.utils.VolleyCallback;
 import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 
@@ -99,6 +102,7 @@ public class TwoTab_Activity extends AnimRootActivity implements VolleyCallback 
         toolbartext.setTypeface(tf1);
         instance = this;
         numMessages = 0;
+
 
         /*ListCountry listCountry = new ListCountry();
         String[] countryList = listCountry.run();
@@ -384,6 +388,7 @@ public class TwoTab_Activity extends AnimRootActivity implements VolleyCallback 
         };
 
         searchFriend();
+
 
 
     }

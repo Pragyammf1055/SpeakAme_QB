@@ -39,7 +39,7 @@ public class SelectLanguageActivity extends AnimRootActivity {
 
 //        String[] ITEMS = getResources().getStringArray(R.array.country);
         ListCountry country = new ListCountry();
-        languageArrayList = country.getAllLanguages();//Arrays.asList(getResources().getStringArray(R.array.country));
+        languageArrayList = country.getAllLanguages(SelectLanguageActivity.this);//Arrays.asList(getResources().getStringArray(R.array.country));
 
 
         recyclerView = (RecyclerView) findViewById(R.id.recycler_view);

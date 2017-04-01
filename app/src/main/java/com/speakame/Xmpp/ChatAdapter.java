@@ -85,6 +85,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static android.app.Activity.RESULT_OK;
+import static com.speakame.Activity.ChatActivity.mRecyclerView;
 import static com.speakame.Activity.TwoTab_Activity.adapter;
 
 /**
@@ -99,16 +100,21 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     ArrayList<ChatMessage> chatMessageList;
     Context context;
     private SparseBooleanArray mSelectedItemsIds;
+    OnLongClickPressListener longClickPressListener;
 
-    public ChatAdapter(Context context, ArrayList<ChatMessage> chatMessageList) {
+    public ChatAdapter(Context context, ArrayList<ChatMessage> chatMessageList,  OnLongClickPressListener longClickPressListener) {
         this.context = context;
         this.chatMessageList = chatMessageList;
         mSelectedItemsIds = new SparseBooleanArray();
+        this.longClickPressListener = longClickPressListener;
+
     }
 
 
     public void add(ChatMessage object, int pos) {
         chatMessageList.add(object);
+        //notifyItemInserted(getItemCount()+1);
+       // mRecyclerView.scrollToPosition(getItemCount()-1);
     }
 
     public void removeData(int position) {
@@ -464,7 +470,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 vh1.startDownloading.setImageDrawable(context.getResources().getDrawable(R.drawable.downloadimage));
 
                 if(message.msgStatus.equalsIgnoreCase("10")){
-                    if(message.fileName.contains(".jpg")) {
+                    if(message.fileName.contains(".jpg") || message.fileName.contains(".png")) {
                         vh1.imageView.setImageResource(R.mipmap.ic_launcher);
                     }else if(message.fileName.contains(".pdf") || message.fileName.contains(".docx")) {
                         if(message.fileName.contains(".pdf")){
@@ -479,7 +485,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                     vh1.startDownloading.setVisibility(View.GONE);
                     downLoadFile(vh1,message);
                 }else if(message.msgStatus.equalsIgnoreCase("11")){
-                    if(message.fileName.contains(".jpg")) {
+                    if(message.fileName.contains(".jpg") || message.fileName.contains(".png")) {
                         vh1.imageView.setImageResource(R.mipmap.ic_launcher);
                     }else if(message.fileName.contains(".pdf") || message.fileName.contains(".docx")) {
                         if(message.fileName.contains(".pdf")){
@@ -608,6 +614,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private void configureMessageViewHolder(final MessageViewHolder vh1, final int position) {
         final ChatMessage message = (ChatMessage) chatMessageList.get(position);
         if (message != null) {
+            vh1.storeData = message;
             vh1.view.setBackgroundColor(message.isSelected() ? Color.GRAY : 0);
             if (message.isMine) {
                 vh1.msgStatus.setVisibility(View.VISIBLE);
@@ -724,6 +731,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                         vh1.reciverName.setVisibility(View.GONE);
                     } else {
                         vh1.reciverName.setText(message.senderName);
+                        //vh1.reciverName.setText(getContactName(message.sender));
                     }
                 }
 
@@ -768,9 +776,10 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
                     DatabaseHelper.getInstance(context).UpdateFileName(response,message.msgid);
 
-                    if(message.fileName.contains(".jpg")) {
+                    if(message.fileName.contains(".jpg") || message.fileName.contains(".png")) {
                         // vh1.video.setVisibility(View.GONE);
                         vh1.imageView.setImageDrawable(Drawable.createFromPath(response));
+                        vh1.progressBar.setVisibility(View.GONE);
                     }else if(message.fileName.contains(".mp4")) {
                         //vh1.video.setVisibility(View.VISIBLE);
                         File file = new File(response);
@@ -786,10 +795,11 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
                             }
                         });
+                        vh1.progressBar.setVisibility(View.GONE);
                     }
 
                 }
-                vh1.progressBar.setVisibility(View.GONE);
+
                 vh1.cancelDownloading.setVisibility(View.GONE);
                 /*File SpeakaMe = Environment.getExternalStorageDirectory();
                 File SpeakaMeDirectory = new File(SpeakaMe + "/SpeakaMe/image/recive");
@@ -828,55 +838,66 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                             message.files = response;
                             XmppConneceted activity = new XmppConneceted();
                             message.fileData = new byte[0];
-                            activity.getmService().xmpp.sendMessage(message, new CallBackUi() {
-                                @Override
-                                public void update(String s) {
-                                    // String aa[] = s.split(",");
-                                    Log.d("onReceiptReceived>>>>", s);
-                                    chatMessageList.get(position).msgStatus = s;
-                                    if (s.equalsIgnoreCase("1")) {
-                                        vh1.msgStatus.setImageResource(R.drawable.tick);
-                                    } else if (s.equalsIgnoreCase("2")) {
-                                        vh1.msgStatus.setImageResource(R.drawable.reach);
-                                    } else {
-                                        vh1.msgStatus.setImageResource(R.drawable.read);
-                                    }
-                                    MediaPlayer mp = MediaPlayer.create(context, R.raw.tick);
-                                    if (AppPreferences.getConvertTone(context).equalsIgnoreCase("false")) {
-                                        mp.stop();
-                                    } else {
-                                        mp.start();
-                                    }
+                            Toast.makeText(context, message.groupid+"File Uploaded !", Toast.LENGTH_LONG).show();
+                            Log.d("groupid>>>>", message.groupid+">");
+                            if(message.groupid == null ||
+                                    message.groupid.equalsIgnoreCase("")){
 
-
-                                }
-                            });
-
-                            /*if(response.contains(".jpg")) {
-                                // vh1.video.setVisibility(View.GONE);
-                               // vh1.imageView.setImageDrawable(Drawable.createFromPath(response));
-                                Bitmap bitmap = Function.getBitmap(response);
-                                if(bitmap != null){
-                                    vh1.imageView.setImageBitmap(bitmap);
-                                }else {
-
-                                }
-                            }else if(response.contains(".mp4")) {
-                                //vh1.video.setVisibility(View.VISIBLE);
-                                File file = new File(response);
-                                final Uri uri = Uri.fromFile(file);
-                                vh1.video.setVideoURI(uri);
-                                // vh1.video.setMediaController(new MediaController(context));
-                                vh1.video.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                                activity.getmService().xmpp.sendMessage(message, new CallBackUi() {
                                     @Override
-                                    public void onPrepared(final MediaPlayer mp) {
-
-                                        mp.seekTo(1);
+                                    public void update(String s) {
+                                        // String aa[] = s.split(",");
+                                        Log.d("onReceiptReceived>>>>", s);
+                                        chatMessageList.get(position).msgStatus = s;
+                                        if (s.equalsIgnoreCase("1")) {
+                                            vh1.msgStatus.setImageResource(R.drawable.tick);
+                                        } else if (s.equalsIgnoreCase("2")) {
+                                            vh1.msgStatus.setImageResource(R.drawable.reach);
+                                        } else {
+                                            vh1.msgStatus.setImageResource(R.drawable.read);
+                                        }
+                                        MediaPlayer mp = MediaPlayer.create(context, R.raw.tick);
+                                        if (AppPreferences.getConvertTone(context).equalsIgnoreCase("false")) {
+                                            mp.stop();
+                                        } else {
+                                            mp.start();
+                                        }
 
 
                                     }
                                 });
-                            }*/
+                            }else{
+                                activity.getmService().xmpp.sendGroupMessage(message, new CallBackUi() {
+                                    @Override
+                                    public void update(String s) {
+                                        // String aa[] = s.split(",");
+                                        Log.d("onReceiptReceived>>>>", s);
+                                        chatMessageList.get(position).msgStatus = s;
+                                        if (s.equalsIgnoreCase("1")) {
+                                            vh1.msgStatus.setImageResource(R.drawable.tick);
+                                        } else if (s.equalsIgnoreCase("2")) {
+                                            vh1.msgStatus.setImageResource(R.drawable.reach);
+                                        } else {
+                                            vh1.msgStatus.setImageResource(R.drawable.read);
+                                        }
+                                        MediaPlayer mp = MediaPlayer.create(context, R.raw.tick);
+                                        if (AppPreferences.getConvertTone(context).equalsIgnoreCase("false")) {
+                                            mp.stop();
+                                        } else {
+                                            mp.start();
+                                        }
+
+
+                                    }
+                                });
+                            }
+
+
+
+
+
+
+
 
                         }
                     }
@@ -916,29 +937,57 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                             message.files = response;
                             XmppConneceted activity = new XmppConneceted();
                             message.fileData = new byte[0];
-                            activity.getmService().xmpp.sendMessage(message, new CallBackUi() {
-                                @Override
-                                public void update(String s) {
-                                    // String aa[] = s.split(",");
-                                    Log.d(">>>>", s);
-                                    chatMessageList.get(position).msgStatus = s;
-                                    if (s.equalsIgnoreCase("1")) {
-                                        vh1.msgStatus.setImageResource(R.drawable.tick);
-                                    } else if (s.equalsIgnoreCase("2")) {
-                                        vh1.msgStatus.setImageResource(R.drawable.reach);
-                                    } else {
-                                        vh1.msgStatus.setImageResource(R.drawable.read);
-                                    }
-                                    MediaPlayer mp = MediaPlayer.create(context, R.raw.tick);
-                                    if (AppPreferences.getConvertTone(context).equalsIgnoreCase("false")) {
-                                        mp.stop();
-                                    } else {
-                                        mp.start();
-                                    }
+                            if(message.groupid == null ||
+                                    message.groupid.equalsIgnoreCase("")) {
+                                activity.getmService().xmpp.sendMessage(message, new CallBackUi() {
+                                    @Override
+                                    public void update(String s) {
+                                        // String aa[] = s.split(",");
+                                        Log.d(">>>>", s);
+                                        chatMessageList.get(position).msgStatus = s;
+                                        if (s.equalsIgnoreCase("1")) {
+                                            vh1.msgStatus.setImageResource(R.drawable.tick);
+                                        } else if (s.equalsIgnoreCase("2")) {
+                                            vh1.msgStatus.setImageResource(R.drawable.reach);
+                                        } else {
+                                            vh1.msgStatus.setImageResource(R.drawable.read);
+                                        }
+                                        MediaPlayer mp = MediaPlayer.create(context, R.raw.tick);
+                                        if (AppPreferences.getConvertTone(context).equalsIgnoreCase("false")) {
+                                            mp.stop();
+                                        } else {
+                                            mp.start();
+                                        }
 
 
-                                }
-                            });
+                                    }
+                                });
+                            }else{
+                                activity.getmService().xmpp.sendGroupMessage(message, new CallBackUi() {
+                                    @Override
+                                    public void update(String s) {
+                                        // String aa[] = s.split(",");
+                                        Log.d(">>>>", s);
+                                        chatMessageList.get(position).msgStatus = s;
+                                        if (s.equalsIgnoreCase("1")) {
+                                            vh1.msgStatus.setImageResource(R.drawable.tick);
+                                        } else if (s.equalsIgnoreCase("2")) {
+                                            vh1.msgStatus.setImageResource(R.drawable.reach);
+                                        } else {
+                                            vh1.msgStatus.setImageResource(R.drawable.read);
+                                        }
+                                        MediaPlayer mp = MediaPlayer.create(context, R.raw.tick);
+                                        if (AppPreferences.getConvertTone(context).equalsIgnoreCase("false")) {
+                                            mp.stop();
+                                        } else {
+                                            mp.start();
+                                        }
+
+
+                                    }
+                                });
+                            }
+
 
 
                         }
@@ -1022,20 +1071,17 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         return mSelectedItemsIds.size();
     }
 
-
-    public void toggleSelection(View view, int position) {
+    public void toggleSelection(int position) {
         //selectView(position, !mSelectedItemsIds.get(position));
+        final ChatMessage message = (ChatMessage) chatMessageList.get(position);
         if (mSelectedItemsIds.get(position, false)) {
             mSelectedItemsIds.delete(position);
-
+            message.setSelected(false);
         } else {
             mSelectedItemsIds.put(position, true);
+            message.setSelected(true);
         }
-
-
-        final ChatMessage message = (ChatMessage) chatMessageList.get(position);
-        message.setSelected(!message.isSelected());
-        view.setBackgroundColor(message.isSelected() ? Color.GRAY : Color.WHITE);
+        //view.setBackgroundColor(message.isSelected() ? Color.GRAY : Color.WHITE);
 
         notifyItemChanged(position);
     }
@@ -1055,10 +1101,10 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         notifyDataSetChanged();
     }
 
-    public static class MessageViewHolder extends RecyclerView.ViewHolder {
+    public class MessageViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener {
         public ImageView msgStatus;
         public TextView time, reciverName;
-
+        ChatMessage storeData;
         public EmojiconTextView msg, originalmsg;
         public LinearLayout layout;
         public RelativeLayout parent_layout;
@@ -1068,6 +1114,9 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         public MessageViewHolder(View view) {
             super(view);
             this.view = view;
+            view.setOnClickListener(this);
+            view.setOnLongClickListener(this);
+
             parent_layout = (RelativeLayout) view.findViewById(R.id.bubble_layout_parent);
             layout = (LinearLayout) view.findViewById(R.id.bubble_layout);
             msg = (EmojiconTextView) view.findViewById(R.id.message_text);
@@ -1077,10 +1126,25 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             img_totf = (ImageView) view.findViewById(R.id.imgtotf);
             msgStatus = (ImageView) view.findViewById(R.id.msgStatus);
         }
+
+        @Override
+        public boolean onLongClick(View v) {
+            if (longClickPressListener != null) {
+                longClickPressListener.onItemLongClicked(getLayoutPosition());
+            }
+            return false;
+        }
+
+        @Override
+        public void onClick(View v) {
+            if (longClickPressListener != null) {
+                longClickPressListener.onItemClicked(getLayoutPosition());
+            }
+        }
     }
 
 
-    public class ContactViewHolder extends RecyclerView.ViewHolder {
+    public class ContactViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener {
         public TextView msg, addcontact, time;
         public ImageView imageView,msgStatus, startUpload, startDownloading,cancelUploading, cancelDownloading;
         public LinearLayout layout;
@@ -1091,6 +1155,8 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         public ContactViewHolder(View view) {
             super(view);
             this.view = view;
+            view.setOnClickListener(this);
+            view.setOnLongClickListener(this);
             parent_layout = (RelativeLayout) view.findViewById(R.id.bubble_layout_parent);
             layout = (LinearLayout) view.findViewById(R.id.bubble_layout);
             imageView = (ImageView) view.findViewById(R.id.image);
@@ -1104,9 +1170,23 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             cancelDownloading = (ImageView) view.findViewById(R.id.cancel);
             progressBar = (ProgressBar) view.findViewById(R.id.progressBar);
         }
+        @Override
+        public boolean onLongClick(View v) {
+            if (longClickPressListener != null) {
+                longClickPressListener.onItemLongClicked(getLayoutPosition());
+            }
+            return false;
+        }
+
+        @Override
+        public void onClick(View v) {
+            if (longClickPressListener != null) {
+                longClickPressListener.onItemClicked(getLayoutPosition());
+            }
+        }
     }
 
-    public class FileViewHolder extends RecyclerView.ViewHolder {
+    public class FileViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener {
         public TextView msg, time;
         public ImageView docImage,imageView,msgStatus, startUpload, startDownloading,cancelUploading, cancelDownloading;
         public VideoView video;
@@ -1118,6 +1198,8 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         public FileViewHolder(View view) {
             super(view);
             this.view = view;
+            view.setOnClickListener(this);
+            view.setOnLongClickListener(this);
             parent_layout = (RelativeLayout) view.findViewById(R.id.bubble_layout_parent);
             textMsgBg = (RelativeLayout) view.findViewById(R.id.textMsgBg);
             layout = (LinearLayout) view.findViewById(R.id.bubble_layout);
@@ -1132,6 +1214,20 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             msg = (TextView) view.findViewById(R.id.message_text);
             time = (TextView) view.findViewById(R.id.time_text);
             progressBar = (ProgressBar) view.findViewById(R.id.progressBar);
+        }
+        @Override
+        public boolean onLongClick(View v) {
+            if (longClickPressListener != null) {
+                longClickPressListener.onItemLongClicked(getLayoutPosition());
+            }
+            return false;
+        }
+
+        @Override
+        public void onClick(View v) {
+            if (longClickPressListener != null) {
+                longClickPressListener.onItemClicked(getLayoutPosition());
+            }
         }
     }
 
@@ -1166,5 +1262,42 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
 
         }
+    }
+
+    public String getContactName(String number) {
+        String name = number;
+
+        ContentResolver cr = context.getContentResolver(); //Activity/Application android.content.Context
+        Cursor cursor = cr.query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
+        // jsonContacts = new JSONArray();
+        if (cursor.moveToFirst()) {
+
+            //jsonContacts = new JSONObject();
+            do {
+                String id = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID));
+
+                if (Integer.parseInt(cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER))) > 0) {
+                    Cursor pCur = cr.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?", new String[]{id}, null);
+                    while (pCur.moveToNext()) {
+                        String contactNumber = pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+                        String contactname = pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
+                        if (contactNumber.equalsIgnoreCase(number)) {
+                            name = (contactname);
+                        }
+
+                        break;
+
+                    }
+                    pCur.close();
+                }
+
+            } while (cursor.moveToNext());
+        }
+        return name;
+    }
+
+    public interface OnLongClickPressListener{
+        void onItemClicked(int position);
+        boolean onItemLongClicked(int position);
     }
 }

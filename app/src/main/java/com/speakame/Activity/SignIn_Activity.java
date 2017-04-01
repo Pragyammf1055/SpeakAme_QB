@@ -439,7 +439,7 @@ public class SignIn_Activity extends AnimRootActivity {
                 values.add(new BasicNameValuePair("mobile", params[1]));
                 values.add(new BasicNameValuePair("password", params[2]));
                 values.add(new BasicNameValuePair("dateTime", currentDateTimeString));
-                values.add(new BasicNameValuePair("method", "login"));
+                values.add(new BasicNameValuePair("method", AppConstants.LOGIN));
                 values.add(new BasicNameValuePair("mobile_uniquekey", Function.getAndroidID(SignIn_Activity.this)));
                 values.add(new BasicNameValuePair("fcm_mobile_id", FirebaseInstanceId.getInstance().getToken()));
                 pass = params[2];
@@ -449,7 +449,7 @@ public class SignIn_Activity extends AnimRootActivity {
                 values.add(new BasicNameValuePair("password", ""));
                 values.add(new BasicNameValuePair("email", params[3]));
                 values.add(new BasicNameValuePair("profpic", params[4]));
-                values.add(new BasicNameValuePair("method", "login"));
+                values.add(new BasicNameValuePair("method", AppConstants.LOGIN));
                 values.add(new BasicNameValuePair("fcm_mobile_id", FirebaseInstanceId.getInstance().getToken()));
                 values.add(new BasicNameValuePair("mobile_uniquekey", Function.getAndroidID(SignIn_Activity.this)));
 //                values.add(new BasicNameValuePair("device_id", getDeviceId()));
@@ -458,8 +458,8 @@ public class SignIn_Activity extends AnimRootActivity {
             }
 
             Log.d("login_value", values.toString());
-            String login_json = serviceHandler.makeServiceCall(AppConstants.LOGINURL, ServiceHandler.POST, values);
-            System.out.println("Logine value : ------------ " + AppConstants.LOGINURL);
+            String login_json = serviceHandler.makeServiceCall(AppConstants.REGISTER_LOG, ServiceHandler.POST, values);
+            System.out.println("Logine value : ------------ " + AppConstants.REGISTER_LOG);
 
 
             if (login_json != null) {
@@ -475,15 +475,16 @@ public class SignIn_Activity extends AnimRootActivity {
                         loginId = jsonObject2.getString("userId");
                         AppPreferences.setLoginId(SignIn_Activity.this, Integer.parseInt(jsonObject2.getString("userId")));
                         AppPreferences.setSocialId(SignIn_Activity.this, jsonObject2.getString("social_id"));
-                        AppPreferences.setMobileuser(SignIn_Activity.this, jsonObject2.getString("mobile"));
+                        AppPreferences.setMobileuser(SignIn_Activity.this, jsonObject2.getString("country_with_mobile").replace(" ","-"));
                         AppPreferences.setPassword(SignIn_Activity.this, jsonObject2.getString("password"));
                         AppPreferences.setFirstUsername(SignIn_Activity.this, jsonObject2.getString("username"));
                         AppPreferences.setUserprofile(SignIn_Activity.this, jsonObject2.getString("userImage"));
 
                         System.out.println("userpic" + jsonObject2.getString("userImage"));
-                        System.out.println("usermobile" + jsonObject2.getString("mobile"));
+                        System.out.println("usermobile" + jsonObject2.getString("country_with_mobile").replace(" ","").replace("+",""));
                         System.out.println("userPassword" + jsonObject2.getString("password"));
                         AppPreferences.setEmail(SignIn_Activity.this, jsonObject2.getString("email"));
+                        AppPreferences.setMobileuser(SignIn_Activity.this, jsonObject2.getString("country_with_mobile").replace(" ","").replace("+",""));
                         AppPreferences.setUsercity(SignIn_Activity.this, jsonObject2.getString("country"));
                         AppPreferences.setCountrycode(SignIn_Activity.this, jsonObject2.getString("countrycode"));
                         AppPreferences.setUSERLANGUAGE(SignIn_Activity.this, jsonObject2.getString("language"));
@@ -492,14 +493,15 @@ public class SignIn_Activity extends AnimRootActivity {
                         AppPreferences.setBlockList(SignIn_Activity.this, jsonObject2.getString("block_users"));
                         AppPreferences.setPicprivacy(SignIn_Activity.this, jsonObject2.getString("profie_pic_privacy"));
                         AppPreferences.setStatusprivacy(SignIn_Activity.this, jsonObject2.getString("profie_status_privacy"));
-                        AppPreferences.setLoginStatus(SignIn_Activity.this, jsonObject2.getString("user_status"));
+                        //AppPreferences.setLoginStatus(SignIn_Activity.this, jsonObject2.getString("user_status"));
+                        AppPreferences.setLoginStatus(SignIn_Activity.this, "1");
                         AppPreferences.setRegisterDate(SignIn_Activity.this, jsonObject2.getString("start_date"));
                         AppPreferences.setRegisterEndDate(SignIn_Activity.this, jsonObject2.getString("end_date"));
-                        AppPreferences.setRemainingDays(SignIn_Activity.this, jsonObject2.getString("reamning_days"));
-                        System.out.println("userenddate" + jsonObject2.getString("end_date"));
+//                        AppPreferences.setRemainingDays(SignIn_Activity.this, jsonObject2.getString("reamning_days"));
+                     //   System.out.println("userenddate" + jsonObject2.getString("end_date"));
                         User user = new User();
                         user.setName(jsonObject2.getString("username"));
-                        user.setMobile(jsonObject2.getString("mobile"));
+                        user.setMobile(jsonObject2.getString("country_with_mobile").replace(" ","").replace("+",""));
                         user.setPassword(jsonObject2.getString("password"));
 
                         DatabaseHelper.getInstance(SignIn_Activity.this).insertUser(user);

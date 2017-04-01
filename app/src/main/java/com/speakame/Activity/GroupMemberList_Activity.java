@@ -98,7 +98,7 @@ public class GroupMemberList_Activity extends AnimRootActivity implements Volley
         JSONObject jsonObject = new JSONObject();
         JSONArray jsonArray = new JSONArray();
         try {
-            jsonObject.put("method", "getCheckList");
+            jsonObject.put("method", AppConstants.GETCHECKLIST);
             jsonObject.put("mobile_uniquekey", Function.getAndroidID(GroupMemberList_Activity.this));
             jsonObject.put("user_id", AppPreferences.getLoginId(GroupMemberList_Activity.this));
 
@@ -109,7 +109,7 @@ public class GroupMemberList_Activity extends AnimRootActivity implements Volley
             e.printStackTrace();
         }
         JSONParser jsonParser = new JSONParser(getApplicationContext());
-        jsonParser.parseVollyJsonArray(AppConstants.DEMOCOMMONURL, 1, jsonArray, GroupMemberList_Activity.this);
+        jsonParser.parseVollyJsonArray(AppConstants.USER_CONNECTION_APIS, 1, jsonArray, GroupMemberList_Activity.this);
         System.out.println("jsonArray" + jsonObject);
 
     }
@@ -122,7 +122,6 @@ public class GroupMemberList_Activity extends AnimRootActivity implements Volley
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-
 
         switch (item.getItemId()) {
             case android.R.id.home:
