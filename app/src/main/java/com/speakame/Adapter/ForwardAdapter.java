@@ -221,7 +221,7 @@ public class ForwardAdapter extends RecyclerView.Adapter<ForwardAdapter.MyViewHo
         chatMessage.formID = String.valueOf(AppPreferences.getLoginId(context));
         chatMessage.senderlanguages = AppPreferences.getUSERLANGUAGE(context);
         chatMessage.reciverlanguages = reciverlanguages;
-        chatMessage.MyImage = AppPreferences.getUserprofilepic(context);
+        chatMessage.MyImage = AppPreferences.getUserprofile(context);
 
         //TwoTab_Activity activity = new TwoTab_Activity();
         XmppConneceted activity = new XmppConneceted();

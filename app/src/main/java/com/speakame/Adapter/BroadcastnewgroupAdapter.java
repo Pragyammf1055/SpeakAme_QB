@@ -2,6 +2,7 @@ package com.speakame.Adapter;
 
 import android.app.Activity;
 import android.graphics.Typeface;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -102,8 +103,11 @@ public class BroadcastnewgroupAdapter extends BaseAdapter {
                 msgCount.setTextSize(10);
             }
         }
+
+
         if(image != null){
             if(!image.equalsIgnoreCase("")){
+                Log.d("USERIMAGE", image);
                 Picasso.with(context).load(image).error(R.drawable.user_icon)
                         .resize(200, 200)
                         .into(imageView);

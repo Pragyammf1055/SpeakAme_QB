@@ -114,6 +114,16 @@ public class DataUpdate {
                         {groupId});
         db.close();
     }
+    public static void UpdateFriendPro(SQLiteDatabase db,String image, String reciver) {
+
+        ContentValues initialValues = new ContentValues();
+        initialValues.put(DBTable.KEY_FRIENDIMAGE, image);
+
+        db.update(DBTable.TBL_CHAT, initialValues, DBTable.KEY_RECEIVER + " = ?",
+                new String[]
+                        {reciver});
+        db.close();
+    }
     public static void UpdateGroupName(SQLiteDatabase db,String name, String groupId) {
 
         ContentValues initialValues = new ContentValues();

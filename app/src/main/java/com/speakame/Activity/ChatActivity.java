@@ -1245,7 +1245,7 @@ chatlist.remove();
         chatMessage.formID = String.valueOf(AppPreferences.getLoginId(ChatActivity.this));
         chatMessage.senderlanguages = AppPreferences.getUSERLANGUAGE(ChatActivity.this);
         chatMessage.reciverlanguages = reciverlanguages;
-        chatMessage.MyImage = AppPreferences.getUserprofilepic(ChatActivity.this);
+        chatMessage.MyImage = AppPreferences.getUserprofile(ChatActivity.this);
         chatMessage.lastseen = new DatabaseHelper(ChatActivity.this).getLastSeen(user2);
         //chatMessage.fileData = fileData;
         msg_edittext.setText("");

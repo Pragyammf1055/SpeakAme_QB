@@ -6,7 +6,9 @@ import android.os.IBinder;
 import android.util.Log;
 
 import com.speakame.Activity.Main_Activity;
+import com.speakame.Beans.User;
 import com.speakame.Database.DatabaseHelper;
+import com.speakame.Xmpp.MyService;
 import com.speakame.utils.AppConstants;
 import com.speakame.utils.AppPreferences;
 import com.speakame.utils.Function;
@@ -121,6 +123,29 @@ public class HomeService extends IntentService {
 
 
     private void checklogin() {
+        User user = DatabaseHelper.getInstance(HomeService.this).getUser(AppPreferences.getMobileuser(HomeService.this));
+        if(user.getMobile() == null){
+
+        }else if(user.getMobile().equalsIgnoreCase("null")){
+            AppPreferences.setEmail(HomeService.this, "");
+            AppPreferences.setMobileuser(HomeService.this, "");
+            AppPreferences.setFirstUsername(HomeService.this, "");
+            AppPreferences.setLoginId(HomeService.this, 0);
+            AppPreferences.setUserprofile(HomeService.this, "");
+            AppPreferences.setTotf(HomeService.this, "");
+            AppPreferences.setEnetrSend(HomeService.this, "");
+            DatabaseHelper.getInstance(HomeService.this).deleteDB();
+
+            //   MyXMPP.deleteUserr();
+
+            Intent intent = new Intent(HomeService.this, Main_Activity.class);
+            stopSelf();
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+        }
+
+    }
+    private void checklogin1() {
         JSONObject jsonObject = new JSONObject();
         JSONArray jsonArray = new JSONArray();
         try {

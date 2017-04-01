@@ -110,6 +110,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
             DataUpdate.UpdateGroupImage(db, image, groupId);
     }
+    public void UpdateFriendPro(String image, String reciver) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+            DataUpdate.UpdateFriendPro(db, image, reciver);
+    }
     public void UpdateGroupName(String name, String groupId) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 

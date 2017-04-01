@@ -7,9 +7,7 @@ import android.content.SharedPreferences.Editor;
 public class AppPreferences {
     public static final String MBPREFERENCES = "SpeakAme";
     public static final String UID = "user_id";
-    public static final String DEVICEID = "deviceId";
     public static final String USERSTATUS = "status";
-    public static final String USERPROFILEPIC = "pro_pic";
     public static final String USERCITY = "user_name";
     public static final String USERBLOCKNUMBER = "block_user";
     public static final String USERPROFILEREVIEW = "pro_view";
@@ -331,19 +329,7 @@ public class AppPreferences {
     }
 
 
-    public static String getUserprofilepic(Context context) {
-        SharedPreferences pereference = context.getSharedPreferences(
-                MBPREFERENCES, 0);
-        return pereference.getString(USERPROFILEPIC, "");
-    }
 
-    public static void setUserprofilepic(Context context, String id) {
-        SharedPreferences preferences = context.getSharedPreferences(
-                MBPREFERENCES, 0);
-        Editor editor = preferences.edit();
-        editor.putString(USERPROFILEPIC, id);
-        editor.commit();
-    }
 
     public static String getUsercity(Context context) {
         SharedPreferences pereference = context.getSharedPreferences(

@@ -346,7 +346,7 @@ public class DBDataGet {
                 query = "select * from " + DBTable.TBL_CHAT + " where " + DBTable.KEY_RECEIVER + " = '" + keyname + "' and "+DBTable.KEY_READ+" ='" + "0" +"'";
                 //query = "select "+DBTable.KEY_MSGSTATUS+" from " + DBTable.TBL_CHAT + " where " + DBTable.KEY_RECEIVER + " = '" + keyname + "' ORDER BY " + DBTable.KEY_ID + " ASC ";
             } else {
-                query = "select * from " + DBTable.TBL_CHAT + " where " + DBTable.KEY_GROUPNAME + " = '" + keyname + "' and "+DBTable.KEY_READ+" ='" + "0" +"'";
+                query = "select * from " + DBTable.TBL_CHAT + " where " + DBTable.KEY_RECEIVER + " = '" + keyname + "' and "+DBTable.KEY_READ+" ='" + "0" +"'";
                 //query = "select "+DBTable.KEY_MSGSTATUS+" from " + DBTable.TBL_CHAT + " where " + DBTable.KEY_GROUPNAME + " = '" + keyname + "' ORDER BY " + DBTable.KEY_ID + " ASC ";
             }
 

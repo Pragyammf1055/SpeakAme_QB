@@ -234,7 +234,7 @@ public class EditProfile_Activity extends AnimRootActivity {
                     .into(prof_pic);
         }
 
-        System.out.println("profpic"+AppPreferences.getUserprofilepic(EditProfile_Activity.this));
+        System.out.println("profpic"+AppPreferences.getUserprofile(EditProfile_Activity.this));
 
         editstatus.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -596,22 +596,24 @@ public class EditProfile_Activity extends AnimRootActivity {
                         JSONArray resultArray = jsonObj.getJSONArray("result");
                         for (int i = 0; i < resultArray.length(); i++) {
                             JSONObject jsonObject2 = resultArray.getJSONObject(i);
-                            AppPreferences.setLoginId(EditProfile_Activity.this, Integer.parseInt(jsonObject2.getString("userId")));
-                            AppPreferences.setMobileuser(EditProfile_Activity.this, jsonObject2.getString("mobile"));
+                            //AppPreferences.setLoginId(EditProfile_Activity.this, Integer.parseInt(jsonObject2.getString("userId")));
+                            //AppPreferences.setMobileuser(EditProfile_Activity.this, jsonObject2.getString("mobile"));
                             AppPreferences.setFirstUsername(EditProfile_Activity.this, jsonObject2.getString("username"));
                             AppPreferences.setUserprofile(EditProfile_Activity.this, jsonObject2.getString("userImage"));
-                            AppPreferences.setEmail(EditProfile_Activity.this, jsonObject2.getString("email"));
-                            AppPreferences.setCountrycode(EditProfile_Activity.this, jsonObject2.getString("countrycode"));
-                            AppPreferences.setUsercity(EditProfile_Activity.this, jsonObject2.getString("country"));
-                            AppPreferences.setUSERLANGUAGE(EditProfile_Activity.this, jsonObject2.getString("language"));
-                            AppPreferences.setUsergender(EditProfile_Activity.this, jsonObject2.getString("gender"));
+                            //AppPreferences.setEmail(EditProfile_Activity.this, jsonObject2.getString("email"));
+                            //AppPreferences.setCountrycode(EditProfile_Activity.this, jsonObject2.getString("countrycode"));
+                            //AppPreferences.setUsercity(EditProfile_Activity.this, jsonObject2.getString("country"));
+                            //AppPreferences.setUSERLANGUAGE(EditProfile_Activity.this, jsonObject2.getString("language"));
+                            //AppPreferences.setUsergender(EditProfile_Activity.this, jsonObject2.getString("gender"));
                             AppPreferences.setUserstatus(EditProfile_Activity.this, jsonObject2.getString("userProfileStatus"));
                         }
                         XmppConneceted activity = new XmppConneceted();
                         ChatMessage chatMessage = new ChatMessage();
-                        chatMessage.receiver = String.valueOf(AppPreferences.getLoginId(EditProfile_Activity.this));
+                        chatMessage.Groupimage = "updateProPic";
+                        chatMessage.receiver = AppPreferences.getMobileuser(EditProfile_Activity.this);
                         chatMessage.ReciverFriendImage = resultArray.getJSONObject(0).getString("userImage");
                         chatMessage.msgStatus = resultArray.getJSONObject(0).getString("userProfileStatus");
+
                         activity.getmService().xmpp.updateProfile(chatMessage);
                     } else if (jsonObj.getString("status").equalsIgnoreCase("400")) {
                         status = "400";
@@ -623,9 +625,9 @@ public class EditProfile_Activity extends AnimRootActivity {
                 }
 
             } catch (ConnectTimeoutException e) {
-
+                e.printStackTrace();
             } catch (SocketTimeoutException e) {
-
+                e.printStackTrace();
             } catch (Exception e) {
                 e.printStackTrace();
             }

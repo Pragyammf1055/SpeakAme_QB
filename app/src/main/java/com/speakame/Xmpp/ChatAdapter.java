@@ -339,7 +339,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 vh1.docImage.setVisibility(View.VISIBLE);
                 vh1.imageView.setVisibility(View.GONE);
                 vh1.video.setVisibility(View.GONE);
-            }else if(message.fileName.contains(".mp4") || message.fileName.contains(".3gp")) {
+            }else if(message.fileName.contains(".mp4") || message.fileName.contains(".3gp")|| message.fileName.contains(".MOV")) {
                 vh1.docImage.setVisibility(View.GONE);
                 vh1.imageView.setVisibility(View.GONE);
                 vh1.video.setVisibility(View.VISIBLE);
@@ -396,7 +396,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                         }else if(message.fileName.contains(".docx")){
                             vh1.docImage.setImageResource(R.mipmap.ic_doc);
                         }
-                    }else if(message.fileName.contains(".mp4")) {
+                    }else if(message.fileName.contains(".mp4")|| message.fileName.contains(".3gp")|| message.fileName.contains(".MOV")) {
                         File file = new File(message.files);
                         final Uri uri = Uri.fromFile(file);
                         vh1.video.setVideoURI(uri);
@@ -422,7 +422,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                         }else if(message.fileName.contains(".docx")){
                             vh1.docImage.setImageResource(R.mipmap.ic_doc);
                         }
-                    }else if(message.fileName.contains(".mp4")) {
+                    }else if(message.fileName.contains(".mp4")|| message.fileName.contains(".3gp")|| message.fileName.contains(".MOV")) {
                         //vh1.video.setVisibility(View.VISIBLE);
                         File file = new File(message.files);
                         final Uri uri = Uri.fromFile(file);
@@ -478,7 +478,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                         }else if(message.fileName.contains(".docx")){
                             vh1.docImage.setImageResource(R.mipmap.ic_doc);
                         }
-                    }else if(message.fileName.contains(".mp4")) {
+                    }else if(message.fileName.contains(".mp4")|| message.fileName.contains(".3gp")|| message.fileName.contains(".MOV")) {
 
                     }
                     //vh1.imageView.setAlpha(1);
@@ -493,7 +493,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                         }else if(message.fileName.contains(".docx")){
                             vh1.docImage.setImageResource(R.mipmap.ic_doc);
                         }
-                    }else if(message.fileName.contains(".mp4")) {
+                    }else if(message.fileName.contains(".mp4")|| message.fileName.contains(".3gp")|| message.fileName.contains(".MOV")) {
                         Log.d("IMAGEPATH recive", message.files);
                     }
                     //vh1.imageView.setAlpha(1);
@@ -512,7 +512,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                         }else if(message.fileName.contains(".docx")){
                             vh1.docImage.setImageResource(R.mipmap.ic_doc);
                         }
-                    }else if(message.fileName.contains(".mp4")) {
+                    }else if(message.fileName.contains(".mp4")|| message.fileName.contains(".3gp")|| message.fileName.contains(".MOV")) {
                         //vh1.video.setVisibility(View.VISIBLE);
                         File file = new File(message.files);
                         final Uri uri = Uri.fromFile(file);
@@ -646,6 +646,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                   //  vh1.msgStatus.setVisibility(View.VISIBLE);
                 }
 
+                Log.d("groupName", message.groupName+":::"+ message.type);
 
                 if(message.msgStatus.equalsIgnoreCase("0")) {
                     XmppConneceted activity = new XmppConneceted();
@@ -780,7 +781,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                         // vh1.video.setVisibility(View.GONE);
                         vh1.imageView.setImageDrawable(Drawable.createFromPath(response));
                         vh1.progressBar.setVisibility(View.GONE);
-                    }else if(message.fileName.contains(".mp4")) {
+                    }else if(message.fileName.contains(".mp4")|| message.fileName.contains(".3gp")|| message.fileName.contains(".MOV")) {
                         //vh1.video.setVisibility(View.VISIBLE);
                         File file = new File(response);
                         final Uri uri = Uri.fromFile(file);
@@ -838,7 +839,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                             message.files = response;
                             XmppConneceted activity = new XmppConneceted();
                             message.fileData = new byte[0];
-                            Toast.makeText(context, message.groupid+"File Uploaded !", Toast.LENGTH_LONG).show();
+                           // Toast.makeText(context, message.groupid+"File Uploaded !", Toast.LENGTH_LONG).show();
                             Log.d("groupid>>>>", message.groupid+">");
                             if(message.groupid == null ||
                                     message.groupid.equalsIgnoreCase("")){

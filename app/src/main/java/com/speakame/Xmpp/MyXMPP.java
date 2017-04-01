@@ -484,7 +484,25 @@ public class MyXMPP extends Service {
                                         @Override
                                         public void run() {
 
-                                            updateLastSeen(presence.getType(), presence.getFrom(), presence.getStatus());
+                                            if(presence.getStatus() == null) {
+                                            }else if(presence.getStatus().contains("updateProPic")){
+                                                try {
+                                                    JSONObject object = new JSONObject(presence.getStatus());
+                                                    DatabaseHelper.getInstance(context).UpdateFriendPro(object.getString("ReciverFriendImage"), object.getString("receiver"));
+                                                    if(ChatActivity.instance != null) {
+                                                        Picasso.with(context).load(object.getString("ReciverFriendImage")).error(R.drawable.user_icon)
+                                                                .resize(200, 200)
+                                                                .into(conversationimage);
+                                                    }else if(TwoTab_Activity.instance != null){
+                                                        TwoTab_Activity.updateList("");
+                                                    }
+                                                } catch (JSONException e) {
+                                                    e.printStackTrace();
+                                                }
+
+                                            }else {
+                                                updateLastSeen(presence.getType(), presence.getFrom(), presence.getStatus());
+                                            }
                                         }
                                     });
 
@@ -653,7 +671,7 @@ public class MyXMPP extends Service {
                 multiUserChat.join(AppPreferences.getMobileuser(context));
                 multiUserChat.sendMessage(message);
                 final String deliveryReceiptId = DeliveryReceiptRequest.addTo(message);
-                Log.e("xmpp.SendMessage()", String.valueOf(message));
+                Log.e("xmpp.SendMessage(Group)", String.valueOf(message));
 
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
 
@@ -2302,8 +2320,8 @@ public class MyXMPP extends Service {
 
     public void updateProfile(ChatMessage chatMessage) throws NotConnectedException {
         String body = gson.toJson(chatMessage);
-        Presence.Type type =  Presence.Type.available ;
-        Presence presence = new Presence(type,body,42, Presence.Mode.valueOf("picupdate"));
+        Presence.Type type =  Presence.Type.available;
+        Presence presence = new Presence(type,body,42, Presence.Mode.available);
         connection.sendPacket(presence);
     }
     public void updateProfilePicAndStatus()  {
