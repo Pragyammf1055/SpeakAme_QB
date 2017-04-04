@@ -731,7 +731,12 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                     if (message.senderName.contains("@ip-")) {
                         vh1.reciverName.setVisibility(View.GONE);
                     } else {
-                        vh1.reciverName.setText(message.senderName);
+                        if(Function.isStringInt(message.senderName)){
+                            vh1.reciverName.setText("+"+message.senderName);
+                        }else{
+                            vh1.reciverName.setText(message.senderName);
+                        }
+                        //vh1.reciverName.setText(message.senderName);
                         //vh1.reciverName.setText(getContactName(message.sender));
                     }
                 }

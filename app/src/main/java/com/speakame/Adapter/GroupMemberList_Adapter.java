@@ -28,6 +28,7 @@ import com.speakame.utils.AppPreferences;
 import com.speakame.utils.Contactloader.Contact;
 import com.speakame.utils.Contactloader.ContactFetcher;
 import com.speakame.utils.Contactloader.ContactPhone;
+import com.speakame.utils.Function;
 import com.squareup.picasso.Picasso;
 
 import org.jivesoftware.smack.packet.Message;
@@ -76,7 +77,13 @@ public class GroupMemberList_Adapter extends RecyclerView.Adapter<GroupMemberLis
         if(allBeans.getFriendname().equalsIgnoreCase("you")){
             holder.name.setText(allBeans.getFriendname());
         }else{
-            holder.name.setText(getContactName(allBeans.getFriendmobile()));
+            String stringNumber = getContactName(allBeans.getFriendmobile());
+            if(Function.isStringInt(stringNumber)){
+                holder.name.setText("+"+stringNumber);
+            }else{
+                holder.name.setText(stringNumber);
+            }
+
         }
 
 
@@ -193,15 +200,15 @@ public class GroupMemberList_Adapter extends RecyclerView.Adapter<GroupMemberLis
         for(Contact contact : listContacts){
             for(ContactPhone phone : contact.numbers){
                 Log.d("ContactFetch", contact.name +"::"+ phone.number);
-                if(number.equalsIgnoreCase( phone.number)){
+                if(number.contains( phone.number) && phone.number.length() > 9){
                     return contact.name;
                 }
             }
-
         }
-
         return name;
     }
+
+
 }
 
 

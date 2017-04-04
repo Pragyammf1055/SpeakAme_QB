@@ -121,15 +121,15 @@ public class DownloadFile extends AsyncTask<String, Integer, String> {
             String fileExte = Function.getFileExtention(filename);
 
             if (fileExte.equalsIgnoreCase("png") || fileExte.equalsIgnoreCase("jpg") || fileExte.equalsIgnoreCase("jpeg")) {
-                folderType = "image";
+                folderType = "SpeakaMeImage";
             } else if (fileExte.equalsIgnoreCase("mp4") || fileExte.equalsIgnoreCase("3gp")) {
-                folderType = "video";
+                folderType = "SpeakaMeVideo";
             } else if (fileExte.equalsIgnoreCase("pdf")) {
-                folderType = "document";
+                folderType = "SpeakaMeDocument";
             } else {
-                folderType = "test";
+                folderType = "SpeakaMeTest";
             }
-            File SpeakaMeDir = Function.createFolder(folderType,"recive");
+            File SpeakaMeDir = Function.createFolder(folderType);
             filePath = SpeakaMeDir +"/"+ filenema;
 
             ByteArrayOutputStream dataStream = new ByteArrayOutputStream();
@@ -185,15 +185,15 @@ public class DownloadFile extends AsyncTask<String, Integer, String> {
             String fileExte = Function.getFileExtention(filename);
 
             if (fileExte.equalsIgnoreCase("png") || fileExte.equalsIgnoreCase("jpg") || fileExte.equalsIgnoreCase("jpeg")) {
-                folderType = "image";
+                folderType = "SpeakaMeImage";
             } else if (fileExte.equalsIgnoreCase("mp4") || fileExte.equalsIgnoreCase("3gp")) {
-                folderType = "video";
+                folderType = "SpeakaMeVideo";
             } else if (fileExte.equalsIgnoreCase("pdf")) {
-                folderType = "document";
+                folderType = "SpeakaMeDocument";
             } else {
-                folderType = "test";
+                folderType = "SpeakaMeTest";
             }
-            File SpeakaMeDir = Function.createFolder(folderType,"recive");
+            File SpeakaMeDir = Function.createFolder(folderType);
             filePath = SpeakaMeDir +"/"+ filenema;
 
             BufferedInputStream bis = new BufferedInputStream(input);

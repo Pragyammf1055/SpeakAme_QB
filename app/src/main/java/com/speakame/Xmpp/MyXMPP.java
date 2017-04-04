@@ -900,7 +900,7 @@ public class MyXMPP extends Service {
         for(Contact contact : listContacts){
             for(ContactPhone phone : contact.numbers){
                 Log.d("ContactFetch", contact.name +"::"+ phone.number);
-                if(number.contains( phone.number)){
+                if(number.contains( phone.number) && phone.number.length() > 9){
                     return contact.name;
                 }
             }
@@ -1426,7 +1426,7 @@ public class MyXMPP extends Service {
                     // File saveFile = Function.getOutputMediaFile();
 
                     File SpeakaMe = Environment.getExternalStorageDirectory();
-                    File SpeakaMeDirectory = new File(SpeakaMe + "/SpeakaMe/image/");
+                    File SpeakaMeDirectory = new File(SpeakaMe + "/SpeakaMe/SpeakaMeImage/");
                     if (!SpeakaMeDirectory.exists()) {
                         SpeakaMeDirectory.mkdirs();
                     }
@@ -1935,7 +1935,6 @@ public class MyXMPP extends Service {
 
 
         }
-
 
     }
 

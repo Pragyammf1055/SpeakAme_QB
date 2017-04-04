@@ -349,6 +349,9 @@ public class ChatActivity extends AnimRootActivity implements View.OnClickListen
         btn4 = (ImageButton) findViewById(R.id.contactid);
         fm = (FrameLayout) findViewById(R.id.emojicons);
 
+        if(!Function.checkPermission(ChatActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE)){
+            Function.requestPermission(ChatActivity.this,Manifest.permission.READ_EXTERNAL_STORAGE, 1);
+        }
 
         linearLayout = (LinearLayout) findViewById(R.id.linear);
         mbtnadd = (Button) findViewById(R.id.btn2);
@@ -378,12 +381,11 @@ public class ChatActivity extends AnimRootActivity implements View.OnClickListen
         Function.callPermisstion(ChatActivity.this, 1);
         Function.cameraPermisstion(ChatActivity.this, 1);
 
-
         allBeans = getIntent().getParcelableExtra("value");
 
         FriendStatus = allBeans.getFriendStatus();
         FriendName = allBeans.getFriendname();
-        FriendMobile = allBeans.getFriendmobile();
+        FriendMobile = allBeans.getFriendmobile().replace(" ","").replace("+","");
         FriendImage = allBeans.getFriendimage();
         FriendId = allBeans.getFriendid();
         reciverlanguages = allBeans.getLanguages();
@@ -399,11 +401,15 @@ public class ChatActivity extends AnimRootActivity implements View.OnClickListen
             linearLayout.setVisibility(View.GONE);
         }
 
-
         Log.d("UserList", FriendMobile + ">>>mob>>>" + FriendName + "/n" + FriendStatus + "/n" + groupName + "/n");
         if (groupName.equalsIgnoreCase("")) {
             img_eye.setVisibility(View.VISIBLE);
-            toolbartext.setText(FriendName);
+            if(Function.isStringInt(FriendName)){
+                toolbartext.setText("+"+FriendName);
+            }else{
+                toolbartext.setText(FriendName);
+            }
+
             if(FriendImage == null){
 
             }else
@@ -1264,19 +1270,19 @@ chatlist.remove();
 
             String msg = chatMessage.body;
             if ((fileExte.equalsIgnoreCase("png") || fileExte.equalsIgnoreCase("jpg") || fileExte.equalsIgnoreCase("jpeg")) && msg.contains(AppConstants.KEY_CONTACT)) {
-                folderType = "contact";
+                folderType = "SpeakaMeContact";
             } else if (fileExte.equalsIgnoreCase("png") || fileExte.equalsIgnoreCase("jpg") || fileExte.equalsIgnoreCase("jpeg")) {
-                folderType = "image";
+                folderType = "SpeakaMeImage";
             } else if (fileExte.equalsIgnoreCase("mp4") || fileExte.equalsIgnoreCase("3gp")) {
-                folderType = "video";
+                folderType = "SpeakaMeVideo";
             } else if (fileExte.equalsIgnoreCase("pdf")) {
-                folderType = "document";
+                folderType = "SpeakaMeDocument";
             } else {
-                folderType = "test";
+                folderType = "SpeakaMeTest";
             }
 
 
-            File SpeakaMeDirectory = Function.createFolder(folderType,"send");
+            File SpeakaMeDirectory = Function.createFolder(folderType);
             chatMessage.fileName = Function.generateNewFileName(fileExte);
             chatMessage.files = Function.copyFile(file, SpeakaMeDirectory +"/"+ chatMessage.fileName );
 
@@ -1339,19 +1345,19 @@ chatlist.remove();
 
             String msg = chatMessage.body;
             if ((fileExte.equalsIgnoreCase("png") || fileExte.equalsIgnoreCase("jpg") || fileExte.equalsIgnoreCase("jpeg")) && msg.contains(AppConstants.KEY_CONTACT)) {
-                folderType = "contact";
+                folderType = "SpeakaMeContact";
             } else if (fileExte.equalsIgnoreCase("png") || fileExte.equalsIgnoreCase("jpg") || fileExte.equalsIgnoreCase("jpeg")) {
-                folderType = "image";
+                folderType = "SpeakaMeImage";
             } else if (fileExte.equalsIgnoreCase("mp4") || fileExte.equalsIgnoreCase("3gp")) {
-                folderType = "video";
+                folderType = "SpeakaMeVideo";
             } else if (fileExte.equalsIgnoreCase("pdf")) {
-                folderType = "document";
+                folderType = "SpeakaMeDocument";
             } else {
-                folderType = "test";
+                folderType = "SpeakaMeTest";
             }
 
 
-            File SpeakaMeDirectory = Function.createFolder(folderType,"send");
+            File SpeakaMeDirectory = Function.createFolder(folderType);
             chatMessage.fileName = Function.generateNewFileName(fileExte);
             chatMessage.files = Function.copyFile(file, SpeakaMeDirectory +"/"+ chatMessage.fileName );
 
@@ -1535,7 +1541,7 @@ chatlist.remove();
                             // Bitmap bitmap = BitmapFactory.decodeByteArray(photoByte, 0, photoByte.length);
                             // Getting Caching directory
                             //File cacheDirectory = getBaseContext().getCacheDir();
-                            File SpeakaMeDirectory = Function.createFolder("contact","test");
+                            File SpeakaMeDirectory = Function.createFolder("SpeakaMeContact");
 
                             // Temporary file to store the contact files
                             File tmpFile = new File(SpeakaMeDirectory.getPath() + "/contact.png");

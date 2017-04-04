@@ -15,6 +15,7 @@ import com.speakame.Database.DatabaseHelper;
 import com.speakame.R;
 import com.speakame.Xmpp.ChatMessage;
 import com.speakame.Xmpp.CommonMethods;
+import com.speakame.utils.Function;
 import com.squareup.picasso.Picasso;
 
 import java.text.ParseException;
@@ -78,7 +79,12 @@ public class BroadcastnewgroupAdapter extends BaseAdapter {
         ImageView imageView = (ImageView) rowView.findViewById(R.id.imageprofilepic);
         String image="";
         if(chatMessage.groupName.equalsIgnoreCase("")){
-            txtname.setText(chatMessage.reciverName);
+            if(Function.isStringInt(chatMessage.reciverName)){
+                txtname.setText("+"+chatMessage.reciverName);
+            }else{
+                txtname.setText(chatMessage.reciverName);
+            }
+
              image = chatMessage.ReciverFriendImage;
            count = DatabaseHelper.getInstance(context).getmsgCount("chat", chatMessage.receiver);
         }else{

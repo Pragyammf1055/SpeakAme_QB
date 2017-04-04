@@ -97,8 +97,8 @@ public class ImportcontactAdapter extends RecyclerView.Adapter<ImportcontactAdap
 
             Log.i("ContactAdapter", " INside status 1 ");
             final String friendName = allBeans.getFriendname();
-            final String friendNumber = allBeans.getFriendmobile();
-            Log.i("ImportContact", " Blocked Name :-" + friendName);
+            final String friendNumber = allBeans.getFriendmobile().replace(" ","").replace("+","");
+            Log.i("ImportContact", " Blocked Name :-" + allBeans.getFriendmobile());
 
             holder.name.setTextColor(context.getResources().getColor(R.color.fadelistitem));
             holder.number.setTextColor(context.getResources().getColor(R.color.fadelistitem));
@@ -190,7 +190,7 @@ public class ImportcontactAdapter extends RecyclerView.Adapter<ImportcontactAdap
         try {
 
             jsonObject.put("method", "addfavirioute");
-            jsonObject.put("contactnumber", contactList.get(position).getFriendmobile());
+            jsonObject.put("contactnumber", contactList.get(position).getFriendmobile().replace(" ","").replace("+",""));
             jsonObject.put("userid", AppPreferences.getLoginId(context));
             jsonObject.put("faviroute", "1");
 
@@ -236,7 +236,7 @@ public class ImportcontactAdapter extends RecyclerView.Adapter<ImportcontactAdap
         try {
 
             jsonObject.put("method", "addfavirioute");
-            jsonObject.put("contactnumber", contactList.get(position).getFriendmobile());
+            jsonObject.put("contactnumber", contactList.get(position).getFriendmobile().replace(" ","").replace("+",""));
             jsonObject.put("userid", AppPreferences.getLoginId(context));
             jsonObject.put("faviroute", "0");
 

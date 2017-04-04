@@ -81,7 +81,7 @@ public class FileUpload extends AsyncTask<String, Integer, String> {
     @SuppressWarnings("deprecation")
     private String uploadFile(String filePath) {
         String responseString = null;
-
+        Log.d("fileupload data", filePath);
         httpclient = new DefaultHttpClient();
         httppost = new HttpPost(urlString);
 
@@ -137,8 +137,10 @@ public class FileUpload extends AsyncTask<String, Integer, String> {
             }
 
         } catch (ClientProtocolException e) {
+            e.printStackTrace();
             responseString = e.toString();
         } catch (IOException e) {
+            e.printStackTrace();
             responseString = e.toString();
         }
 

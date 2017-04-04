@@ -475,7 +475,7 @@ public class SignIn_Activity extends AnimRootActivity {
                         loginId = jsonObject2.getString("userId");
                         AppPreferences.setLoginId(SignIn_Activity.this, Integer.parseInt(jsonObject2.getString("userId")));
                         AppPreferences.setSocialId(SignIn_Activity.this, jsonObject2.getString("social_id"));
-                        AppPreferences.setMobileuser(SignIn_Activity.this, jsonObject2.getString("country_with_mobile").replace(" ","-"));
+                       // AppPreferences.setMobileuser(SignIn_Activity.this, jsonObject2.getString("country_with_mobile").replace(" ","-"));
                         AppPreferences.setPassword(SignIn_Activity.this, jsonObject2.getString("password"));
                         AppPreferences.setFirstUsername(SignIn_Activity.this, jsonObject2.getString("username"));
                         AppPreferences.setUserprofile(SignIn_Activity.this, jsonObject2.getString("userImage"));

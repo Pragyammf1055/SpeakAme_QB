@@ -378,7 +378,7 @@ public class ContactImport_Activity extends AnimRootActivity {
                                 allBeans = new AllBeans();
                                 allBeans.setFriendid(topObject.getString("speaka_id"));
                                 allBeans.setFriendname(topObject.getString("person_name"));
-                                allBeans.setFriendmobile(topObject.getString("speaka_number").replace(" ","").replace("+",""));
+                                allBeans.setFriendmobile(topObject.getString("speaka_number"));
                                 allBeans.setFriendimage(topObject.getString("user_image"));
                                 allBeans.setFriendStatus(topObject.getString("userProfileStatus"));
                                 allBeans.setFavriouteFriend(topObject.getString("faviroute"));

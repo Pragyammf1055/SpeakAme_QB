@@ -43,7 +43,6 @@ public class DataInsert {
         //  long id = db.insert(DBTable.TBL_CHAT, null, initialValues);
 
         try {
-
             Log.d("insert", initialValues.toString());
             long id = db.insert(DBTable.TBL_CHAT, null, initialValues);
             Log.d("insertid", id + "");
