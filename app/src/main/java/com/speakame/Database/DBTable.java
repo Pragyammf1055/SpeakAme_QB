@@ -48,6 +48,7 @@ public class DBTable {
     public static final String FRIENDFAVIOURATESTATUS = "frnd_fav_status";
     public static final String FRIENDLANGUAGE = "frnd_language";
     public static final String BLOCKED_STATUS = "block_status";
+    public static final String KEY_USERSTATUS = "user_status";
 
 
     private static final String CREATE_TBL_CHAT = "create table "
@@ -76,6 +77,7 @@ public class DBTable {
             + KEY_MSGTYPE + " text null, "
             + KEY_MSGSTATUS + " text null, "
             + KEY_RECEIPTID + " text null, "
+            + KEY_USERSTATUS + " text null, "
             + KEY_FRIENDIMAGE + " text null"
             + ");";
 

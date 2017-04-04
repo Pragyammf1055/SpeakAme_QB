@@ -23,6 +23,7 @@ public class ChatMessage {
     public String ReciverFriendImage;
     public String MyImage;
     public String Groupimage="";
+    public String userStatus="";
     public String msgStatus="0";
     public String receiptId="0";
     public int isRead = 0;

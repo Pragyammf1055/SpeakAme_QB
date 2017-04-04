@@ -86,13 +86,14 @@ public class ViewContact_DetailActivity extends AnimRootActivity {
         Number = intent.getStringExtra("number");
         value = intent.getStringExtra("value");
 
-        Status = intent.getStringExtra("status");
+        //Status = intent.getStringExtra("status");
         Image = intent.getStringExtra("image");
 
         toolbartext.setText(Name);
         mtextname.setText(Name);
         mtextnumber.setText(Number);
-        if (Status.equalsIgnoreCase("") || Status.equalsIgnoreCase("0")) {
+        Status = DatabaseHelper.getInstance(ViewContact_DetailActivity.this).getUSerStatus(Number);
+        if (Status.equalsIgnoreCase("")) {
             mtextstatus.setText("Cant't talk speakame only");
         } else {
             mtextstatus.setText(Status);

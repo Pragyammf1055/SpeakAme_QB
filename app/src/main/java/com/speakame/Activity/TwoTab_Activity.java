@@ -258,7 +258,7 @@ public class TwoTab_Activity extends AnimRootActivity implements VolleyCallback 
                 DatabaseHelper.getInstance(TwoTab_Activity.this).UpdateMsgRead("1", chatMessageList.get(position).receiver);
                 AllBeans allBeans = new AllBeans();
                 allBeans.setFriendname(chatMessageList.get(position).reciverName);
-                allBeans.setFriendStatus("");
+                allBeans.setFriendStatus(chatMessageList.get(position).userStatus);
                 allBeans.setFriendmobile(chatMessageList.get(position).receiver);
                 allBeans.setGroupName(chatMessageList.get(position).groupName);
                 allBeans.setGroupid(chatMessageList.get(position).groupid);

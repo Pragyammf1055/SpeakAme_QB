@@ -40,6 +40,7 @@ import static com.speakame.Activity.ViewGroupDetail_Activity.GroupImage;
 import static com.speakame.Activity.ViewGroupDetail_Activity.Groupid;
 import static com.speakame.Activity.ViewGroupDetail_Activity.Groupname;
 import static com.speakame.Activity.ViewGroupDetail_Activity.groupJid;
+import static com.speakame.Activity.ViewGroupDetail_Activity.isAdmin;
 import static com.speakame.Activity.ViewGroupDetail_Activity.reciverlanguages;
 
 /**
@@ -86,6 +87,8 @@ public class GroupMemberList_Adapter extends RecyclerView.Adapter<GroupMemberLis
         }
         if(!allBeans.getGroupAdminStatus().equalsIgnoreCase("")){
             holder.adminTextView.setVisibility(View.VISIBLE);
+        }else{
+            holder.adminTextView.setVisibility(View.GONE);
         }
 
         if (allBeans.getFriendimage().equalsIgnoreCase("")) {
@@ -125,7 +128,10 @@ public class GroupMemberList_Adapter extends RecyclerView.Adapter<GroupMemberLis
 
         @Override
         public boolean onLongClick(View v) {
-            ShowLongPressDialog(allBeans);
+            if(isAdmin.equalsIgnoreCase("2")){
+                    ShowLongPressDialog(allBeans);
+                }
+
             return false;
         }
     }
@@ -172,7 +178,7 @@ public class GroupMemberList_Adapter extends RecyclerView.Adapter<GroupMemberLis
                    // activity.getmService().xmpp.groupUpdate(chatMessage);
                 }
 
-                activity.getmService().xmpp.groupUpdate(chatMessage);
+                activity.getmService().xmpp.banUser(chatMessage,allBeans.getFriendmobile());
             }
         });
         //Create alert dialog object via builder

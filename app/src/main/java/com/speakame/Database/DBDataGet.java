@@ -58,6 +58,7 @@ public class DBDataGet {
                     String GroupName = cursor.getString(cursor.getColumnIndex(DBTable.KEY_GROUPNAME));
                     String msgStatus = cursor.getString(cursor.getColumnIndex(DBTable.KEY_MSGSTATUS));
                     String receiptID = cursor.getString(cursor.getColumnIndex(DBTable.KEY_RECEIPTID));
+                    String userStatus = cursor.getString(cursor.getColumnIndex(DBTable.KEY_USERSTATUS));
 
                     boolean isMINE = cursor.getInt(cursor.getColumnIndex(DBTable.KEY_ISMINE)) > 0;
 
@@ -70,6 +71,7 @@ public class DBDataGet {
                     chatMessage.msgStatus = msgStatus;
                     chatMessage.receiptId = receiptID;
                     chatMessage.fileData = fileData;
+                    chatMessage.userStatus = userStatus;
                     chatMessageList.add(chatMessage);
                     Log.d("CHATLISTSS count",chatMessage.toString()+"\n>>>>>>>>>>>>>>>>");
 
@@ -337,6 +339,80 @@ public class DBDataGet {
         return Msgid;
     }
 
+    public static String getUSerStatus(SQLiteDatabase db, String reciver) {
+
+        String status = "";
+        try {
+            String query = "select "+ DBTable.KEY_USERSTATUS +" from " + DBTable.TBL_CHAT + " where " + DBTable.KEY_RECEIVER + " = '" + reciver + "'";
+            System.out.println("query : " + query);
+            Cursor cursor = db.rawQuery(query, null);
+            if (cursor == null) {
+
+                return status;
+            } /*else if (cursor.getCount() == 0) {
+                return Msgid;
+            }
+*/
+            if (cursor.moveToFirst()) {
+
+                do {
+
+                    status = cursor.getString(cursor.getColumnIndex(DBTable.KEY_USERSTATUS));
+
+
+
+                    System.out.println("query : " + status);
+
+                } while (cursor.moveToNext());
+            }
+            if (cursor != null && !cursor.isClosed()) {
+                cursor.close();
+            }
+            // db.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            db.close();
+        }
+
+        // closeConnecion();
+        return status;
+    }
+
+    public static boolean getIsBlock(SQLiteDatabase db, String reciver) {
+
+        boolean IsBlock = false;
+        try {
+            String query = "select * from " + DBTable.TBL_CHAT + " where " + DBTable.KEY_READ + " = '400' AND "+DBTable.KEY_RECEIVER+" ='" + reciver +"'";
+            System.out.println("query : " + query);
+            Cursor cursor = db.rawQuery(query, null);
+            if (cursor == null) {
+
+                return IsBlock;
+            } /*else if (cursor.getCount() == 0) {
+                return Msgid;
+            }
+*/
+            if (cursor.moveToFirst()) {
+
+
+                IsBlock = true;
+
+            }
+            if (cursor != null && !cursor.isClosed()) {
+                cursor.close();
+            }
+            // db.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            db.close();
+        }
+
+        // closeConnecion();
+        return IsBlock;
+    }
+
     public static String getmsgCount(SQLiteDatabase db, String which, String keyname) {
 
         String count = "";
@@ -595,6 +671,7 @@ public class DBDataGet {
                     String FriendImg = cursor.getString(cursor.getColumnIndex(DBTable.KEY_FRIENDIMAGE));
                     String msgStatus = cursor.getString(cursor.getColumnIndex(DBTable.KEY_MSGSTATUS));
                     String receiptId = cursor.getString(cursor.getColumnIndex(DBTable.KEY_RECEIPTID));
+                    String userStatus = cursor.getString(cursor.getColumnIndex(DBTable.KEY_USERSTATUS));
 
                     boolean isMINE = cursor.getInt(cursor.getColumnIndex(DBTable.KEY_ISMINE)) > 0;
 
@@ -608,6 +685,7 @@ public class DBDataGet {
                     chatMessage.ReciverFriendImage = FriendImg;
                     chatMessage.msgStatus = msgStatus;
                     chatMessage.receiptId = receiptId;
+                    chatMessage.userStatus = userStatus;
 
 
                     arrayList.add(chatMessage);
@@ -663,6 +741,7 @@ public class DBDataGet {
                     String GroupID = cursor.getString(cursor.getColumnIndex(DBTable.KEY_GROUPID));
                     String GroupDpImage = cursor.getString(cursor.getColumnIndex(DBTable.KEY_GROUPIMAGE));
                     String FriendImg = cursor.getString(cursor.getColumnIndex(DBTable.KEY_FRIENDIMAGE));
+                    String userStatus = cursor.getString(cursor.getColumnIndex(DBTable.KEY_USERSTATUS));
                     boolean isMINE = cursor.getInt(cursor.getColumnIndex(DBTable.KEY_ISMINE)) > 0;
 
                     System.out.println("imageeeey2keeeeeeeee" + GroupDpImage);
@@ -676,6 +755,7 @@ public class DBDataGet {
                     chatMessage.groupid = GroupID;
                     chatMessage.ReciverFriendImage = FriendImg;
                     chatMessage.Groupimage = GroupDpImage;
+                    chatMessage.userStatus = userStatus;
 
 
                     arrayList.add(chatMessage);

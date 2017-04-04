@@ -472,6 +472,7 @@ public class MyXMPP extends Service {
                         @Override
                         public void entriesDeleted(Collection<String> addresses) {
 
+                            Log.d("entriesDeleted", "" + addresses.toString() + ":" );
                         }
 
                         @Override
@@ -488,7 +489,7 @@ public class MyXMPP extends Service {
                                             }else if(presence.getStatus().contains("updateProPic")){
                                                 try {
                                                     JSONObject object = new JSONObject(presence.getStatus());
-                                                    DatabaseHelper.getInstance(context).UpdateFriendPro(object.getString("ReciverFriendImage"), object.getString("receiver"));
+                                                    DatabaseHelper.getInstance(context).UpdateFriendPro(object.getString("ReciverFriendImage"),object.getString("userStatus"), object.getString("receiver"));
                                                     if(ChatActivity.instance != null) {
                                                         Picasso.with(context).load(object.getString("ReciverFriendImage")).error(R.drawable.user_icon)
                                                                 .resize(200, 200)
@@ -1875,6 +1876,7 @@ public class MyXMPP extends Service {
             message.senderlanguages = chatMessage.reciverlanguages;
             message.reciverlanguages = chatMessage.senderlanguages;
             message.ReciverFriendImage = chatMessage.MyImage;
+            message.userStatus = chatMessage.userStatus;
             message.msgStatus = "10";
 
 
@@ -1961,53 +1963,60 @@ public class MyXMPP extends Service {
             Log.d("processGroupMessage", chatMessage.toString());
             DatabaseHelper.getInstance(context).insertChat(chatMessage);
 
+            if(chatMessage.body.contains("removeFromGroup")){
+
+            }
            /* if(chatMessage.body.contains("Remove by :")) {
                 userExitFromGroup(chatMessage.receiver);
             }else if(chatMessage.body.contains("Subadmin :")) {
 
             }*/
-            new Handler(Looper.getMainLooper()).post(new Runnable() {
+            if(DatabaseHelper.getInstance(context).getIsBlock(chatMessage.sender)){
 
-                @Override
-                public void run() {
-                    if (ChatActivity.instance != null) {
-                        DatabaseHelper.getInstance(context).UpdateMsgRead("1", chatMessage.sender);
-                        if(chatMessage.body.contains("Image changed by")){
-                            Picasso.with(context).load(chatMessage.Groupimage).error(R.drawable.user_icon)
-                                    .resize(200, 200)
-                                    .into(conversationimage);
-                        }else if(chatMessage.body.contains("name changed by")){
-                            toolbartext.setText(chatMessage.groupName);
-                        }
-                        ChatActivity.chatlist.add(chatMessage);
-                        ChatActivity.mRecyclerView.scrollToPosition(ChatActivity.chatAdapter.getItemCount()-1);
-                        // ChatActivity.mLayoutManager.scrollToPosition(ChatActivity.chatlist.size());
-                        MediaPlayer mp = MediaPlayer.create(context, R.raw.steamchat);
-                        if (AppPreferences.getConvertTone(context).equalsIgnoreCase("false")) {
-                            mp.stop();
+            }else {
+                new Handler(Looper.getMainLooper()).post(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        if (ChatActivity.instance != null) {
+                            DatabaseHelper.getInstance(context).UpdateMsgRead("1", chatMessage.sender);
+                            if (chatMessage.body.contains("Image changed by")) {
+                                Picasso.with(context).load(chatMessage.Groupimage).error(R.drawable.user_icon)
+                                        .resize(200, 200)
+                                        .into(conversationimage);
+                            } else if (chatMessage.body.contains("name changed by")) {
+                                toolbartext.setText(chatMessage.groupName);
+                            }
+                            ChatActivity.chatlist.add(chatMessage);
+                            ChatActivity.mRecyclerView.scrollToPosition(ChatActivity.chatAdapter.getItemCount() - 1);
+                            // ChatActivity.mLayoutManager.scrollToPosition(ChatActivity.chatlist.size());
+                            MediaPlayer mp = MediaPlayer.create(context, R.raw.steamchat);
+                            if (AppPreferences.getConvertTone(context).equalsIgnoreCase("false")) {
+                                mp.stop();
+                            } else {
+                                mp.start();
+                            }
                         } else {
-                            mp.start();
-                        }
-                    }else{
-                        generateNofification(chatMessage);
+                            generateNofification(chatMessage);
 
-                        if(!chatMessage.files.equalsIgnoreCase("")) {
-                            downLoadFile(chatMessage);
+                            if (!chatMessage.files.equalsIgnoreCase("")) {
+                                downLoadFile(chatMessage);
+                            }
                         }
-                    }
 
-                    if (TwoTab_Activity.instance != null) {
-                        TwoTab_Activity.updateList(chatMessage.groupName);
-                    }
+                        if (TwoTab_Activity.instance != null) {
+                            TwoTab_Activity.updateList(chatMessage.groupName);
+                        }
 
                    /* if (TwoTab_Activity.instance == null && ChatActivity.instance == null) {
                         generateNofification(chatMessage);
                     }
 */
 
-                    //subscribtion(message.receiver, message.reciverName);
-                }
-            });
+                        //subscribtion(message.receiver, message.reciverName);
+                    }
+                });
+            }
         }
 
     }
@@ -2237,25 +2246,35 @@ public class MyXMPP extends Service {
         }
     }
 
-    public void userExitFromGroup(String receiver){
+    public void banUser(ChatMessage chatMessage,String user){
 
         MultiUserChatManager multiUserChatManager = MultiUserChatManager.getInstanceFor(connection);
-        Log.d("groupChatName", receiver + "@conference."
+        Log.d("groupChatName sender", user+">>>"+chatMessage.receiver + "@conference."
                 + context.getString(R.string.server));
-        MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(receiver + "@conference."
+        MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(chatMessage.receiver + "@conference."
                 + context.getString(R.string.server));
 
-        /*Message message1 = new Message();
+        Message message1 = new Message();
         String body = gson.toJson(chatMessage);
         message1.setBody(body);
-        message1.setType(Message.Type.groupchat);*/
+        message1.setType(Message.Type.groupchat);
+
 
         try {
-            //multiUserChat.sendMessage(message1);
-            multiUserChat.leave();
+            multiUserChat.sendMessage(message1);
         } catch (NotConnectedException e) {
             e.printStackTrace();
         }
+        try {
+            multiUserChat.banUser(user+context.getString(R.string.serverandresorces), chatMessage.body);
+        } catch (XMPPException.XMPPErrorException e) {
+            e.printStackTrace();
+        } catch (SmackException.NoResponseException e) {
+            e.printStackTrace();
+        } catch (NotConnectedException e) {
+            e.printStackTrace();
+        }
+
     }
 
     public void userSelfExit(ChatMessage chatMessage){
@@ -2274,13 +2293,9 @@ public class MyXMPP extends Service {
 
         try {
             multiUserChat.sendMessage(message1);
-            //multiUserChat.leave();
-            multiUserChat.banUser(loginUser+ "@" + context.getString(R.string.server)+"/Smack", "I am remove");
+            multiUserChat.leave();
+
         } catch (NotConnectedException e) {
-            e.printStackTrace();
-        } catch (XMPPException.XMPPErrorException e) {
-            e.printStackTrace();
-        } catch (SmackException.NoResponseException e) {
             e.printStackTrace();
         }
     }

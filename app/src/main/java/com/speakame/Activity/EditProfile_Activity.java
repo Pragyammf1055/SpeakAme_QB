@@ -612,7 +612,7 @@ public class EditProfile_Activity extends AnimRootActivity {
                         chatMessage.Groupimage = "updateProPic";
                         chatMessage.receiver = AppPreferences.getMobileuser(EditProfile_Activity.this);
                         chatMessage.ReciverFriendImage = resultArray.getJSONObject(0).getString("userImage");
-                        chatMessage.msgStatus = resultArray.getJSONObject(0).getString("userProfileStatus");
+                        chatMessage.userStatus = resultArray.getJSONObject(0).getString("userProfileStatus");
 
                         activity.getmService().xmpp.updateProfile(chatMessage);
                     } else if (jsonObj.getString("status").equalsIgnoreCase("400")) {

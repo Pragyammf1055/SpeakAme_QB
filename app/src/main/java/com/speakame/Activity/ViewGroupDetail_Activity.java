@@ -79,7 +79,7 @@ public class ViewGroupDetail_Activity extends AnimRootActivity implements Volley
     private ArrayList<ChatMessage> chatlist;
     ArrayList<Integer> stringArrayList;
     private Random random;
-    private String isAdmin = "0";
+    public static String isAdmin = "0";
     private MenuItem addContact;
 
     @Override
@@ -217,8 +217,9 @@ public class ViewGroupDetail_Activity extends AnimRootActivity implements Volley
                 chatMessage.formID = String.valueOf(AppPreferences.getLoginId(ViewGroupDetail_Activity.this));
                 chatMessage.lastseen = new DatabaseHelper(ViewGroupDetail_Activity.this).getLastSeen(groupJid);
 
-                chatMessage.body = "Make "+allBeans.getFriendname()+" Subadmin :";
+                chatMessage.body = "removeFromGroup";
 
+                //activity.getmService().xmpp.userSelfExit(chatMessage);
                 activity.getmService().xmpp.userSelfExit(chatMessage);
                 finish();
             }
@@ -291,11 +292,12 @@ public class ViewGroupDetail_Activity extends AnimRootActivity implements Volley
                         allBeans = new AllBeans();
                         allBeans.setFriendid(topObject.getString("speaka_id"));
                         allBeans.setFriendname(topObject.getString("person_name"));
-                        allBeans.setFriendmobile(topObject.getString("speaka_number"));
+                        allBeans.setFriendmobile(topObject.getString("speaka_number").replace(" ","").replace("+",""));
                         allBeans.setFriendimage(topObject.getString("user_image"));
                         allBeans.setFriendStatus(topObject.getString("userProfileStatus"));
                         allBeans.setGroupCreateDate(topObject.getString("group_create"));
                         allBeans.setGroupAdminStatus(topObject.getString("admin_id"));
+
 
                         friendlist.add(allBeans);
                         stringArrayList.add(Integer.valueOf(topObject.getString("speaka_id")));

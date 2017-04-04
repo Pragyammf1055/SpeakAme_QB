@@ -110,10 +110,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
             DataUpdate.UpdateGroupImage(db, image, groupId);
     }
-    public void UpdateFriendPro(String image, String reciver) {
+    public void UpdateFriendPro(String image,String userStatus, String reciver) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 
-            DataUpdate.UpdateFriendPro(db, image, reciver);
+            DataUpdate.UpdateFriendPro(db, image, userStatus, reciver);
     }
     public void UpdateGroupName(String name, String groupId) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
@@ -194,6 +194,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public String getMsgId(String messageId) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         String msgID = DBDataGet.getMsgId(db, messageId);
+        //closeConnecion();
+        return msgID;
+    }
+    public String getUSerStatus(String reciver) {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        String msgID = DBDataGet.getUSerStatus(db, reciver);
+        //closeConnecion();
+        return msgID;
+    }
+    public boolean getIsBlock(String reciver) {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        boolean msgID = DBDataGet.getIsBlock(db, reciver);
         //closeConnecion();
         return msgID;
     }
