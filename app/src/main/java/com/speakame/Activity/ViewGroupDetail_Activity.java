@@ -219,8 +219,8 @@ public class ViewGroupDetail_Activity extends AnimRootActivity implements Volley
 
                 chatMessage.body = "removeFromGroup";
 
-                //activity.getmService().xmpp.userSelfExit(chatMessage);
                 activity.getmService().xmpp.userSelfExit(chatMessage);
+                //activity.getmService().xmpp.banUser(chatMessage,AppPreferences.getMobileuser(ViewGroupDetail_Activity.this));
                 finish();
             }
         });

@@ -1240,6 +1240,18 @@ chatlist.remove();
     }
 
     public void sendTextMessage(String message, String file, String fileName) {
+        String MyImage = "";
+        String MyStatus = "";
+        if(AppPreferences.getPicprivacy(ChatActivity.this).equalsIgnoreCase(AppConstants.EVERYONE)){
+            MyImage = AppPreferences.getUserprofile(ChatActivity.this);
+            MyStatus = AppPreferences.getUserstatus(ChatActivity.this);
+        }else if(AppPreferences.getPicprivacy(ChatActivity.this).equalsIgnoreCase(AppConstants.MYFRIENDS)){
+            if(!Function.isStringInt(FriendName)){
+                MyImage = AppPreferences.getUserprofile(ChatActivity.this);
+                MyStatus = AppPreferences.getUserstatus(ChatActivity.this);
+            }
+        }
+
         final ChatMessage chatMessage = new ChatMessage(user1, AppPreferences.getFirstUsername(ChatActivity.this), user2, FriendName,
                 groupName, message, "" + random.nextInt(1000), file, true);
         chatMessage.setMsgID();
@@ -1251,8 +1263,8 @@ chatlist.remove();
         chatMessage.formID = String.valueOf(AppPreferences.getLoginId(ChatActivity.this));
         chatMessage.senderlanguages = AppPreferences.getUSERLANGUAGE(ChatActivity.this);
         chatMessage.reciverlanguages = reciverlanguages;
-        chatMessage.MyImage = AppPreferences.getUserprofile(ChatActivity.this);
-        chatMessage.userStatus = AppPreferences.getUserstatus(ChatActivity.this);
+        chatMessage.MyImage = MyImage;
+        chatMessage.userStatus = MyStatus;
         chatMessage.lastseen = new DatabaseHelper(ChatActivity.this).getLastSeen(user2);
         //chatMessage.fileData = fileData;
         msg_edittext.setText("");

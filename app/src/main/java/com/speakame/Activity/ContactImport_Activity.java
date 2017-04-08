@@ -53,7 +53,6 @@ import dmax.dialog.SpotsDialog;
 public class ContactImport_Activity extends AnimRootActivity {
     RecyclerView recyclerView;
     AllBeans allBeans;
-    ArrayList<AllBeans> friendlist;
     TextView toolbartext, nocontenttext;
     EditText srch_edit;
     boolean isSerch = true;
@@ -81,7 +80,7 @@ public class ContactImport_Activity extends AnimRootActivity {
         recyclerView.addItemDecoration(new HorizontalDividerItemDecoration.Builder(this).build());
 
 
-        friendlist = new ArrayList<AllBeans>();
+
         srch_edit.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -131,8 +130,6 @@ public class ContactImport_Activity extends AnimRootActivity {
                         String contactNumber = pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
                         String contactname = pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
 
-
-
                         alContactsnumber.put(contactNumber);
                         alContactsname.put(contactname);
 
@@ -150,7 +147,7 @@ public class ContactImport_Activity extends AnimRootActivity {
         }*/
         ///////endcontactimport////////////////////////
 
-        if (AppPreferences.getAckwnoledge(ContactImport_Activity.this).equalsIgnoreCase("1")) {
+        /*if (AppPreferences.getAckwnoledge(ContactImport_Activity.this).equalsIgnoreCase("1")) {
 
             if ((ConnectionDetector
                     .isConnectingToInternet(ContactImport_Activity.this))) {
@@ -193,12 +190,12 @@ public class ContactImport_Activity extends AnimRootActivity {
         } else {
 
             sendallcontact();
-        }
+        }*/
        // int numberitem= recyclerView.getAdapter().getItemCount();
 
 
       //  System.out.println("numberitm"+numberitem);
-
+        sendallcontact();
     }
 
     @Override
@@ -312,7 +309,6 @@ public class ContactImport_Activity extends AnimRootActivity {
                                 System.out.println("valueallcontact" + AppPreferences.getAckwnoledge(ContactImport_Activity.this));
                             }
                             importcontact();
-                            Toast.makeText(getApplicationContext(), "Contact updated", Toast.LENGTH_LONG).show();
 
                         } else if (mainObject.getString("status").equalsIgnoreCase("400")) {
                             Toast.makeText(getApplicationContext(), "Contact Not Updated", Toast.LENGTH_LONG).show();
@@ -337,9 +333,7 @@ public class ContactImport_Activity extends AnimRootActivity {
 
 
     private void importcontact() {
-        if (friendlist != null) {
-            friendlist.clear();
-        }
+
         final AlertDialog mProgressDialog = new SpotsDialog(ContactImport_Activity.this);
         mProgressDialog.setTitle("Your contact is retrieving...");
         mProgressDialog.setCancelable(false);
@@ -363,7 +357,6 @@ public class ContactImport_Activity extends AnimRootActivity {
             @Override
             public void backResponse(String response) {
 
-
                 Log.d("response>>>>>", response);
                 //  mProgressDialog.dismiss();
                 if (response != null) {
@@ -372,10 +365,10 @@ public class ContactImport_Activity extends AnimRootActivity {
 
                         if (mainObject.getString("status").equalsIgnoreCase("200")) {
                             JSONArray orderArray = mainObject.getJSONArray("result");
-
+                            ArrayList<AllBeans> friendlist = new ArrayList<AllBeans>();
                             for (int i = 0; orderArray.length() > i; i++) {
                                 JSONObject topObject = orderArray.getJSONObject(i);
-                                allBeans = new AllBeans();
+                                AllBeans allBeans = new AllBeans();
                                 allBeans.setFriendid(topObject.getString("speaka_id"));
                                 allBeans.setFriendname(topObject.getString("person_name"));
                                 allBeans.setFriendmobile(topObject.getString("speaka_number"));
@@ -385,7 +378,7 @@ public class ContactImport_Activity extends AnimRootActivity {
                                 allBeans.setLanguages(topObject.getString("language"));
                                 allBeans.setBlockedStatus(topObject.getString("blockedStatus"));
                                 allBeans.setGroupName("");
-                                DatabaseHelper.getInstance(ContactImport_Activity.this).insertContact(allBeans);
+                               // DatabaseHelper.getInstance(ContactImport_Activity.this).insertContact(allBeans);
                                 friendlist.add(allBeans);
 
 
@@ -398,7 +391,7 @@ public class ContactImport_Activity extends AnimRootActivity {
                                 });
                                 //////Sorting name////////
                             }
-                            if (friendlist != null) {
+                            Toast.makeText(getApplicationContext(), "Contact updated", Toast.LENGTH_LONG).show();
                                 importcontactAdapter = new ImportcontactAdapter(ContactImport_Activity.this, friendlist);
                                 RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(ContactImport_Activity.this);
                                 recyclerView.setLayoutManager(mLayoutManager);
@@ -407,7 +400,7 @@ public class ContactImport_Activity extends AnimRootActivity {
                                 recyclerView.setItemAnimator(new DefaultItemAnimator());
 
                                 recyclerView.setAdapter(importcontactAdapter);
-                            }
+
                         } else if (mainObject.getString("status").equalsIgnoreCase("400")) {
 
                             Toast.makeText(getApplicationContext(), "Synch", Toast.LENGTH_LONG).show();

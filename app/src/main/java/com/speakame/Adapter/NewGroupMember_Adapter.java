@@ -72,7 +72,7 @@ public class NewGroupMember_Adapter extends RecyclerView.Adapter<NewGroupMember_
 
         AllBeans allBeans = contactList.get(position);
         holder.name.setText(allBeans.getFriendname());
-        holder.number.setText("+"+allBeans.getFriendmobile());
+        holder.number.setText(""+allBeans.getFriendmobile());
 
         if (allBeans.getFriendimage().equalsIgnoreCase("")) {
             holder.imageView.setBackgroundResource(R.drawable.user_icon);

@@ -39,6 +39,7 @@ public class DataInsert {
         initialValues.put(DBTable.KEY_RECEIPTID, message.receiptId);
         initialValues.put(DBTable.KEY_READ, message.isRead);
         initialValues.put(DBTable.KEY_USERSTATUS, message.userStatus);
+        initialValues.put(DBTable.KEY_ISOTHERMSG, message.isOtherMsg);
 
         //  long id = db.insert(DBTable.TBL_CHAT, null, initialValues);
 

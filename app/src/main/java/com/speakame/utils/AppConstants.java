@@ -17,6 +17,10 @@ public class AppConstants {
     public static final String APPURL = "http://truckslogistics.com/Projects-Work/SpeakAme/user/";
 
 
+    public static final String EVERYONE = "Everyone";
+    public static final String MYFRIENDS = "My Friends";
+    public static final String NOBODY = "Nobody";
+
     public static final String TAG = "SPEAKAME";
     public static final String KEY_CONTACT = ",";
     public static final boolean IS_DEV_BUILD = true;

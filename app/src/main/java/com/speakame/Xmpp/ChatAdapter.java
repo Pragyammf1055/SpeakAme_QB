@@ -31,7 +31,9 @@ import android.renderscript.Element;
 import android.renderscript.RenderScript;
 import android.renderscript.ScriptIntrinsicBlur;
 import android.support.annotation.RequiresApi;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.appcompat.BuildConfig;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.util.SparseBooleanArray;
@@ -93,6 +95,7 @@ import static com.speakame.Activity.TwoTab_Activity.adapter;
  */
 public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
+    private static final int OTHER = 0;
     private static final int FILE = 1;
     private static final int CONTACT = 2;
     private static final int MESSAGE = 5;
@@ -167,7 +170,9 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
         String msg = chatMessageList.get(position).body;
         Log.d("Filename", chatMessageList.get(position).files+">>" + msg);
-        if (!chatMessageList.get(position).files.equalsIgnoreCase("") && msg.contains(AppConstants.KEY_CONTACT)) {
+        if(chatMessageList.get(position).isOtherMsg == 1){
+            return OTHER;
+        }else if (!chatMessageList.get(position).files.equalsIgnoreCase("") && msg.contains(AppConstants.KEY_CONTACT)) {
 
             return CONTACT;
         }else if (chatMessageList.get(position).files.equalsIgnoreCase("")) {
@@ -196,9 +201,13 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 View v4 = inflater.inflate(R.layout.chatmessage, viewGroup, false);
                 viewHolder = new MessageViewHolder(v4);
                 break;
+            case OTHER:
+                View v5 = inflater.inflate(R.layout.other_text_for_gp, viewGroup, false);
+                viewHolder = new OrherViewHolder(v5);
+                break;
             default:
-                View v5 = inflater.inflate(R.layout.chatmessage, viewGroup, false);
-                viewHolder = new MessageViewHolder(v5);
+                View v6 = inflater.inflate(R.layout.chatmessage, viewGroup, false);
+                viewHolder = new MessageViewHolder(v6);
                 break;
         }
         return viewHolder;
@@ -219,11 +228,29 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 MessageViewHolder vh4 = (MessageViewHolder) viewHolder;
                 configureMessageViewHolder(vh4, position);
                 break;
-            default:
-
-                MessageViewHolder vh5 = (MessageViewHolder) viewHolder;
-                configureMessageViewHolder(vh5, position);
+            case OTHER:
+                OrherViewHolder vh5 = (OrherViewHolder) viewHolder;
+                configureOtherViewHolder(vh5, position);
                 break;
+            default:
+                MessageViewHolder vh6 = (MessageViewHolder) viewHolder;
+                configureMessageViewHolder(vh6, position);
+                break;
+        }
+    }
+
+    private void configureOtherViewHolder(OrherViewHolder vh5, int position) {
+        final ChatMessage message = (ChatMessage) chatMessageList.get(position);
+        if (message != null) {
+            String[] msg = message.body.split("~");
+
+            if (msg.length > 1) {
+                vh5.otherMsg.setText(msg[0]);
+            } else {
+                vh5.otherMsg.setText(msg[0]);
+            }
+
+            vh5.otherMsg.setGravity(Gravity.CENTER_HORIZONTAL);
         }
     }
 
@@ -483,7 +510,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                     }
                     //vh1.imageView.setAlpha(1);
                     vh1.startDownloading.setVisibility(View.GONE);
-                    downLoadFile(vh1,message);
+                    downLoadFile(vh1,message,position);
                 }else if(message.msgStatus.equalsIgnoreCase("11")){
                     if(message.fileName.contains(".jpg") || message.fileName.contains(".png")) {
                         vh1.imageView.setImageResource(R.mipmap.ic_launcher);
@@ -499,7 +526,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                     //vh1.imageView.setAlpha(1);
                     vh1.startDownloading.setVisibility(View.VISIBLE);
                 }else{
-                    Log.d("IMAGEPATH recive", message.files);
+
                    // vh1.imageView.setImageDrawable(Drawable.createFromPath(message.fileName));
                     //vh1.imageView.setAlpha(0);
                     vh1.startDownloading.setVisibility(View.GONE);
@@ -532,7 +559,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
 
 
-            File file = new File(message.files);
+            final File file = new File(message.files);
             final Uri uri = Uri.fromFile(file);
 
 
@@ -558,21 +585,43 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             vh1.imageView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    Log.d("IMAGEPATH reciveclick", message.files+"\n"+ file.getAbsolutePath());
                     Intent intent = new Intent(Intent.ACTION_VIEW);
-                    intent.setDataAndType(uri,"image/*");
                     intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-                    context.startActivity(intent);
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+                        intent.setDataAndType(uri,"image/*");
+                    } else {
+                        File file = new File(message.files);
+                        Uri photoUri = FileProvider.getUriForFile(context, "com.speakame" , file);
+                        intent.setDataAndType(photoUri,"image/*");
+                    }
+                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    if (intent.resolveActivity(context.getPackageManager()) != null) {
+                        context.startActivity(intent);
+                    }
                        // imageDialog(uri);
                 }
             });
             vh1.video.setOnTouchListener(new View.OnTouchListener() {
                 @Override
                 public boolean onTouch(View v, MotionEvent event) {
+                    Log.d("IMAGEPATH reciveclick", message.files+"\n"+ file.getAbsolutePath());
                     if(!message.msgStatus.equalsIgnoreCase("10")){
                         Intent intent = new Intent(Intent.ACTION_VIEW);
-                        intent.setDataAndType(uri,"video/*");
+                        //intent.setDataAndType(uri,"video/*");
                         intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-                        context.startActivity(intent);
+                        //context.startActivity(intent);
+                        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+                            intent.setDataAndType(uri,"video/*");
+                        } else {
+                            File file = new File(message.files);
+                            Uri photoUri = FileProvider.getUriForFile(context, "com.speakame" , file);
+                            intent.setDataAndType(photoUri,"video/*");
+                        }
+                        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                        if (intent.resolveActivity(context.getPackageManager()) != null) {
+                            context.startActivity(intent);
+                        }
                       //  videoDialog(uri);
                     }
 
@@ -587,7 +636,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                         uploadImage(vh1, message, position);
                     }else {
                         vh1.startUpload.setVisibility(View.GONE);
-                        downLoadFile(vh1,message);
+                        downLoadFile(vh1,message, position);
                     }
                 }
             });
@@ -597,9 +646,20 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 public void onClick(View v) {
                     //if (message.fileName.endsWith(".pdf")) {
                         Intent intent = new Intent(Intent.ACTION_VIEW);
-                        intent.setDataAndType(uri,"application/*");
+                        //intent.setDataAndType(uri,"application/*");
                         intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+                        //context.startActivity(intent);
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+                        intent.setDataAndType(uri,"application/*");
+                    } else {
+                        File file = new File(message.files);
+                        Uri photoUri = FileProvider.getUriForFile(context, "com.speakame" , file);
+                        intent.setDataAndType(photoUri,"application/*");
+                    }
+                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    if (intent.resolveActivity(context.getPackageManager()) != null) {
                         context.startActivity(intent);
+                    }
                    // } else {
 
                    // }
@@ -756,14 +816,12 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 vh1.img_totf.setVisibility(View.GONE);
             }
 
-
-
             vh1.time.setText(message.Time);
 
 
         }
     }
-    private void downLoadFile(final FileViewHolder vh1, final ChatMessage message) {
+    private void downLoadFile(final FileViewHolder vh1, final ChatMessage message, final int pos) {
         /*ObjectAnimator animation = ObjectAnimator.ofInt (vh1.progressBar, "progress", 0, 500); // see this max value coming back here, we animale towards that value
         animation.setDuration (5000); //in milliseconds
         animation.setInterpolator (new DecelerateInterpolator());
@@ -786,6 +844,8 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                         // vh1.video.setVisibility(View.GONE);
                         vh1.imageView.setImageDrawable(Drawable.createFromPath(response));
                         vh1.progressBar.setVisibility(View.GONE);
+                        chatMessageList.get(pos).files = response;
+                        //notifyItemChanged(pos);
                     }else if(message.fileName.contains(".mp4")|| message.fileName.contains(".3gp")|| message.fileName.contains(".MOV")) {
                         //vh1.video.setVisibility(View.VISIBLE);
                         File file = new File(response);
@@ -1107,6 +1167,17 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         notifyDataSetChanged();
     }
 
+    public class OrherViewHolder extends RecyclerView.ViewHolder {
+
+        public TextView otherMsg;
+
+        public OrherViewHolder(View view) {
+            super(view);
+            otherMsg = (TextView) view.findViewById(R.id.otherMsg);
+        }
+
+
+    }
     public class MessageViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener {
         public ImageView msgStatus;
         public TextView time, reciverName;

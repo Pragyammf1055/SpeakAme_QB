@@ -3,6 +3,7 @@
     <color name="colorPrimary">#3b579d</color>
     <color name="colorPrimaryDark">#3b579d</color>
     <color name="colorAccent">#3b579d</color>
+    <color name="appcolor_light">#b0c2ef</color>
     <color name="colorwhite">#ffffff</color>
     <color name="colorblack">#000000</color>
     <color name="inputeditcolor">#393939</color>

@@ -59,6 +59,7 @@ public class DBDataGet {
                     String msgStatus = cursor.getString(cursor.getColumnIndex(DBTable.KEY_MSGSTATUS));
                     String receiptID = cursor.getString(cursor.getColumnIndex(DBTable.KEY_RECEIPTID));
                     String userStatus = cursor.getString(cursor.getColumnIndex(DBTable.KEY_USERSTATUS));
+                    int isOtherMsg = cursor.getInt(cursor.getColumnIndex(DBTable.KEY_ISOTHERMSG));
 
                     boolean isMINE = cursor.getInt(cursor.getColumnIndex(DBTable.KEY_ISMINE)) > 0;
 
@@ -72,6 +73,7 @@ public class DBDataGet {
                     chatMessage.receiptId = receiptID;
                     chatMessage.fileData = fileData;
                     chatMessage.userStatus = userStatus;
+                    chatMessage.isOtherMsg = isOtherMsg;
                     chatMessageList.add(chatMessage);
                     Log.d("CHATLISTSS count",chatMessage.toString()+"\n>>>>>>>>>>>>>>>>");
 

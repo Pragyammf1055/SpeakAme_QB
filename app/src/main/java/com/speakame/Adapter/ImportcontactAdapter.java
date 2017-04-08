@@ -80,10 +80,8 @@ public class ImportcontactAdapter extends RecyclerView.Adapter<ImportcontactAdap
 
                 return new MyViewHolder(view);
             }
-
         }
         return null;
-
     }
 
     @Override
@@ -138,7 +136,6 @@ public class ImportcontactAdapter extends RecyclerView.Adapter<ImportcontactAdap
             holder.number.setText(allBeans.getFriendmobile());
         }
 
-
         if (allBeans.getFriendimage().equalsIgnoreCase("")) {
             holder.myimageView.setBackgroundResource(R.drawable.ic_account_circle_black_24dp);
 
@@ -146,8 +143,6 @@ public class ImportcontactAdapter extends RecyclerView.Adapter<ImportcontactAdap
             Picasso.with(context).load(allBeans.getFriendimage()).error(R.drawable.ic_account_circle_black_24dp)
                     .resize(200, 200)
                     .into(holder.myimageView);
-
-
         }
 
         if (allBeans.getFavriouteFriend().equalsIgnoreCase("0") || allBeans.getFavriouteFriend().equalsIgnoreCase("")) {

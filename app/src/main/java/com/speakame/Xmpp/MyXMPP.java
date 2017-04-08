@@ -330,6 +330,7 @@ public class MyXMPP extends Service {
             chatMessage.type = Message.Type.groupchat.name();
             chatMessage.groupid = groupid;
             chatMessage.Groupimage = GroupPicture;
+            chatMessage.isOtherMsg = 1;
             Log.d("Groupimage  >>", GroupPicture);
 
             createGroupWindows(chatMessage);
@@ -1361,34 +1362,6 @@ public class MyXMPP extends Service {
         return false;
     }
 
-    private void groupNotification(String romm, String meg) {
-
-        Intent notificationIntent = new Intent(context, TwoTab_Activity.class);
-        PendingIntent contentIntent = PendingIntent.getActivity(context, 0, notificationIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT);
-
-        NotificationCompat.Builder builder =
-                new NotificationCompat.Builder(context)
-                        .setSmallIcon(R.mipmap.ic_launcher)
-                        .setContentTitle(romm)
-                        .setContentText(meg)
-
-                        .setDefaults(Notification.DEFAULT_ALL)
-                        .setWhen(System.currentTimeMillis())
-                        .setTicker("Speakame")
-                        .setDefaults(Notification.DEFAULT_LIGHTS| Notification.DEFAULT_SOUND| Notification.DEFAULT_VIBRATE)
-                        .setContentIntent(contentIntent);
-                        //.setContentInfo("Info");
-
-
-        //builder.setContentIntent(contentIntent);
-
-        // Add as notification
-        NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        manager.notify(0, builder.build());
-    }
-
-
 
     public enum Composing {
         typing(ChatState.composing),
@@ -2047,16 +2020,6 @@ public class MyXMPP extends Service {
         }).execute(message.files, message.fileName);
     }
 
-   /* private void downLoadFile(final ChatMessage message){
-        new DownloadFile(new VolleyCallback() {
-            @Override
-            public void backResponse(String response) {
-
-                DatabaseHelper.getInstance(context).UpdateMsgStatus("5",message.msgid);
-            }
-        }).execute(message.files, message.fileName);
-    }*/
-
     private class MGMessageListener implements MessageListener {
 
 
@@ -2113,7 +2076,7 @@ public class MyXMPP extends Service {
 */
                     String msgId = new DatabaseHelper(context).getMsgId(chatMessage.msgid);
                     if (msgId.equalsIgnoreCase("")) {
-                        if (langu.equalsIgnoreCase(Mylangu)) {
+                        if (sorcountrycode.equalsIgnoreCase(descountrycode)) {
                             new Handler(Looper.getMainLooper()).post(new Runnable() {
 
                                 @Override
@@ -2199,6 +2162,7 @@ public class MyXMPP extends Service {
                 chatMessage.type = Message.Type.groupchat.name();
                 chatMessage.groupid=jsonObject.getString("groupid");
                 chatMessage.Groupimage = jsonObject.getString("Groupimage");
+                chatMessage.isOtherMsg = 1;
 
                 //groupNotification(chatMessage.groupName, chatMessage.body);
                 generateNofification(chatMessage);
@@ -2233,6 +2197,7 @@ public class MyXMPP extends Service {
         MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(chatMessage.receiver + "@conference."
                 + context.getString(R.string.server));
 
+        chatMessage.isOtherMsg = 1;
         Message message1 = new Message();
         String body = gson.toJson(chatMessage);
         message1.setBody(body);
@@ -2253,6 +2218,7 @@ public class MyXMPP extends Service {
         MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(chatMessage.receiver + "@conference."
                 + context.getString(R.string.server));
 
+        chatMessage.isOtherMsg = 1;
         Message message1 = new Message();
         String body = gson.toJson(chatMessage);
         message1.setBody(body);
@@ -2285,6 +2251,7 @@ public class MyXMPP extends Service {
         MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(chatMessage.receiver + "@conference."
                 + context.getString(R.string.server));
 
+        chatMessage.isOtherMsg = 1;
         Message message1 = new Message();
         String body = gson.toJson(chatMessage);
         message1.setBody(body);
@@ -2293,6 +2260,7 @@ public class MyXMPP extends Service {
         try {
             multiUserChat.sendMessage(message1);
             multiUserChat.leave();
+
 
         } catch (NotConnectedException e) {
             e.printStackTrace();

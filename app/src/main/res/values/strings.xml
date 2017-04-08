@@ -2,6 +2,7 @@
 
     <string name="app_name">SpeakAme</string>
     <string name="signin">SIGN IN</string>
+    <string name="project_id">99211001429</string>
     <string name="register" translatable="false">REGISTER</string>
     <string name="helpful">Helpful Hints</string>
     <string name="title_activity_sign_in_">Login</string>
