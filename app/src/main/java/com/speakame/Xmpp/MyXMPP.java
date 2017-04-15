@@ -2092,6 +2092,7 @@ public class MyXMPP extends Service {
                             });
 
 
+
                         } else {
                             try {
                                 TextTranslater.getInstance().translate(context,sorcountrycode, descountrycode, chatMessage.body, new VolleyCallback() {
