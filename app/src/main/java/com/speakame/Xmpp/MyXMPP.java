@@ -56,13 +56,16 @@ import org.jivesoftware.smack.chat.ChatManagerListener;
 import org.jivesoftware.smack.chat.ChatMessageListener;
 import org.jivesoftware.smack.filter.StanzaExtensionFilter;
 import org.jivesoftware.smack.filter.StanzaFilter;
+import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smack.provider.ProviderManager;
 import org.jivesoftware.smack.roster.Roster;
 import org.jivesoftware.smack.roster.RosterEntry;
+import org.jivesoftware.smack.roster.RosterGroup;
 import org.jivesoftware.smack.roster.RosterListener;
+import org.jivesoftware.smack.roster.packet.RosterPacket;
 import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration;
 import org.jivesoftware.smackx.address.provider.MultipleAddressesProvider;
@@ -137,6 +140,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -235,33 +239,7 @@ public class MyXMPP extends Service {
         connection.isSocketClosed();
     }
 
-    public static String getLastSeen(Context context, String user) {
 
-        LastActivityManager lastActivityManager = LastActivityManager.getInstanceFor(connection);
-        lastActivityManager.enable();
-        try {
-            LastActivity lastActivity = lastActivityManager.getLastActivity(user + "@" + context.getString(R.string.server));
-
-            Date date = new Date();
-            date.setSeconds((int) (lastActivity.getIdleTime()));
-            Log.d("LastActivity", lastActivity.message + "\n" + lastActivity.lastActivity + "\n" +
-                    lastActivity.getStatusMessage() + "\n" +
-                    lastActivity.getIdleTime() * 1000 + "\n" + new TimeAgo(context).timeAgo(date));
-            return new TimeAgo(context).timeAgo(date);
-        } catch (SmackException.NoResponseException e) {
-            e.printStackTrace();
-        } catch (XMPPException.XMPPErrorException e) {
-            e.printStackTrace();
-        } catch (NotConnectedException e) {
-            e.printStackTrace();
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
-        return "";
-
-    }
 
     public static String getOnlyStrings(String s) {
         Pattern pattern = Pattern.compile("[^a-z A-Z]");
@@ -444,7 +422,7 @@ public class MyXMPP extends Service {
                 try {
                     connection.connect();
                     configureProviderManager(connection);
-                    DeliveryReceiptManager dm = DeliveryReceiptManager
+                   /* DeliveryReceiptManager dm = DeliveryReceiptManager
                             .getInstanceFor(connection);
                     dm.setAutoReceiptMode(AutoReceiptMode.always);
                     dm.addReceiptReceivedListener(new ReceiptReceivedListener() {
@@ -455,19 +433,19 @@ public class MyXMPP extends Service {
                                                       final Stanza packet) {
 
                         }
-                    });
+                    });*/
                     connected = true;
 
                     roster = Roster.getInstanceFor(MyXMPP.connection);
                     roster.addRosterListener(new RosterListener() {
                         @Override
                         public void entriesAdded(Collection<String> addresses) {
-
+                            Log.d("entriesAdded", "" + addresses.toString() + ":" );
                         }
 
                         @Override
                         public void entriesUpdated(Collection<String> addresses) {
-
+                            Log.d("entriesUpdated", "" + addresses.toString() + ":" );
                         }
 
                         @Override
@@ -1346,20 +1324,41 @@ public class MyXMPP extends Service {
 
     }
 
-    public boolean deleteChatRoom(String roomId) throws NotConnectedException, XMPPException.XMPPErrorException, SmackException.NoResponseException {
+    public boolean deleteChatRoom(ChatMessage chatMessage, String roomId, String alternateJid) throws NotConnectedException, XMPPException.XMPPErrorException, SmackException.NoResponseException {
 
         MultiUserChatManager multiUserChatManager = MultiUserChatManager.getInstanceFor(connection);
         MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(roomId + "@conference." + context.getString(R.string.server));
 
         multiUserChat.join(loginUser);
 
-        for (Affiliate affiliate : multiUserChat.getOwners()) {
+
+        chatMessage.isOtherMsg = 1;
+        Message message1 = new Message();
+        String body = gson.toJson(chatMessage);
+        message1.setBody(body);
+        message1.setType(Message.Type.groupchat);
+
+        try {
+            multiUserChat.sendMessage(message1);
+
+        } catch (NotConnectedException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            multiUserChat.destroy("Owner destroy a group", null);
+        } catch (SmackException.NoResponseException e) {
+            e.printStackTrace();
+        } catch (XMPPException.XMPPErrorException e) {
+            e.printStackTrace();
+        }
+        /*for (Affiliate affiliate : multiUserChat.getOwners()) {
             if (affiliate.getJid().equalsIgnoreCase(loginUser + "@" + context.getResources().getString(R.string.server))) {
                 multiUserChat.destroy("remove", loginUser + "@" + context.getResources().getString(R.string.server));
                 return true;
             }
-        }
-        return false;
+        }*/
+        return true;
     }
 
 
@@ -1758,9 +1757,11 @@ public class MyXMPP extends Service {
                         }
                     }*/
 
+                    Log.d("Languagesss", langu+"\n"+Mylangu+"\n"+sorcountrycode+"\n"+descountrycode);
+
                     String msgId = new DatabaseHelper(context).getMsgId(chatMessage.msgid);
                     if (msgId.equalsIgnoreCase("")) {
-                        if (langu.equalsIgnoreCase(Mylangu)) {
+                        if (langu.equalsIgnoreCase("no translate")) {
                             new Handler(Looper.getMainLooper()).post(new Runnable() {
 
                                 @Override
@@ -1778,9 +1779,9 @@ public class MyXMPP extends Service {
                                     @Override
                                     public void backResponse(String response) {
                                         if (!response.equalsIgnoreCase("") && AppPreferences.getTotf(context).equalsIgnoreCase("1")) {
-
-                                            chatMessage.body = (chatMessage.body + "~" + Mylangu + "~" + response);
-                                            //  chatMessage.body = (chatMessage.body + "\n" + Mylangu + ":\n" + response);
+                                            if (!langu.equalsIgnoreCase(Mylangu)) {
+                                                chatMessage.body = (chatMessage.body + "~" + Mylangu + "~" + response);
+                                            }
                                         } else if (!response.equalsIgnoreCase("") && AppPreferences.getTotf(context).equalsIgnoreCase("0")) {
 
                                             chatMessage.body = response;
@@ -1794,7 +1795,6 @@ public class MyXMPP extends Service {
                                                 processMessages(chatMessage);
                                             }
                                         });
-
 
                                     }
 
@@ -2032,6 +2032,8 @@ public class MyXMPP extends Service {
                 Log.d("processGroupMessage2", chatMessage.toString());
                // processGroupMessage(chatMessage);
 
+
+
                 if (checkUserBlock(chatMessage.sender)) {
 
 
@@ -2075,7 +2077,10 @@ public class MyXMPP extends Service {
                     }
 */
                     String msgId = new DatabaseHelper(context).getMsgId(chatMessage.msgid);
-                    if (msgId.equalsIgnoreCase("")) {
+                    if(chatMessage.body.equalsIgnoreCase("Owner_destroy_group")){
+                        DatabaseHelper.getInstance(context).deleteGroup(chatMessage.groupName);
+
+                    }else if (msgId.equalsIgnoreCase("")) {
                         if (sorcountrycode.equalsIgnoreCase(descountrycode)) {
                             new Handler(Looper.getMainLooper()).post(new Runnable() {
 
@@ -2259,9 +2264,18 @@ public class MyXMPP extends Service {
 
         try {
             multiUserChat.sendMessage(message1);
-            multiUserChat.leave();
 
+        } catch (NotConnectedException e) {
+            e.printStackTrace();
+        }
 
+        RosterPacket packet = new RosterPacket();
+        packet.setType(IQ.Type.set);
+        RosterPacket.Item item  = new RosterPacket.Item(multiUserChat.getRoom(), null);
+        item.setItemType(RosterPacket.ItemType.remove);
+        packet.addRosterItem(item);
+        try {
+            connection.sendPacket(packet);
         } catch (NotConnectedException e) {
             e.printStackTrace();
         }
@@ -2306,8 +2320,6 @@ public class MyXMPP extends Service {
         Presence presence = new Presence(type,body,42, Presence.Mode.available);
         connection.sendPacket(presence);
     }
-    public void updateProfilePicAndStatus()  {
 
-    }
 
 }

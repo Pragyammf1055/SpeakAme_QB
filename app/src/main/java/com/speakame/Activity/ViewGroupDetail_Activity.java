@@ -179,16 +179,33 @@ public class ViewGroupDetail_Activity extends AnimRootActivity implements Volley
             @Override
             public void onClick(View v) {
                 XmppConneceted activity = new XmppConneceted();
+                ChatMessage chatMessage = new ChatMessage(AppPreferences.getMobileuser(ViewGroupDetail_Activity.this), AppPreferences.getFirstUsername(ViewGroupDetail_Activity.this),
+                        groupJid, groupJid,
+                        Groupname, "",
+                        "" + random.nextInt(1000), "", false);
+                chatMessage.setMsgID();
+                chatMessage.Date = CommonMethods.getCurrentDate();
+                chatMessage.Time = CommonMethods.getCurrentTime();
+                chatMessage.type = Message.Type.groupchat.name();
+                chatMessage.groupid = Groupid;
+                chatMessage.Groupimage = GroupImage;
+                chatMessage.senderlanguages = AppPreferences.getUSERLANGUAGE(ViewGroupDetail_Activity.this);
+                chatMessage.reciverlanguages = reciverlanguages;
+                chatMessage.formID = String.valueOf(AppPreferences.getLoginId(ViewGroupDetail_Activity.this));
+                chatMessage.lastseen = new DatabaseHelper(ViewGroupDetail_Activity.this).getLastSeen(groupJid);
+
+                chatMessage.body = "Owner_destroy_group";
+
+                String alternateJid = friendlist.get(0).getFriendmobile().replace("+","").replace(" ","");
+               // alternateJid = alternateJid + getString(R.string.serverandresorces);
+
                 try {
-                    boolean isDeleted = activity.getmService().xmpp.deleteChatRoom(Groupname);
-                    if(isDeleted){
-                        DatabaseHelper.getInstance(ViewGroupDetail_Activity.this).deleteGroup(Groupname);
-                        Intent intent = new Intent(ViewGroupDetail_Activity.this, TwoTab_Activity.class);
-                        intent.setAction("");
-                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                        startActivity(intent);
-                        finish();
-                    }
+                    activity.getmService().xmpp.deleteChatRoom(chatMessage,Groupname,alternateJid);
+                    Intent intent = new Intent(ViewGroupDetail_Activity.this, TwoTab_Activity.class);
+                    intent.setAction("");
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                    finish();
                 } catch (XMPPException.XMPPErrorException e) {
                     e.printStackTrace();
                 } catch (SmackException.NotConnectedException e) {
@@ -238,7 +255,6 @@ public class ViewGroupDetail_Activity extends AnimRootActivity implements Volley
         editstatus = (TextView) findViewById(R.id.editstatus);
         deleteGroup = (Button) findViewById(R.id.deleteGroup);
         exitGroup = (Button) findViewById(R.id.exitGroup);
-
         image_group.setOnClickListener(this);
         edit_groupname.setOnClickListener(this);
 

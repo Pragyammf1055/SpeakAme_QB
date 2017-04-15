@@ -503,7 +503,6 @@ public class SignIn_Activity extends AnimRootActivity {
                         user.setName(jsonObject2.getString("username"));
                         user.setMobile(jsonObject2.getString("country_with_mobile").replace(" ","").replace("+",""));
                         user.setPassword(jsonObject2.getString("password"));
-
                         DatabaseHelper.getInstance(SignIn_Activity.this).insertUser(user);
                     }
 
