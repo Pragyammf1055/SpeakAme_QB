@@ -2122,9 +2122,7 @@ public class MyXMPP extends Service {
                                 });
                             }catch (Exception e){}
                         }
-
                     }
-
                 }
 
 
