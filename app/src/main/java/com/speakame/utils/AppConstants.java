@@ -49,6 +49,7 @@ public class AppConstants {
     public static final String CHECKLIST = "checkList";
     public static final String GETCHECKLIST = "getCheckList";
     public static final String CREATEGROUP = "createGroup";
+    public static final String USERMAKEGROUPDETAIL = "userMakeGroupDetail";
 
 
 }

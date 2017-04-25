@@ -219,7 +219,7 @@ public class GroupMemberList_Activity extends AnimRootActivity implements Volley
         JSONObject jsonObject = new JSONObject();
         JSONArray jsonArray = new JSONArray();
 
-
+        newGroupMember_adapter.stringArrayList.addAll(memberIdList);
         try {
             jsonObject.put("method", "singleGroupView");
             jsonObject.put("group_id", GroupId);

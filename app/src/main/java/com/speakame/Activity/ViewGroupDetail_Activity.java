@@ -157,7 +157,7 @@ public class ViewGroupDetail_Activity extends AnimRootActivity implements Volley
             JSONObject jsonObject = new JSONObject();
             JSONArray jsonArray = new JSONArray();
             try {
-                jsonObject.put("method", "userMakeGroupDetail");
+                jsonObject.put("method", AppConstants.USERMAKEGROUPDETAIL);
                 jsonObject.put("user_id", AppPreferences.getLoginId(ViewGroupDetail_Activity.this));
                 jsonObject.put("group_id", Groupid);
                 jsonArray.put(jsonObject);
