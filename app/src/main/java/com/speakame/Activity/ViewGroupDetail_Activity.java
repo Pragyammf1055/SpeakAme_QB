@@ -238,6 +238,9 @@ public class ViewGroupDetail_Activity extends AnimRootActivity implements Volley
 
                 activity.getmService().xmpp.userSelfExit(chatMessage);
                 //activity.getmService().xmpp.banUser(chatMessage,AppPreferences.getMobileuser(ViewGroupDetail_Activity.this));
+                if(ChatActivity.instance != null){
+                    ChatActivity.instance.finish();
+                }
                 finish();
             }
         });
@@ -339,7 +342,6 @@ public class ViewGroupDetail_Activity extends AnimRootActivity implements Volley
                     alerttextview.setText("Server error");
                     recyclerView.setVisibility(View.GONE);
                 }
-
 
             } catch (JSONException e) {
                 e.printStackTrace();

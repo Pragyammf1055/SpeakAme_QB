@@ -2263,6 +2263,8 @@ public class MyXMPP extends Service {
 
         try {
             multiUserChat.sendMessage(message1);
+            multiUserChat.leave();
+            DatabaseHelper.getInstance(context).deleteGroup(chatMessage.groupName);
 
         } catch (NotConnectedException e) {
             e.printStackTrace();
@@ -2319,6 +2321,5 @@ public class MyXMPP extends Service {
         Presence presence = new Presence(type,body,42, Presence.Mode.available);
         connection.sendPacket(presence);
     }
-
 
 }

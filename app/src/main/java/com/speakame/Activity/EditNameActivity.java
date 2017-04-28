@@ -102,7 +102,7 @@ public class EditNameActivity extends AppCompatActivity implements View.OnClickL
                     if(object.getString("status").equalsIgnoreCase("200")){
                         JSONArray array = object.getJSONArray("result");
                         JSONObject object1 = array.getJSONObject(0);
-                        String group_name = object1.getString("group_name");
+                        String group_name = object1.getString("update_group_name");
 
                         Intent intent = new Intent();
                         intent.putExtra("name",group_name);

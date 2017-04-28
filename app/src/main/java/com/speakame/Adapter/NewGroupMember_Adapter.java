@@ -99,7 +99,6 @@ public class NewGroupMember_Adapter extends RecyclerView.Adapter<NewGroupMember_
             holder.checkBox.setChecked(false);
         }
 
-
         holder.checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {

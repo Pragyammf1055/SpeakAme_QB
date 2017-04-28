@@ -14,7 +14,7 @@ import java.util.Date;
 public class CommonMethods {
     //private static DateFormat dateFormat = new SimpleDateFormat("d MMM yyyy");
     private static DateFormat dateFormat = new SimpleDateFormat("yyyy MM dd");
-    private static DateFormat timeFormat = new SimpleDateFormat("K:mm aa");
+    private static DateFormat timeFormat = new SimpleDateFormat("hh:mm aa");
     //2007-01-01 10:00:00
    // private static DateFormat timeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 

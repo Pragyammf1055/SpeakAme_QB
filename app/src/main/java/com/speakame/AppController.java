@@ -27,7 +27,6 @@ public class AppController extends Application {
         mInstance = this;
 
         new AppPreferences(this);
-        MultiDex.install(this);
     }
 
     public RequestQueue getRequestQueue() {
