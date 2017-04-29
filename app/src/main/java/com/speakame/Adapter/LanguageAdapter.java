@@ -9,10 +9,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.speakame.Beans.AllBeans;
 import com.speakame.R;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 
 public class LanguageAdapter extends RecyclerView.Adapter<LanguageAdapter.MyViewHolder> {
@@ -80,5 +82,19 @@ public class LanguageAdapter extends RecyclerView.Adapter<LanguageAdapter.MyView
             context.setResult(-1, intent);
             context.finish();
         }
+    }
+    public void filter(String charText) {
+        charText = charText.toLowerCase(Locale.getDefault());
+        languageArrayList.clear();
+        if (charText.length() == 0) {
+            languageArrayList.addAll(objects);
+        } else {
+            for (String wp : objects) {
+                if (wp.toLowerCase(Locale.getDefault()).contains(charText)) {
+                    languageArrayList.add(wp);
+                }
+            }
+        }
+        notifyDataSetChanged();
     }
 }

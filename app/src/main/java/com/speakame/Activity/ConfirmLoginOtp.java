@@ -334,7 +334,10 @@ public class ConfirmLoginOtp extends AnimRootActivity {
                             loginId = jsonObject2.getString("userId");
                             AppPreferences.setLoginId(ConfirmLoginOtp.this, Integer.parseInt(jsonObject2.getString("userId")));
                             AppPreferences.setSocialId(ConfirmLoginOtp.this, jsonObject2.getString("social_id"));
-                            AppPreferences.setMobileuser(ConfirmLoginOtp.this, jsonObject2.getString("mobile"));
+                            String a = jsonObject2.getString("countrycode");
+                            String b = a.replace("+","").replace(" ","");
+                            String mob = b+jsonObject2.getString("mobile");
+                            AppPreferences.setMobileuser(ConfirmLoginOtp.this, mob);
                             AppPreferences.setPassword(ConfirmLoginOtp.this, jsonObject2.getString("password"));
                             AppPreferences.setFirstUsername(ConfirmLoginOtp.this, jsonObject2.getString("username"));
                             AppPreferences.setUserprofile(ConfirmLoginOtp.this, jsonObject2.getString("userImage"));
@@ -357,7 +360,7 @@ public class ConfirmLoginOtp extends AnimRootActivity {
                             AppPreferences.setLoginStatus(ConfirmLoginOtp.this, jsonObject2.getString("user_status"));
                             User user = new User();
                             user.setName(jsonObject2.getString("username"));
-                            user.setMobile(jsonObject2.getString("mobile"));
+                            user.setMobile(mob);
                             user.setPassword(jsonObject2.getString("password"));
 
                             DatabaseHelper.getInstance(ConfirmLoginOtp.this).insertUser(user);

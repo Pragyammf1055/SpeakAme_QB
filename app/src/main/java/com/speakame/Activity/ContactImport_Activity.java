@@ -433,6 +433,7 @@ public class ContactImport_Activity extends AnimRootActivity {
     @Override
     public void onBackPressed() {
         super.onBackPressed();
+        startActivity(new Intent(this, TwoTab_Activity.class));
         finish();
     }
 

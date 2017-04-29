@@ -1373,22 +1373,10 @@ chatlist.remove();
             chatMessage.fileName = Function.generateNewFileName(fileExte);
             chatMessage.files = Function.copyFile(file, SpeakaMeDirectory +"/"+ chatMessage.fileName );
 
-
-           /* File file2= null;
-            try {
-                file2 = Function.decodeBase64BinaryToFile(SpeakaMeDirectory.toString(), Function.generateNewFileName(fileExte), file);
-                chatMessage.fileName = file2.getAbsolutePath();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }*/
-
             Log.d("IMAGEPATH filename",SpeakaMeDirectory+"\n"+chatMessage.fileName+"\n"+chatMessage.files);
 
         }else{
 
-
-            /*XmppConneceted activity = new XmppConneceted();
-            activity.getmService().xmpp.sendMessage(chatMessage);*/
 
         }
 

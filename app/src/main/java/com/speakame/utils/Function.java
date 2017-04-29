@@ -586,8 +586,8 @@ public class Function {
     }
 
     public static File createFolder(String folder){
-        File SpeakaMe = Environment.getExternalStorageDirectory();
-        File SpeakaMeDirectory = new File(SpeakaMe + "/SpeakaMe/" + folder );//+ "/"+ type);
+        File SpeakaMe = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).getAbsoluteFile();
+        File SpeakaMeDirectory = new File(SpeakaMe + "/" + folder );//+ "/"+ type);
         if (!SpeakaMeDirectory.exists()) {
             SpeakaMeDirectory.mkdirs();
         }

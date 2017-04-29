@@ -845,7 +845,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                         vh1.imageView.setImageDrawable(Drawable.createFromPath(response));
                         vh1.progressBar.setVisibility(View.GONE);
                         chatMessageList.get(pos).files = response;
-                        //notifyItemChanged(pos);
+                        notifyItemChanged(pos);
                     }else if(message.fileName.contains(".mp4")|| message.fileName.contains(".3gp")|| message.fileName.contains(".MOV")) {
                         //vh1.video.setVisibility(View.VISIBLE);
                         File file = new File(response);

@@ -1,11 +1,16 @@
 package com.speakame.Activity;
 
+import android.app.SearchManager;
+import android.content.Context;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
@@ -17,6 +22,7 @@ import com.speakame.utils.ListCountry;
 import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 
 import java.util.List;
+import java.util.Locale;
 
 public class SelectLanguageActivity extends AnimRootActivity {
 
@@ -56,6 +62,42 @@ public class SelectLanguageActivity extends AnimRootActivity {
     }
 
 
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.country_menu, menu);
+
+        MenuItem searchItem = menu.findItem(R.id.action_search);
+
+        SearchManager searchManager = (SearchManager) SelectLanguageActivity.this.getSystemService(Context.SEARCH_SERVICE);
+
+        SearchView searchView = null;
+        if (searchItem != null) {
+            searchView = (SearchView) searchItem.getActionView();
+
+        }
+        if (searchView != null) {
+            searchView.setSearchableInfo(searchManager.getSearchableInfo(SelectLanguageActivity.this.getComponentName()));
+            searchView.setIconifiedByDefault(true);
+        }
+
+        final SearchView finalSearchView = searchView;
+        finalSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                String value = finalSearchView.getQuery().toString().toLowerCase(Locale.getDefault());
+                languageAdapter.filter(value.toLowerCase());
+                return true;
+            }
+        });
+
+
+        return super.onCreateOptionsMenu(menu);
+    }
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
