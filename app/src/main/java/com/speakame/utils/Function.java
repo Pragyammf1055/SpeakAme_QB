@@ -18,8 +18,10 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
+import android.media.MediaScannerConnection;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.provider.ContactsContract;
@@ -29,6 +31,8 @@ import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.inputmethod.InputMethodManager;
+
+import com.speakame.AppController;
 
 import org.apache.commons.codec.binary.Base64;
 import org.json.JSONArray;
@@ -591,7 +595,23 @@ public class Function {
         if (!SpeakaMeDirectory.exists()) {
             SpeakaMeDirectory.mkdirs();
         }
+
         return SpeakaMeDirectory;
+    }
+
+    public static void mediaScanner(){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
+        {
+            Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+            File f = new File("file://"+ Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES));
+            Uri contentUri = Uri.fromFile(f);
+            mediaScanIntent.setData(contentUri);
+            AppController.getInstance().sendBroadcast(mediaScanIntent);
+        }
+        else
+        {
+            AppController.getInstance().sendBroadcast(new Intent(Intent.ACTION_MEDIA_MOUNTED, Uri.parse("file://" + Environment.getExternalStorageDirectory())));
+        }
     }
 
     public static String generateNewFileName(String fileExte){

@@ -89,6 +89,7 @@ import java.util.List;
 import static android.app.Activity.RESULT_OK;
 import static com.speakame.Activity.ChatActivity.mRecyclerView;
 import static com.speakame.Activity.TwoTab_Activity.adapter;
+import static com.speakame.utils.Function.mediaScanner;
 
 /**
  * Created by Max on 22-Dec-16.
@@ -870,7 +871,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 /*File SpeakaMe = Environment.getExternalStorageDirectory();
                 File SpeakaMeDirectory = new File(SpeakaMe + "/SpeakaMe/image/recive");
                 String file = SpeakaMeDirectory+"/"+message.fileName;*/
-
+                mediaScanner();
             }
         }).execute(message.files, message.fileName);
     }
@@ -957,15 +958,8 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                                     }
                                 });
                             }
-
-
-
-
-
-
-
-
                         }
+                        mediaScanner();
                     }
                     });
                     }
