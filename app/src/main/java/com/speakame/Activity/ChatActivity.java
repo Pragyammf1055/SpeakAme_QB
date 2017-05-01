@@ -135,7 +135,8 @@ public class ChatActivity extends AnimRootActivity implements View.OnClickListen
     ImageView img_eye, smily_img;
     public static ImageView conversationimage;
     AllBeans allBeans;
-    String FriendStatus, reciverlanguages = "", FriendName, FriendImage, FriendId, senderName, groupName, groupId;
+    String FriendStatus, reciverlanguages = "", FriendName, FriendImage, FriendId, senderName, groupId;
+    public static String groupName;
     Dialog markerDialog;
     LinearLayout mRevealView;
     boolean hidden = true;
@@ -2233,5 +2234,9 @@ chatlist.remove();
         }
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
 
+    }
 }

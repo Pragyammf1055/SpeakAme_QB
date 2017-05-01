@@ -599,8 +599,13 @@ public class Function {
         return SpeakaMeDirectory;
     }
 
-    public static void mediaScanner(){
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
+    public static void mediaScanner(String response){
+        File file = new File(response);
+        Intent intent =
+                new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+        intent.setData(Uri.fromFile(file));
+        AppController.getInstance().sendBroadcast(intent);
+        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
         {
             Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
             File f = new File("file://"+ Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES));
@@ -611,7 +616,7 @@ public class Function {
         else
         {
             AppController.getInstance().sendBroadcast(new Intent(Intent.ACTION_MEDIA_MOUNTED, Uri.parse("file://" + Environment.getExternalStorageDirectory())));
-        }
+        }*/
     }
 
     public static String generateNewFileName(String fileExte){

@@ -871,7 +871,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 /*File SpeakaMe = Environment.getExternalStorageDirectory();
                 File SpeakaMeDirectory = new File(SpeakaMe + "/SpeakaMe/image/recive");
                 String file = SpeakaMeDirectory+"/"+message.fileName;*/
-                mediaScanner();
+                mediaScanner(response);
             }
         }).execute(message.files, message.fileName);
     }
@@ -953,18 +953,14 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                                         } else {
                                             mp.start();
                                         }
-
-
                                     }
                                 });
                             }
                         }
-                        mediaScanner();
+                        mediaScanner(response);
                     }
                     });
                     }
-
-
         }, vh1.progressBar, vh1.cancelUploading ).execute(message.files, message.msgid);
     }
 

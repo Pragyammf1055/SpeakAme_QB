@@ -10,6 +10,7 @@ import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.provider.MediaStore;
@@ -59,6 +60,10 @@ import java.util.List;
 import java.util.Random;
 
 import dmax.dialog.SpotsDialog;
+
+import static com.speakame.Activity.ChatActivity.conversationimage;
+import static com.speakame.Activity.ChatActivity.groupName;
+import static com.speakame.Activity.ChatActivity.toolbartext;
 
 public class ViewGroupDetail_Activity extends AnimRootActivity implements VolleyCallback, View.OnClickListener {
     private static final int SELECTIMAGE = 1;
@@ -236,12 +241,18 @@ public class ViewGroupDetail_Activity extends AnimRootActivity implements Volley
 
                 chatMessage.body = "removeFromGroup";
 
-                activity.getmService().xmpp.userSelfExit(chatMessage);
-                //activity.getmService().xmpp.banUser(chatMessage,AppPreferences.getMobileuser(ViewGroupDetail_Activity.this));
+                boolean isRemove = activity.getmService().xmpp.userSelfExit(chatMessage);
+                if(isRemove){
+                     exitsTask(Groupid);
+                }else {
+
+                    Toast.makeText(ViewGroupDetail_Activity.this, "User not exits", Toast.LENGTH_SHORT).show();
+                }
                 if(ChatActivity.instance != null){
                     ChatActivity.instance.finish();
                 }
-                finish();
+
+
             }
         });
 
@@ -297,6 +308,9 @@ public class ViewGroupDetail_Activity extends AnimRootActivity implements Volley
     public void backResponse(String response) {
         Log.d("response", response);
         //  mProgressDialog.dismiss();
+        if(!friendlist.isEmpty()){
+            friendlist.clear();
+        }
         if (response != null) {
             try {
                 JSONObject mainObject = new JSONObject(response);
@@ -475,6 +489,12 @@ public class ViewGroupDetail_Activity extends AnimRootActivity implements Volley
 
                                     activity.getmService().xmpp.groupUpdate(chatMessage);
 
+
+                                        Picasso.with(ViewGroupDetail_Activity.this).load(group_image).error(R.drawable.user_icon)
+                                                .resize(200, 200)
+                                                .into(conversationimage);
+
+
                                 }else if(object.getString("status").equalsIgnoreCase("200")){
                                     Toast.makeText(ViewGroupDetail_Activity.this, "Server not respond", Toast.LENGTH_LONG).show();
                                 }else{
@@ -506,6 +526,7 @@ public class ViewGroupDetail_Activity extends AnimRootActivity implements Volley
                 Groupname = name;
                 edit_groupname.setText(name);
                 toolbartitle.setText(name);
+
                 DatabaseHelper.getInstance(ViewGroupDetail_Activity.this).UpdateGroupName(name, Groupid);
 
                 XmppConneceted activity = new XmppConneceted();
@@ -525,6 +546,10 @@ public class ViewGroupDetail_Activity extends AnimRootActivity implements Volley
                 chatMessage.lastseen = new DatabaseHelper(ViewGroupDetail_Activity.this).getLastSeen(groupJid);
 
                 activity.getmService().xmpp.groupUpdate(chatMessage);
+
+                    toolbartext.setText(chatMessage.groupName);
+                    groupName = chatMessage.groupName;
+
             }
 
         }
@@ -558,6 +583,56 @@ public class ViewGroupDetail_Activity extends AnimRootActivity implements Volley
             }
         }
     }
+
+     public void exitsTask(String groupid){
+         JSONObject jsonObject = new JSONObject();
+         try {
+             jsonObject.put("method",AppConstants.GROUP_EXIT_GROUP);
+             jsonObject.put("user_id",AppPreferences.getLoginId(ViewGroupDetail_Activity.this));
+             jsonObject.put("group_id",groupid);
+             jsonObject.put("remove_user_id",AppPreferences.getLoginId(ViewGroupDetail_Activity.this));
+             JSONArray jsonArray = new JSONArray();
+             jsonArray.put(jsonObject);
+
+             final ProgressDialog progressDialog  = ProgressDialog.show(ViewGroupDetail_Activity.this, "", "Please wait.....", false);
+
+             JSONParser jsonParser = new JSONParser(ViewGroupDetail_Activity.this);
+             jsonParser.parseVollyJsonArray(AppConstants.USERGROUPURL, 1, jsonArray, new VolleyCallback() {
+                 @Override
+                 public void backResponse(String response) {
+                     try {
+                         JSONObject object = new JSONObject(response);
+                         if(object.getString("status").equalsIgnoreCase("200")){
+                             JSONObject jsonObject = new JSONObject();
+                             JSONArray jsonArray = new JSONArray();
+                             try {
+                                 jsonObject.put("method", AppConstants.USERMAKEGROUPDETAIL);
+                                 jsonObject.put("user_id", AppPreferences.getLoginId(ViewGroupDetail_Activity.this));
+                                 jsonObject.put("group_id", Groupid);
+                                 jsonArray.put(jsonObject);
+
+                                 System.out.println("groupmemberlist" + jsonArray);
+
+                             } catch (JSONException e) {
+                                 e.printStackTrace();
+                             }
+                             JSONParser jsonParser = new JSONParser(ViewGroupDetail_Activity.this);
+                             jsonParser.parseVollyJsonArray(AppConstants.USERGROUPURL, 1, jsonArray, ViewGroupDetail_Activity.this);
+                             System.out.println("jsonArray" + jsonObject);
+                         }else{
+
+                         }
+                     } catch (JSONException e) {
+                         e.printStackTrace();
+                     }
+                 }
+             });
+             progressDialog.dismiss();
+         } catch (JSONException e) {
+             e.printStackTrace();
+         }
+
+        }
 
 
 }

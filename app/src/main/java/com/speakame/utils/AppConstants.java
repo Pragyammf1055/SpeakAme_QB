@@ -42,6 +42,8 @@ public class AppConstants {
 
 
     public static final String GROUP_IMAGE_UPDATE = "group_image_update";
+    public static final String GROUP_DELETE_GROUP = "delete_group";
+    public static final String GROUP_EXIT_GROUP = "exit_group";
     public static final String GROUP_NAME_UPDATE = "group_name_update";
     public static final String USER_SIGNUP = "user_signup";
     public static final String OTP = "otp";

@@ -15,6 +15,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.speakame.Adapter.NewGroupMember_Adapter;
 import com.speakame.Beans.AllBeans;
@@ -251,18 +252,26 @@ public class GroupMemberList_Activity extends AnimRootActivity implements Volley
                             JSONArray orderArray = mainObject.getJSONArray("result");
 
                             XmppConneceted activity = new XmppConneceted();
-
+                            boolean creategroup = false;
+                            String msg ="";
                             if (memberIdList == null) {
-                                activity.getmService().xmpp.createGroupChat(GroupName, GroupId, AppPreferences.getMobileuser(GroupMemberList_Activity.this), NewGroupMember_Adapter.contactArrayList, GroupImagePicture);
+                                creategroup =  activity.getmService().xmpp.createGroupChat(GroupName, GroupId, AppPreferences.getMobileuser(GroupMemberList_Activity.this), NewGroupMember_Adapter.contactArrayList, GroupImagePicture);
+                                msg = "Group cannot be created";
                             } else {
-                                activity.getmService().xmpp.addNewMemberInGroup(GroupName, GroupId, AppPreferences.getMobileuser(GroupMemberList_Activity.this), NewGroupMember_Adapter.contactArrayList);
+                                creategroup = activity.getmService().xmpp.addNewMemberInGroup(GroupName, GroupId, AppPreferences.getMobileuser(GroupMemberList_Activity.this), NewGroupMember_Adapter.contactArrayList);
+                                msg = "menber not added";
                             }
-                            Intent intent = new Intent(GroupMemberList_Activity.this, TwoTab_Activity.class);
-                            intent.setAction("");
-                            intent.putExtra("groupimage", GroupImagePicture);
-                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                            startActivity(intent);
-                            finish();
+                            if(creategroup){
+                                Intent intent = new Intent(GroupMemberList_Activity.this, TwoTab_Activity.class);
+                                intent.setAction("");
+                                intent.putExtra("groupimage", GroupImagePicture);
+                                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                startActivity(intent);
+                                finish();
+
+                            }else {
+                                Toast.makeText(GroupMemberList_Activity.this, msg, Toast.LENGTH_SHORT).show();
+                            }
 
 
                         } else if (mainObject.getString("status").equalsIgnoreCase("400")) {

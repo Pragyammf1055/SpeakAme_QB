@@ -152,6 +152,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.speakame.Activity.ChatActivity.conversationimage;
+import static com.speakame.Activity.ChatActivity.groupName;
 import static com.speakame.Activity.ChatActivity.toolbartext;
 
 
@@ -247,8 +248,9 @@ public class MyXMPP extends Service {
         String number = matcher.replaceAll("");
         return number;
     }
-    public MultiUserChat createGroupChat(String chatRoom, String groupid, String user,
+    public boolean createGroupChat(String chatRoom, String groupid, String user,
                                          List<AllBeans> mobileList, String GroupPicture) {
+        boolean creategroup = true;
         MultiUserChatManager manager = MultiUserChatManager.getInstanceFor(connection);
 
         String service = "conference.ip-172-31-30-231";//services.get(0);
@@ -345,13 +347,16 @@ public class MyXMPP extends Service {
 
         } catch (SmackException e) {
             e.printStackTrace();
+            creategroup = false;
         } catch (XMPPException.XMPPErrorException e) {
             e.printStackTrace();
+            creategroup = false;
         } catch (IllegalStateException e) {
             e.printStackTrace();
+            creategroup = false;
             Toast.makeText(context, " Creation failed - User already joined the room.", Toast.LENGTH_LONG).show();
         }
-        return muc;
+        return creategroup;
     }
 
     public void init() {
@@ -1202,8 +1207,9 @@ public class MyXMPP extends Service {
         this.typingChangedListener = typingChangedListener;
     }
 
-    public void addNewMemberInGroup(String chatRoom, String groupid, String user, List<AllBeans> mobileList) {
+    public boolean addNewMemberInGroup(String chatRoom, String groupid, String user, List<AllBeans> mobileList) {
 
+        boolean addmenber = true;
         MultiUserChatManager manager = MultiUserChatManager.getInstanceFor(connection);
 
         String service = "conference.ip-172-31-30-231";//services.get(0);
@@ -1227,10 +1233,12 @@ public class MyXMPP extends Service {
                 Log.d("groupchat  invite>>", mobileList.get(i).getFriendmobile().replace(" ","").replace("+","") + "@" + context.getString(R.string.server));
             } catch (NotConnectedException e) {
                 e.printStackTrace();
+                addmenber = false;
             }
             muc.addMessageListener(mGMessageListener);
 
         }
+        return addmenber;
     }
 
     public boolean sendIsComposing(Composing composing, String user) {
@@ -1958,6 +1966,7 @@ public class MyXMPP extends Service {
                                         .into(conversationimage);
                             } else if (chatMessage.body.contains("name changed by")) {
                                 toolbartext.setText(chatMessage.groupName);
+                                groupName = chatMessage.groupName;
                             }
                             ChatActivity.chatlist.add(chatMessage);
                             ChatActivity.mRecyclerView.scrollToPosition(ChatActivity.chatAdapter.getItemCount() - 1);
@@ -2214,8 +2223,9 @@ public class MyXMPP extends Service {
         }
     }
 
-    public void banUser(ChatMessage chatMessage,String user){
+    public boolean banUser(ChatMessage chatMessage,String user){
 
+        boolean isRemove = true;
         MultiUserChatManager multiUserChatManager = MultiUserChatManager.getInstanceFor(connection);
         Log.d("groupChatName sender", user+">>>"+chatMessage.receiver + "@conference."
                 + context.getString(R.string.server));
@@ -2238,17 +2248,20 @@ public class MyXMPP extends Service {
             multiUserChat.banUser(user+context.getString(R.string.serverandresorces), chatMessage.body);
         } catch (XMPPException.XMPPErrorException e) {
             e.printStackTrace();
+            isRemove =false;
         } catch (SmackException.NoResponseException e) {
             e.printStackTrace();
+            isRemove =false;
         } catch (NotConnectedException e) {
             e.printStackTrace();
+            isRemove =false;
         }
-
+       return  isRemove;
     }
 
-    public void userSelfExit(ChatMessage chatMessage){
+    public boolean userSelfExit(ChatMessage chatMessage){
 
-
+        boolean isRemove = true;
         MultiUserChatManager multiUserChatManager = MultiUserChatManager.getInstanceFor(connection);
         Log.d("groupChatName", chatMessage.receiver + "@conference."
                 + context.getString(R.string.server));
@@ -2268,6 +2281,7 @@ public class MyXMPP extends Service {
 
         } catch (NotConnectedException e) {
             e.printStackTrace();
+            isRemove = false;
         }
 
         RosterPacket packet = new RosterPacket();
@@ -2280,6 +2294,7 @@ public class MyXMPP extends Service {
         } catch (NotConnectedException e) {
             e.printStackTrace();
         }
+        return isRemove;
     }
 
     public class MyReceiptReceivedListener implements ReceiptReceivedListener {

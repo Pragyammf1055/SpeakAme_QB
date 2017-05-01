@@ -1,5 +1,6 @@
 package com.speakame.Adapter;
 
+import android.app.ProgressDialog;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -15,6 +16,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.speakame.Activity.TwoTab_Activity;
 import com.speakame.Activity.ViewGroupDetail_Activity;
@@ -24,14 +26,20 @@ import com.speakame.R;
 import com.speakame.Services.XmppConneceted;
 import com.speakame.Xmpp.ChatMessage;
 import com.speakame.Xmpp.CommonMethods;
+import com.speakame.utils.AppConstants;
 import com.speakame.utils.AppPreferences;
 import com.speakame.utils.Contactloader.Contact;
 import com.speakame.utils.Contactloader.ContactFetcher;
 import com.speakame.utils.Contactloader.ContactPhone;
 import com.speakame.utils.Function;
+import com.speakame.utils.JSONParser;
+import com.speakame.utils.VolleyCallback;
 import com.squareup.picasso.Picasso;
 
 import org.jivesoftware.smack.packet.Message;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -185,7 +193,13 @@ public class GroupMemberList_Adapter extends RecyclerView.Adapter<GroupMemberLis
                    // activity.getmService().xmpp.groupUpdate(chatMessage);
                 }
 
-                activity.getmService().xmpp.banUser(chatMessage,allBeans.getFriendmobile());
+               boolean isRemove = activity.getmService().xmpp.banUser(chatMessage,allBeans.getFriendmobile());
+                if(isRemove){
+                    exitsTask(Groupid, allBeans);
+                }else {
+
+                    Toast.makeText(context, "User not Remove", Toast.LENGTH_SHORT).show();
+                }
             }
         });
         //Create alert dialog object via builder
@@ -207,7 +221,41 @@ public class GroupMemberList_Adapter extends RecyclerView.Adapter<GroupMemberLis
         }
         return name;
     }
+    public void exitsTask(String groupid, final AllBeans allBeans){
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("method", AppConstants.GROUP_EXIT_GROUP);
+            jsonObject.put("user_id",AppPreferences.getLoginId(context));
+            jsonObject.put("group_id",groupid);
+            jsonObject.put("remove_user_id",allBeans.getFriendid());
+            JSONArray jsonArray = new JSONArray();
+            jsonArray.put(jsonObject);
 
+            final ProgressDialog progressDialog  = ProgressDialog.show(context, "", "Please wait.....", false);
+
+            JSONParser jsonParser = new JSONParser(context);
+            jsonParser.parseVollyJsonArray(AppConstants.USERGROUPURL, 1, jsonArray, new VolleyCallback() {
+                @Override
+                public void backResponse(String response) {
+                    try {
+                        JSONObject object = new JSONObject(response);
+                        if(object.getString("status").equalsIgnoreCase("200")){
+                            contactList.remove(allBeans);
+                            notifyDataSetChanged();
+                        }else{
+
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+            progressDialog.dismiss();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+    }
 
 }
 
