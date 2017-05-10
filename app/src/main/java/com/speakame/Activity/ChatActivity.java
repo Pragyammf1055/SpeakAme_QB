@@ -2110,7 +2110,6 @@ chatlist.remove();
                         sendUnBlockstatus();
                         sDialog.cancel();
 
-
                     }
                 })
                 .show();
