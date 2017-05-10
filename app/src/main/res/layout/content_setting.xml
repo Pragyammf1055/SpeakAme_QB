@@ -262,6 +262,37 @@
 
                 </LinearLayout>
 
+                <LinearLayout
+                    android:id="@+id/layoutRefer"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
+                    android:padding="10dp">
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/notificationsetting"
+                        android:tint="@color/colorPrimary" />
+
+                    <TextView
+                        android:id="@+id/txtrefer"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_marginLeft="@dimen/_20sdp"
+                        android:layout_weight="1"
+                        android:gravity="left|center"
+                        android:text="Refer a Friend"
+                        android:textColor="@color/inputeditcolor" />
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_weight="0"
+                        android:src="@drawable/right_arrow" />
+
+                </LinearLayout>
 
                 <LinearLayout
                     android:layout_width="match_parent"

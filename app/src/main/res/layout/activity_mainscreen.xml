@@ -12,13 +12,20 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".Activity.Main_Activity">
 
+    <!--  <ImageView
+          android:id="@+id/top"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_centerVertical="true"
+          android:tint="@color/colorwhite"
+          android:src="@drawable/imagespk"
+          android:visibility="visible" />-->
     <ImageView
         android:id="@+id/top"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
-        android:tint="@color/colorwhite"
-        android:src="@drawable/imagespk"
+        android:src="@mipmap/app_icon"
         android:visibility="visible" />
 
     <ImageView

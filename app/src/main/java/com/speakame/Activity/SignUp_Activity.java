@@ -253,7 +253,7 @@ public class SignUp_Activity extends AnimRootActivity implements VolleyCallback,
                 Email = editemail.getText().toString();
                 City = editcity.getText().toString();
                 Language = selectLanguage.getText().toString();
-                CountCode = mcontry_code.getText().toString();
+                    CountCode = mcontry_code.getText().toString();
                 Mobile = editmobile.getText().toString();
                 Password = editpassword.getText().toString();
 

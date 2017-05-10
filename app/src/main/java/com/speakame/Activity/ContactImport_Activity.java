@@ -1,5 +1,6 @@
 package com.speakame.Activity;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ContentResolver;
 import android.content.Intent;
@@ -18,8 +19,11 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -60,6 +64,7 @@ public class ContactImport_Activity extends AnimRootActivity {
     ImportcontactAdapter importcontactAdapter;
     JSONArray alContactsname = new JSONArray();
     JSONArray alContactsnumber = new JSONArray();
+    LinearLayout linearLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,7 +83,7 @@ public class ContactImport_Activity extends AnimRootActivity {
         toolbartext.setTypeface(tf1);
         recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         recyclerView.addItemDecoration(new HorizontalDividerItemDecoration.Builder(this).build());
-
+        linearLayout =  (LinearLayout) findViewById(R.id.linearLayout);
 
 
         srch_edit.addTextChangedListener(new TextWatcher() {
@@ -102,6 +107,22 @@ public class ContactImport_Activity extends AnimRootActivity {
             }
         });
 
+        srch_edit.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus) {
+                    Function.hideSoftKeyboard(ContactImport_Activity.this);
+                }
+            }
+        });
+
+        linearLayout.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                Function.hideSoftKeyboard(ContactImport_Activity.this);
+                return true;
+            }
+        });
 
         /////////getiingallcontact in list///////////
 
@@ -112,7 +133,6 @@ public class ContactImport_Activity extends AnimRootActivity {
                 alContactsnumber.put( phone.number);
                 alContactsname.put(contact.name);
             }
-
         }
 
         /*ContentResolver cr = getApplicationContext().getContentResolver(); //Activity/Application android.content.Context
@@ -196,7 +216,10 @@ public class ContactImport_Activity extends AnimRootActivity {
 
       //  System.out.println("numberitm"+numberitem);
         sendallcontact();
+
+
     }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

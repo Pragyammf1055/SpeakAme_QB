@@ -86,7 +86,7 @@
                 android:gravity="center"
                 android:hint="Type your Subject here"
                 android:imeOptions="actionNone"
-                android:inputType="textLongMessage"
+                android:inputType="textCapWords|textLongMessage"
                 android:maxLength="30"
                 android:scrollbars="vertical"
                 android:singleLine="true"

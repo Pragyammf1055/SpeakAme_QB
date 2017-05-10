@@ -51,8 +51,8 @@ public class Setting_Activity extends AnimRootActivity {
     public static ImageView language, language_blue, chat, chat_blue, setting, setting_blue, star,
             on_image, off_image, star_blue, user, user_blue, user_profile;
     TextView toolbartext, username;
-    TextView txt1, txt2, txt3, txt4, txt5, txt6, txt7, txt8, txtlanguage;
-    LinearLayout l1, l2, l3, l4, l6;
+    TextView txt1, txt2, txt3, txt4, txt5, txt6, txt7, txt8, txtlanguage, txtrefer;
+    LinearLayout l1, l2, l3, l4, l6, layoutRefer;
     ImageView info_img, disconect_img, conect_image;
     String currentDateTimeString;
 
@@ -96,6 +96,7 @@ public class Setting_Activity extends AnimRootActivity {
         txt6 = (TextView) findViewById(R.id.txtnetstatus);
         txt7 = (TextView) findViewById(R.id.txtlogout);
         txt8 = (TextView) findViewById(R.id.totfsetting);
+        txtrefer = (TextView) findViewById(R.id.txtrefer);
         txtlanguage = (TextView) findViewById(R.id.languagetext);
         Typeface tf1 = Typeface.createFromAsset(getAssets(), "Raleway-Regular.ttf");
         Typeface tf2 = Typeface.createFromAsset(getAssets(), "OpenSans-Regular.ttf");
@@ -105,6 +106,7 @@ public class Setting_Activity extends AnimRootActivity {
         txt3.setTypeface(tf2);
         txt4.setTypeface(tf2);
         txt5.setTypeface(tf2);
+        txtrefer.setTypeface(tf2);
         txt6.setTypeface(tf2);
         txt7.setTypeface(tf2);
         txt8.setTypeface(tf2);
@@ -290,6 +292,8 @@ public class Setting_Activity extends AnimRootActivity {
         l2 = (LinearLayout) findViewById(R.id.l2);
         l3 = (LinearLayout) findViewById(R.id.l3);
         l4 = (LinearLayout) findViewById(R.id.changelanguage);
+        layoutRefer = (LinearLayout) findViewById(R.id.layoutRefer);
+
         l6 = (LinearLayout) findViewById(R.id.logoutlayout);
         l1.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -324,6 +328,15 @@ public class Setting_Activity extends AnimRootActivity {
             public void onClick(View v) {
                 changelanguageDialog();
 
+            }
+        });
+
+        layoutRefer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Setting_Activity.this, ReferFreindActivity.class);
+                startActivity(intent);
+                finish();
             }
         });
 

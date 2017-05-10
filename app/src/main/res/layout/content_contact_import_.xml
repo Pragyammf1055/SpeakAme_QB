@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/linearLayout"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -26,6 +27,8 @@
         android:layout_height="40dp"
         android:background="@color/editbg"
         android:drawableLeft="@drawable/search_edit"
+        android:singleLine="true"
+        android:imeOptions="actionSearch"
         android:visibility="gone" />
 
     <android.support.v7.widget.RecyclerView
@@ -34,10 +37,6 @@
         android:layout_width="match_parent"
         android:layout_below="@+id/serch_edit"
         android:layout_marginTop="@dimen/_5sdp"
-        android:layout_height="wrap_content"
-        />
-
-
-
+        android:layout_height="wrap_content" />
 
 </LinearLayout>

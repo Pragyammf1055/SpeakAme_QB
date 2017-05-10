@@ -1,5 +1,6 @@
 package com.speakame.Activity;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -18,9 +19,11 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -39,6 +42,7 @@ import com.speakame.utils.CallBackUi;
 import com.speakame.utils.Contactloader.Contact;
 import com.speakame.utils.Contactloader.ContactFetcher;
 import com.speakame.utils.Contactloader.ContactPhone;
+import com.speakame.utils.Function;
 import com.speakame.utils.VolleyCallback;
 import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 
@@ -71,6 +75,7 @@ public class TwoTab_Activity extends AnimRootActivity implements VolleyCallback 
     AlertDialog mProgressDialog;
     ImageView language, language_blue, chat, chat_blue, setting, setting_blue, star, star_blue, user, user_blue;
     public static CallBackUi callBackUi;
+    RelativeLayout linearLayout;
 
     public static void updateList(String groupName) {
         chatMessageList = new ArrayList<ChatMessage>();
@@ -84,7 +89,6 @@ public class TwoTab_Activity extends AnimRootActivity implements VolleyCallback 
         adapter = new BroadcastnewgroupAdapter(instance, chatMessageList);
         chatlist.setAdapter(adapter);
     }
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -129,6 +133,7 @@ public class TwoTab_Activity extends AnimRootActivity implements VolleyCallback 
         startService(new Intent(TwoTab_Activity.this, HomeService.class));
         //  }
 
+        linearLayout =  (RelativeLayout) findViewById(R.id.linearLayout);
         firsttab = (TextView) findViewById(R.id.broadcast);
         secondtab = (TextView) findViewById(R.id.newgroup);
         lay_desc = (RelativeLayout) findViewById(R.id.layout_desc);
@@ -239,7 +244,7 @@ public class TwoTab_Activity extends AnimRootActivity implements VolleyCallback 
             }
         });
 //        user.setOnClickListener(new View.OnClickListener() {
-//            @Override
+//            @Overridein
 //            public void onClick(View v) {
 //                user.setVisibility(View.GONE);
 //                user_blue.setVisibility(View.VISIBLE);
@@ -276,7 +281,6 @@ public class TwoTab_Activity extends AnimRootActivity implements VolleyCallback 
                 startActivity(intent);
             }
         });
-
 
         chatlist.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
@@ -389,8 +393,22 @@ public class TwoTab_Activity extends AnimRootActivity implements VolleyCallback 
 
         searchFriend();
 
+        srch_edit.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus) {
+                    Function.hideSoftKeyboard(TwoTab_Activity.this);
+                }
+            }
+        });
 
-
+        linearLayout.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                Function.hideSoftKeyboard(TwoTab_Activity.this);
+                return true;
+            }
+        });
     }
 
     @Override
@@ -610,7 +628,6 @@ public class TwoTab_Activity extends AnimRootActivity implements VolleyCallback 
                 if(adapter != null) {
                     adapter.filter(value.toLowerCase());
                 }
-
             }
         });
     }

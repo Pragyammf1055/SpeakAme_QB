@@ -50,6 +50,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.SocketTimeoutException;
+import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
 
 import dmax.dialog.SpotsDialog;
@@ -192,10 +193,10 @@ public class Verify_numberActivity extends AnimRootActivity {
 
                 try {
                     se = new StringEntity(jsonArray.toString(), "UTF-8");
-
-                } catch (UnsupportedEncodingException e) {
+                } catch (UnsupportedCharsetException e) {
                     e.printStackTrace();
                 }
+
                 Log.v("json : ", jsonArray.toString(2));
                 System.out.println("Sent JSON is : " + jsonArray.toString());
                 httppost.setEntity(se);
@@ -321,10 +322,10 @@ public class Verify_numberActivity extends AnimRootActivity {
 
                 try {
                     se = new StringEntity(jsonArray.toString(), "UTF-8");
-
-                } catch (UnsupportedEncodingException e) {
+                } catch (UnsupportedCharsetException e) {
                     e.printStackTrace();
                 }
+
                 Log.v("json : ", jsonArray.toString(2));
                 System.out.println("Sent JSON is : " + jsonArray.toString());
                 httppost.setEntity(se);

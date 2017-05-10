@@ -708,4 +708,7 @@ public class Function {
             ActivityCompat.requestPermissions(activity,new String[]{permission},PERMISSION_REQUEST_CODE);
         }
     }
+
+
+
 }

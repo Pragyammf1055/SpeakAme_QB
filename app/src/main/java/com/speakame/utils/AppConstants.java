@@ -12,8 +12,6 @@ public class AppConstants {
     public static final byte ROUTE_ACTIVITY_CONSTANT = (byte) 23;
     public static final int NETWORK_SOCKET_TIMEOUT_CONSTANT = 25000;
 
-
-
     public static final String APPURL = "http://truckslogistics.com/Projects-Work/SpeakAme/user/";
 
 
@@ -38,9 +36,6 @@ public class AppConstants {
     public static final String CHANGELANGUAGE = "changeLanguage";
     public static final String PAYPAL_CLIENT_ID = "ARIIAHBdfznBpy_N2iV3xWmwMshyRAe4FyulDoXCjhw_c8yjL8YfqLdkMPH1UJiljS-a_TF9F081jbhf";
 
-
-
-
     public static final String GROUP_IMAGE_UPDATE = "group_image_update";
     public static final String GROUP_DELETE_GROUP = "delete_group";
     public static final String GROUP_EXIT_GROUP = "exit_group";
@@ -52,6 +47,5 @@ public class AppConstants {
     public static final String GETCHECKLIST = "getCheckList";
     public static final String CREATEGROUP = "createGroup";
     public static final String USERMAKEGROUPDETAIL = "userMakeGroupDetail";
-
 
 }

@@ -21,19 +21,44 @@
         android:gravity="center"
         android:orientation="vertical">
 
+        <LinearLayout
+            android:layout_width="300dp"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
 
-        <EditText
-            android:id="@+id/mobilenum"
-            android:layout_width="match_parent"
-            android:layout_height="45dp"
-            android:layout_marginLeft="15dp"
-            android:layout_marginRight="15dp"
-            android:layout_marginTop="15dp"
-            android:background="@color/editbg"
-            android:gravity="center"
-            android:hint="Mobile number"
-            android:inputType="phone"
-            android:textColor="@color/inputeditcolor" />
+            <TextView
+                android:id="@+id/cntrycode"
+                android:layout_width="wrap_content"
+                android:layout_height="45dp"
+                android:layout_marginTop="15dp"
+                android:layout_weight="0.5"
+                android:background="@color/editbg"
+                android:editable="false"
+                android:gravity="center"
+                android:hint="+"
+                android:cursorVisible="false"
+                android:focusableInTouchMode="false"
+                android:inputType="number"
+                android:maxLength="6"
+                android:singleLine="true"
+                android:layout_marginRight="@dimen/_5sdp"
+                android:textColor="@color/inputeditcolor" />
+
+            <EditText
+                android:id="@+id/mobilenum"
+                android:layout_width="wrap_content"
+                android:layout_height="45dp"
+                android:layout_marginTop="15dp"
+                android:layout_weight="1"
+                android:background="@color/editbg"
+                android:gravity="center"
+                android:hint="Mobile No."
+                android:inputType="number"
+                android:maxLength="12"
+                android:singleLine="true"
+                android:textColor="@color/inputeditcolor" />
+
+        </LinearLayout>
 
         <EditText
             android:id="@+id/newpassword"

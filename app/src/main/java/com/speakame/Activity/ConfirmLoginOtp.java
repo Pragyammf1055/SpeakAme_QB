@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.SocketTimeoutException;
+import java.nio.charset.UnsupportedCharsetException;
 
 import dmax.dialog.SpotsDialog;
 
@@ -163,10 +164,10 @@ public class ConfirmLoginOtp extends AnimRootActivity {
 
                 try {
                     se = new StringEntity(jsonArray.toString(), "UTF-8");
-
-                } catch (UnsupportedEncodingException e) {
+                } catch (UnsupportedCharsetException e) {
                     e.printStackTrace();
                 }
+
                 Log.v("json : ", jsonArray.toString(2));
                 System.out.println("Sent JSON is : " + jsonArray.toString());
                 httppost.setEntity(se);

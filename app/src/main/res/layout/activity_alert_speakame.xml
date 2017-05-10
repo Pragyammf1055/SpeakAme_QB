@@ -36,5 +36,4 @@
         android:id="@+id/include"
         layout="@layout/content_alert_speakame" />
 
-
 </android.support.design.widget.CoordinatorLayout>

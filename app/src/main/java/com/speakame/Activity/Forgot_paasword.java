@@ -31,11 +31,13 @@ import dmax.dialog.SpotsDialog;
 public class Forgot_paasword extends AnimRootActivity {
     TextView toolbartext;
     EditText mMobile_edittext, mnewpasword_edittext, mchangepass_edit, mconfirmedit_paas;
+    TextView mcontry_code;
     Button mbtn_submit, mbtn_confirm;
     Typeface typeface;
     String Mobilenumber, Newpassword, Changepaasword, ConfirmPassword;
 
     AlertDialog mProgressDialog;
+    private String CountryCode;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,6 +51,8 @@ public class Forgot_paasword extends AnimRootActivity {
         mnewpasword_edittext = (EditText) findViewById(R.id.newpassword);
         mchangepass_edit = (EditText) findViewById(R.id.changpassword);
         mconfirmedit_paas = (EditText) findViewById(R.id.confirmpassword);
+
+        mcontry_code = (TextView) findViewById(R.id.cntrycode);
 
         mbtn_submit = (Button) findViewById(R.id.btn_submit);
         mbtn_confirm = (Button) findViewById(R.id.btn_done);
@@ -64,22 +68,32 @@ public class Forgot_paasword extends AnimRootActivity {
         mconfirmedit_paas.setTypeface(typeface);
         mbtn_submit.setTypeface(typeface);
         mbtn_confirm.setTypeface(typeface);
+
+
+        mcontry_code.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Forgot_paasword.this, CountryListActivity.class);
+                startActivityForResult(intent, 0);
+            }
+        });
+
         mbtn_submit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 dismissKeyboard(Forgot_paasword.this);
                 Mobilenumber = mMobile_edittext.getText().toString();
-
+                CountryCode = mcontry_code.getText().toString();
                 if (Mobilenumber.length() == 0) {
                     mMobile_edittext.setError(getResources().getString(R.string.error_field_required));
                 } else if (Mobilenumber.length() < 8 || Mobilenumber.length() > 12) {
                     mMobile_edittext.setError(getResources().getString(R.string.error_field_required_length));
+                } else if (CountryCode.length() == 0) {
+                    Toast.makeText(getApplicationContext(), "Please Select Country Code !!!", Toast.LENGTH_SHORT).show();
+//                    mcontry_code.setError(getResources().getString(R.string.error_field_required));
                 } else {
-
                     senOtppaasword();
-
                 }
-
 
             }
         });
@@ -94,6 +108,7 @@ public class Forgot_paasword extends AnimRootActivity {
                 Newpassword = mnewpasword_edittext.getText().toString();
                 Changepaasword = mchangepass_edit.getText().toString();
                 ConfirmPassword = mconfirmedit_paas.getText().toString();
+
                 if (Newpassword.length() == 0) {
                     mnewpasword_edittext.setError(getResources().getString(R.string.error_field_required));
                 } else if (Changepaasword.length() == 0) {
@@ -108,16 +123,27 @@ public class Forgot_paasword extends AnimRootActivity {
 
                     confirmpassword();
                 }
-
-
             }
         });
-
-
     }
 
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (resultCode == RESULT_OK) {
+            if (requestCode == 0) {
+
+                mcontry_code.setText(data.getStringExtra("countrycode"));
+
+            }
+        }
+    }
+
     private void senOtppaasword() {
+
+        CountryCode = mcontry_code.getText().toString();
 
         mProgressDialog = new SpotsDialog(Forgot_paasword.this);
         mProgressDialog.setTitle("Your contact is retrieving...");
@@ -130,7 +156,7 @@ public class Forgot_paasword extends AnimRootActivity {
 
             jsonObject.put("method", "fotgotPassword");
             jsonObject.put("mobile_number", Mobilenumber);
-
+            jsonObject.put("CountryCode", CountryCode);
 
             jsonArray.put(jsonObject);
             System.out.println("send>json--" + jsonArray);
@@ -142,7 +168,6 @@ public class Forgot_paasword extends AnimRootActivity {
         jsonParser.parseVollyJsonArray(AppConstants.COMMONURL, 1, jsonArray, new VolleyCallback() {
             @Override
             public void backResponse(String response) {
-
 
                 Log.d("response>>>>>", response);
                 //  mProgressDialog.dismiss();
@@ -156,7 +181,7 @@ public class Forgot_paasword extends AnimRootActivity {
                             for (int i = 0; orderArray.length() > i; i++) {
                                 JSONObject topObject = orderArray.getJSONObject(i);
                             }
-                            Toast.makeText(getApplicationContext(), "password send successfully ", Toast.LENGTH_LONG).show();
+                            Toast.makeText(getApplicationContext(), "Password sent successfully ", Toast.LENGTH_LONG).show();
                             mMobile_edittext.setVisibility(View.GONE);
                             mnewpasword_edittext.setVisibility(View.VISIBLE);
                             mchangepass_edit.setVisibility(View.VISIBLE);

@@ -43,7 +43,7 @@
                 android:drawableRight="@drawable/chat"
                 android:gravity="left"
                 android:imeOptions="actionNone"
-                android:inputType="textLongMessage"
+                android:inputType="textCapWords|textLongMessage"
                 android:maxLength="150"
                 android:scrollbars="vertical"
                 android:singleLine="true"

@@ -83,12 +83,12 @@ public class SignIn_Activity extends AnimRootActivity {
     final ArrayList<String> CountryName = new ArrayList<String>();
     final ArrayList<String> CountryCode = new ArrayList<String>();
     public Dialog dialog;
-    TextView headtext, memberlogintxt, textregister, mortext, mforgottext;
+    TextView headtext, memberlogintxt, textregister, mortext, mforgottext, mCountryCode;
     Typeface typeface, typeface1, typeface2;
     ImageView museriamge, mfbimage, mtwiterimage;
     EditText musername, mpaasword;
     Button mbtnsignin, mbtnsignup;
-    String MobileNumber, Password, currentDateTimeString, Language, Country, CounCode;
+    String MobileNumber, Password, currentDateTimeString, Language, Country, CounCode, countryCode;
     LoginButton loginbutton;
     CallbackManager callbackManager;
     JSONObject obj = null;
@@ -98,6 +98,14 @@ public class SignIn_Activity extends AnimRootActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         callbackManager.onActivityResult(requestCode, resultCode, data);
+
+        if (resultCode == RESULT_OK) {
+            if (requestCode == 0) {
+
+                mCountryCode.setText(data.getStringExtra("countrycode"));
+
+            }
+        }
     }
 
     @Override
@@ -119,6 +127,7 @@ public class SignIn_Activity extends AnimRootActivity {
         textregister = (TextView) findViewById(R.id.textregister);
         mortext = (TextView) findViewById(R.id.ortext);
         mforgottext = (TextView) findViewById(R.id.forgottext);
+        mCountryCode = (TextView) findViewById(R.id.countryCode);
         museriamge = (ImageView) findViewById(R.id.userimageView);
         // mfbimage = (ImageView) findViewById(R.id.fb);
         loginbutton = (LoginButton) findViewById(R.id.login_button);
@@ -144,6 +153,7 @@ public class SignIn_Activity extends AnimRootActivity {
         mbtnsignin.setTypeface(typeface2);
         mbtnsignup.setTypeface(typeface2);
         mforgottext.setTypeface(typeface2);
+        mCountryCode.setTypeface(typeface2);
         loginbutton = (LoginButton) findViewById(R.id.login_button);
         // loginbutton.setBackgroundResource(R.drawable.facebook);
         // loginbutton.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, R.drawable.trans);
@@ -210,6 +220,17 @@ public class SignIn_Activity extends AnimRootActivity {
         Date today = new Date();
         currentDateTimeString = dateFormatter.format(today);
         Log.d("currentdatetime", currentDateTimeString);
+
+
+        mCountryCode.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(SignIn_Activity.this, CountryListActivity.class);
+                startActivityForResult(intent, 0);
+            }
+        });
+
+
         mbtnsignin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -220,7 +241,8 @@ public class SignIn_Activity extends AnimRootActivity {
                     if (mpaasword.length() > 0) {
                         loginType = "web";
                         Password = mpaasword.getText().toString();
-                        new LoginTask(SignIn_Activity.this).execute(loginType, musername.getText().toString(), mpaasword.getText().toString());
+                        countryCode = mCountryCode.getText().toString().trim();
+                        new LoginTask(SignIn_Activity.this).execute(loginType, musername.getText().toString(), mpaasword.getText().toString(), mCountryCode.getText().toString());
                     } else {
                         mpaasword.setError("Enter Password");
                     }
@@ -231,6 +253,7 @@ public class SignIn_Activity extends AnimRootActivity {
                 //  new  AddeventAsynch().execute();
             }
         });
+
         mbtnsignup.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -247,6 +270,7 @@ public class SignIn_Activity extends AnimRootActivity {
 
             }
         });
+
 
         //////////////country_gettingcode/////////
 
@@ -426,8 +450,6 @@ public class SignIn_Activity extends AnimRootActivity {
         protected void onPreExecute() {
             // TODO Auto-generated method stub
             super.onPreExecute();
-
-
         }
 
         @Override
@@ -435,9 +457,12 @@ public class SignIn_Activity extends AnimRootActivity {
             ServiceHandler serviceHandler = new ServiceHandler();
             List<NameValuePair> values = new ArrayList<>();
             values.add(new BasicNameValuePair("loginType", params[0]));
+
             if (params[0].equals("web")) {
                 values.add(new BasicNameValuePair("mobile", params[1]));
                 values.add(new BasicNameValuePair("password", params[2]));
+//                values.add(new BasicNameValuePair("countryCode", params[3]));
+                values.add(new BasicNameValuePair("countryCode", countryCode));
                 values.add(new BasicNameValuePair("dateTime", currentDateTimeString));
                 values.add(new BasicNameValuePair("method", AppConstants.LOGIN));
                 values.add(new BasicNameValuePair("mobile_uniquekey", Function.getAndroidID(SignIn_Activity.this)));
@@ -842,6 +867,7 @@ public class SignIn_Activity extends AnimRootActivity {
         private AlertDialog mProgressDialog;
         private JSONObject jsonObj;
         private String status;
+        String jsonString = "";
 
         public VryfyLogin() {
 
@@ -877,6 +903,7 @@ public class SignIn_Activity extends AnimRootActivity {
 
                 jsonObj.put("method", "checkLoginNewDevice");
                 jsonObj.put("user_mobile", MobileNumber);
+                jsonObj.put("countrycode", countryCode);
 
 
                 JSONArray jsonArray = new JSONArray();
@@ -908,7 +935,7 @@ public class SignIn_Activity extends AnimRootActivity {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                String jsonString = "";
+
                 try {
                     jsonString = reader.readLine();
                 } catch (IOException e) {
@@ -920,6 +947,7 @@ public class SignIn_Activity extends AnimRootActivity {
                     status = jsonObj.getString("status");
                     System.out.println("jsonstring------" + jsonString);
                     if (jsonObj.getString("status").equalsIgnoreCase("200")) {
+                        status = "200";
                         JSONArray resultArray = jsonObj.getJSONArray("result");
                         for (int i = 0; i < resultArray.length(); i++) {
                             JSONObject jsonObject2 = resultArray.getJSONObject(i);
@@ -941,20 +969,20 @@ public class SignIn_Activity extends AnimRootActivity {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            return "";
+            return jsonString;
         }
 
         @Override
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
             mProgressDialog.dismiss();
-            Log.d("status", status + "");
-            if (status.equalsIgnoreCase("200")) {
+            Log.d("SignIn_Activity", "inside 200 status :- "+ status + "\n Result is :- "+ result);
+
+            if (result.contains("200")) {
+
                 Intent intent = new Intent(SignIn_Activity.this, ConfirmLoginOtp.class);
                 startActivity(intent);
-
                 finish();
-
 
             } else {
                 Snackbar.make(findViewById(android.R.id.content), "Check network connection", Snackbar.LENGTH_LONG)
@@ -963,6 +991,4 @@ public class SignIn_Activity extends AnimRootActivity {
         }
 
     }
-
-
 }

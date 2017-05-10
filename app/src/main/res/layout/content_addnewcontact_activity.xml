@@ -55,7 +55,7 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:hint="Enter name here"
-                android:inputType="text"
+                android:inputType="textCapWords"
                 android:padding="@dimen/content_text"
                 android:textSize="@dimen/textsize" />
 
@@ -98,6 +98,7 @@
                 android:gravity="center"
                 android:hint="Enter mobile no. here"
                 android:inputType="number"
+                android:maxLength="12"
                 android:padding="@dimen/content_text"
                 android:textSize="@dimen/textsize" />
 
