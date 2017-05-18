@@ -267,7 +267,6 @@ public class ContactImport_Activity extends AnimRootActivity {
                         case R.id.refresh:
                             alContactsnumber = new JSONArray();
                             alContactsname = new JSONArray();
-
                             ArrayList<Contact> listContacts = new ContactFetcher(ContactImport_Activity.this).fetchAll();
                             for(Contact contact : listContacts){
                                 for(ContactPhone phone : contact.numbers){

@@ -4,6 +4,7 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
@@ -21,7 +22,10 @@ import android.util.Base64;
 import android.util.Log;
 import android.util.Patterns;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
@@ -31,6 +35,15 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.facebook.CallbackManager;
+import com.facebook.FacebookCallback;
+import com.facebook.FacebookException;
+import com.facebook.FacebookSdk;
+import com.facebook.GraphRequest;
+import com.facebook.GraphResponse;
+import com.facebook.login.LoginManager;
+import com.facebook.login.LoginResult;
+import com.facebook.login.widget.LoginButton;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.speakame.Beans.AllBeans;
 import com.speakame.Beans.User;
@@ -38,13 +51,16 @@ import com.speakame.Classes.AnimRootActivity;
 import com.speakame.Database.DatabaseHelper;
 import com.speakame.R;
 import com.speakame.Services.HomeService;
+import com.speakame.Xmpp.MyService;
 import com.speakame.utils.AppConstants;
 import com.speakame.utils.AppPreferences;
 import com.speakame.utils.Function;
 import com.speakame.utils.JSONParser;
+import com.speakame.utils.ServiceHandler;
 import com.speakame.utils.VolleyCallback;
 
 import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.conn.ConnectTimeoutException;
@@ -52,6 +68,7 @@ import org.apache.http.conn.params.ConnManagerParams;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicHeader;
+import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
@@ -69,10 +86,14 @@ import java.net.SocketTimeoutException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.regex.Pattern;
 
+import cn.pedant.SweetAlert.SweetAlertDialog;
 import dmax.dialog.SpotsDialog;
+import fr.ganfra.materialspinner.MaterialSpinner;
 
 public class SignUp_Activity extends AnimRootActivity implements VolleyCallback, View.OnClickListener {
 
@@ -96,12 +117,15 @@ public class SignUp_Activity extends AnimRootActivity implements VolleyCallback,
     //captured picture uri
     private Uri picUri;
     private AlertDialog mProgressDialog;
+    LoginButton loginbutton;
+    CallbackManager callbackManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        FacebookSdk.sdkInitialize(getApplicationContext());
         setContentView(R.layout.activity_sign_up_);
-
+        callbackManager = CallbackManager.Factory.create();
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         user_image = (ImageView) findViewById(R.id.userimage);
@@ -112,6 +136,7 @@ public class SignUp_Activity extends AnimRootActivity implements VolleyCallback,
         mcontry_code = (EditText) findViewById(R.id.cntrycode);
         editpassword = (EditText) findViewById(R.id.paasword);
 
+        loginbutton = (LoginButton) findViewById(R.id.login_button);
         selectLanguage = (EditText) findViewById(R.id.selectLanguage);
         // editlanguage = (AutoCompleteTextView) findViewById(R.id.selectlanguage);
         fbimage = (ImageView) findViewById(R.id.facebookbtn);
@@ -365,6 +390,63 @@ public class SignUp_Activity extends AnimRootActivity implements VolleyCallback,
                 malecheck.setVisibility(View.GONE);
             }
         });
+
+
+        List<String> permissionNeeds = Arrays.asList("user_photos", "email", "user_birthday", "public_profile");
+        loginbutton.setReadPermissions(permissionNeeds);
+
+        loginbutton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
+            @Override
+            public void onSuccess(LoginResult loginResult) {
+
+                System.out.println("onSuccess");
+                GraphRequest request = GraphRequest.newMeRequest
+                        (loginResult.getAccessToken(), new GraphRequest.GraphJSONObjectCallback() {
+                            @Override
+                            public void onCompleted(JSONObject object, GraphResponse response) {
+                                // Application code
+                                Log.v("LoginActivity", response.toString());
+                                System.out.println("Check: " + response.toString());
+                                try {
+                                    String socialid = object.getString("id");
+                                    String name = object.getString("name");
+                                    Log.d("facebook_user", name);
+                                    String email = object.getString("email");
+                                    String imgUrl = "https://graph.facebook.com/" + socialid + "/picture?type=large";
+                                    //  String gender = object.getString("gender");
+                                    //  String birthday = object.getString("birthday");
+                                    System.out.println("facebookauthentication" + socialid + ", " + name + ", " + email + "," + imgUrl);
+
+
+                                    new LoginTask(SignUp_Activity.this).execute("facebook", socialid,
+                                            name, email, imgUrl);
+                                    //response-513937435454439, Vikas Barve, mmfinfotech346@gmail.com, male, 03/10/2000
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+
+                            }
+                        });
+                Bundle parameters = new Bundle();
+                parameters.putString("fields", "id,name,email,gender, birthday");
+                request.setParameters(parameters);
+                request.executeAsync();
+            }
+
+            @Override
+            public void onCancel() {
+
+            }
+
+
+            @Override
+            public void onError(FacebookException error) {
+                System.out.println("onError");
+                Snackbar.make(findViewById(android.R.id.content), "Please try again later", Snackbar.LENGTH_LONG).setAction("Alert!", null).show();
+            }
+
+
+        });
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -398,8 +480,14 @@ public class SignUp_Activity extends AnimRootActivity implements VolleyCallback,
             }
 
         }
+        callbackManager.onActivityResult(requestCode, resultCode, data);
     }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+        LoginManager.getInstance().logOut();
+    }
     private void performCrop() {
 
         try {
@@ -670,6 +758,171 @@ public class SignUp_Activity extends AnimRootActivity implements VolleyCallback,
                 Toast.makeText(SignUp_Activity.this,
                         "Please Try Again Later", Toast.LENGTH_LONG).show();//fa
             }
+        }
+    }
+
+
+
+    class LoginTask extends AsyncTask<String, Void, String> {
+        String status = "", result = "", loginId = "";
+        String pass = "";
+        Context context;
+
+
+        public LoginTask(Context context) {
+            this.context = context;
+            mProgressDialog = new SpotsDialog(SignUp_Activity.this);
+            mProgressDialog.setTitle("Login");
+            mProgressDialog.setMessage("Please wait...");
+            mProgressDialog.setCancelable(false);
+            mProgressDialog.show();
+
+        }
+
+        @Override
+        protected void onPreExecute() {
+            // TODO Auto-generated method stub
+            super.onPreExecute();
+        }
+
+        @Override
+        protected String doInBackground(String... params) {
+            ServiceHandler serviceHandler = new ServiceHandler();
+            List<NameValuePair> values = new ArrayList<>();
+            values.add(new BasicNameValuePair("loginType", params[0]));
+
+            if (params[0].equals("web")) {
+              /*  values.add(new BasicNameValuePair("mobile", params[1]));
+                values.add(new BasicNameValuePair("password", params[2]));
+//                values.add(new BasicNameValuePair("countryCode", params[3]));
+                values.add(new BasicNameValuePair("countryCode", countryCode));
+                values.add(new BasicNameValuePair("dateTime", currentDateTimeString));
+                values.add(new BasicNameValuePair("method", AppConstants.LOGIN));
+                values.add(new BasicNameValuePair("mobile_uniquekey", Function.getAndroidID(SignUp_Activity.this)));
+                values.add(new BasicNameValuePair("fcm_mobile_id", FirebaseInstanceId.getInstance().getToken()));*/
+                pass = params[2];
+            } else if (params[0].equals("facebook")) {
+                values.add(new BasicNameValuePair("user_social_id", params[1]));
+                values.add(new BasicNameValuePair("user_name", params[2]));
+                values.add(new BasicNameValuePair("password", ""));
+                values.add(new BasicNameValuePair("email", params[3]));
+                values.add(new BasicNameValuePair("profpic", params[4]));
+                values.add(new BasicNameValuePair("method", AppConstants.LOGIN));
+                values.add(new BasicNameValuePair("fcm_mobile_id", FirebaseInstanceId.getInstance().getToken()));
+                values.add(new BasicNameValuePair("mobile_uniquekey", Function.getAndroidID(SignUp_Activity.this)));
+//                values.add(new BasicNameValuePair("device_id", getDeviceId()));
+//                values.add(new BasicNameValuePair("android_id", Uniqueid));
+
+            }
+
+            Log.d("login_value", values.toString());
+            String login_json = serviceHandler.makeServiceCall(AppConstants.REGISTER_LOG, ServiceHandler.POST, values);
+            System.out.println("Logine value : ------------ " + AppConstants.REGISTER_LOG);
+
+
+            if (login_json != null) {
+                Log.d("login_json", login_json.toString());
+                try {
+                    JSONObject jsonObject = new JSONObject(login_json);
+                    status = jsonObject.getString("status");
+                    result = jsonObject.getString("result");
+
+                    JSONArray jsonArray = jsonObject.getJSONArray("result");
+                    for (int i = 0; i < jsonArray.length(); i++) {
+                        JSONObject jsonObject2 = jsonArray.getJSONObject(i);
+                        loginId = jsonObject2.getString("userId");
+                        AppPreferences.setLoginId(SignUp_Activity.this, Integer.parseInt(jsonObject2.getString("userId")));
+                        AppPreferences.setSocialId(SignUp_Activity.this, jsonObject2.getString("social_id"));
+                        // AppPreferences.setMobileuser(SignIn_Activity.this, jsonObject2.getString("country_with_mobile").replace(" ","-"));
+                        AppPreferences.setPassword(SignUp_Activity.this, jsonObject2.getString("password"));
+                        AppPreferences.setFirstUsername(SignUp_Activity.this, jsonObject2.getString("username"));
+                        AppPreferences.setUserprofile(SignUp_Activity.this, jsonObject2.getString("userImage"));
+
+                        System.out.println("userpic" + jsonObject2.getString("userImage"));
+                        System.out.println("usermobile" + jsonObject2.getString("country_with_mobile").replace(" ","").replace("+",""));
+                        System.out.println("userPassword" + jsonObject2.getString("password"));
+                        AppPreferences.setEmail(SignUp_Activity.this, jsonObject2.getString("email"));
+                        AppPreferences.setMobileuser(SignUp_Activity.this, jsonObject2.getString("country_with_mobile").replace(" ","").replace("+",""));
+                        AppPreferences.setUsercity(SignUp_Activity.this, jsonObject2.getString("country"));
+                        AppPreferences.setCountrycode(SignUp_Activity.this, jsonObject2.getString("countrycode"));
+                        AppPreferences.setUSERLANGUAGE(SignUp_Activity.this, jsonObject2.getString("language"));
+                        AppPreferences.setUsergender(SignUp_Activity.this, jsonObject2.getString("gender"));
+                        AppPreferences.setUserstatus(SignUp_Activity.this, jsonObject2.getString("userProfileStatus"));
+                        AppPreferences.setBlockList(SignUp_Activity.this, jsonObject2.getString("block_users"));
+                        AppPreferences.setPicprivacy(SignUp_Activity.this, jsonObject2.getString("profie_pic_privacy"));
+                        AppPreferences.setStatusprivacy(SignUp_Activity.this, jsonObject2.getString("profie_status_privacy"));
+                        //AppPreferences.setLoginStatus(SignIn_Activity.this, jsonObject2.getString("user_status"));
+                        AppPreferences.setLoginStatus(SignUp_Activity.this, "1");
+                        AppPreferences.setRegisterDate(SignUp_Activity.this, jsonObject2.getString("start_date"));
+                        AppPreferences.setRegisterEndDate(SignUp_Activity.this, jsonObject2.getString("end_date"));
+//                        AppPreferences.setRemainingDays(SignIn_Activity.this, jsonObject2.getString("reamning_days"));
+                        //   System.out.println("userenddate" + jsonObject2.getString("end_date"));
+                        User user = new User();
+                        user.setName(jsonObject2.getString("username"));
+                        user.setMobile(jsonObject2.getString("country_with_mobile").replace(" ","").replace("+",""));
+                        user.setPassword(jsonObject2.getString("password"));
+                        DatabaseHelper.getInstance(SignUp_Activity.this).insertUser(user);
+                    }
+
+                } catch (JSONException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+
+            }
+
+            return null;
+
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            // TODO Auto-generated method stub
+            super.onPostExecute(result);
+
+            mProgressDialog.dismiss();
+
+            //    finish();
+            Log.d("data from server", status + "   " + loginId);
+            if (status.equals("200") && !loginId.equals("")) {
+
+                System.out.println("loginid1" + AppPreferences.getLoginId(context));
+                startService(new Intent(getBaseContext(), MyService.class));
+
+                Intent mintent_home = new Intent(SignUp_Activity.this, TwoTab_Activity.class);
+                mintent_home.setAction("");
+                startActivity(mintent_home);
+                finish();
+            } else if (status.equals("300")) {
+
+                //imageDialog();
+                Log.d("data>>>", status + "   " + loginId);
+
+
+            } else if (status.equals("400")) {
+                Snackbar.make(findViewById(android.R.id.content), "Not valid user !", Snackbar.LENGTH_LONG).setAction("Action", null).show();
+            } else if (status.equals("600")) {
+                System.out.println("loginid1" + AppPreferences.getLoginId(context));
+                startService(new Intent(getBaseContext(), MyService.class));
+
+                Intent mintent_home = new Intent(SignUp_Activity.this, AlertSpeakameActivity.class);
+                mintent_home.setAction("");
+                startActivity(mintent_home);
+                finish();
+            } else if (status.equals("700")) {
+                System.out.println("loginid1" + AppPreferences.getLoginId(context));
+                startService(new Intent(getBaseContext(), MyService.class));
+
+                Intent mintent_home = new Intent(SignUp_Activity.this, AlertDaysSpeakameActivity.class);
+                mintent_home.setAction("");
+                startActivity(mintent_home);
+                finish();
+            } else if (status.equals("800")) {
+                //confirmpopup();
+            } else {
+                Snackbar.make(findViewById(android.R.id.content), "Check your network connection", Snackbar.LENGTH_LONG).setAction("Action", null).show();
+            }
+
         }
     }
 

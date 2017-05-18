@@ -13,6 +13,22 @@
     tools:context="com.speakame.Activity.AlertDaysSpeakameActivity"
     tools:showIn="@layout/activity_alert_days_speakame">
 
+    <ImageView
+        android:id="@+id/top"
+        android:layout_width="@dimen/_100sdp"
+        android:layout_height="@dimen/_100sdp"
+        android:layout_centerHorizontal="true"
+        android:src="@mipmap/app_icon"
+        android:visibility="visible" />
+
+    <ImageView
+        android:id="@+id/top2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/top"
+        android:layout_centerHorizontal="true"
+        android:src="@drawable/sname"
+        android:visibility="visible" />
 
     <Button
         android:id="@+id/btn_continue"
@@ -31,7 +47,7 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:layout_marginTop="100dp"
+        android:layout_marginTop="180dp"
         android:background="@drawable/box"
         android:gravity="center"
         android:orientation="vertical">
@@ -59,8 +75,16 @@
             android:layout_height="wrap_content"
             android:text="remaining"
             android:textSize="@dimen/_20sdp"
-
             android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=" 1st year of service FREE, Only 99cent (US) thereafter!"
+            android:textSize="@dimen/_12sdp"
+            android:padding="@dimen/_8sdp"
+            android:gravity="center_horizontal"
+            android:layout_marginTop="@dimen/_30sdp"/>
 
     </LinearLayout>
 </RelativeLayout>

@@ -4,11 +4,14 @@ import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.Toolbar;
 import android.util.Base64;
@@ -42,28 +45,30 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.SocketTimeoutException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 
 import dmax.dialog.SpotsDialog;
 
 public class Contactus_Activity extends AnimRootActivity {
     //keep track of camera capture intent
-    final int CAMERA_CAPTURE = 1;
+    final int CAMERA_CAPTURE1 = 1;
+    final int CAMERA_CAPTURE2 = 2;
+    final int CAMERA_CAPTURE3 = 3;
     //keep track of cropping intent
     final int PIC_CROP = 2;
     TextView toolbartext;
     ImageView img_one, img_two, img_three;
     EditText medit_description;
     String Description, First_image, Second_image, Third_image, currentDateTimeString;
-    Bitmap thePic;
-    //captured picture uri
-    private Uri picUri;
+    ArrayList<Uri> fileArrayList = new ArrayList<Uri>();
 
 
     @Override
@@ -96,18 +101,13 @@ public class Contactus_Activity extends AnimRootActivity {
             @Override
             public void onClick(View v) {
 
-                try {
-
-                    Intent galleryIntent = new Intent(
-                            Intent.ACTION_PICK,
-                            android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                    startActivityForResult(galleryIntent, CAMERA_CAPTURE);
-                } catch (ActivityNotFoundException anfe) {
-                    //display an error message
-                    String errorMessage = "Whoops - your device doesn't support capturing images!";
-                    Toast toast = Toast.makeText(Contactus_Activity.this, errorMessage, Toast.LENGTH_SHORT);
-                    toast.show();
-                }
+                Intent intent = new Intent(
+                        Intent.ACTION_PICK,
+                        android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                intent.setType("image/*");
+                startActivityForResult(
+                        Intent.createChooser(intent, "Select File"),
+                        CAMERA_CAPTURE1);
 
             }
         });
@@ -115,36 +115,26 @@ public class Contactus_Activity extends AnimRootActivity {
             @Override
             public void onClick(View v) {
 
-                try {
-
-                    Intent galleryIntent = new Intent(
-                            Intent.ACTION_PICK,
-                            android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                    startActivityForResult(galleryIntent, CAMERA_CAPTURE);
-                } catch (ActivityNotFoundException anfe) {
-                    //display an error message
-                    String errorMessage = "Whoops - your device doesn't support capturing images!";
-                    Toast toast = Toast.makeText(Contactus_Activity.this, errorMessage, Toast.LENGTH_SHORT);
-                    toast.show();
-                }
+                Intent intent = new Intent(
+                        Intent.ACTION_PICK,
+                        android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                intent.setType("image/*");
+                startActivityForResult(
+                        Intent.createChooser(intent, "Select File"),
+                        CAMERA_CAPTURE2);
 
             }
         });
         img_three.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                try {
-
-                    Intent galleryIntent = new Intent(
-                            Intent.ACTION_PICK,
-                            android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                    startActivityForResult(galleryIntent, CAMERA_CAPTURE);
-                } catch (ActivityNotFoundException anfe) {
-                    //display an error message
-                    String errorMessage = "Whoops - your device doesn't support capturing images!";
-                    Toast toast = Toast.makeText(Contactus_Activity.this, errorMessage, Toast.LENGTH_SHORT);
-                    toast.show();
-                }
+                Intent intent = new Intent(
+                        Intent.ACTION_PICK,
+                        android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                intent.setType("image/*");
+                startActivityForResult(
+                        Intent.createChooser(intent, "Select File"),
+                        CAMERA_CAPTURE3);
             }
         });
 
@@ -167,7 +157,21 @@ public class Contactus_Activity extends AnimRootActivity {
                 break;
             case R.id.done:
                 Description = medit_description.getText().toString();
-                new ContactusTask().execute();
+
+                Intent emailIntent = new Intent(android.content.Intent.ACTION_SEND_MULTIPLE);
+                emailIntent.setType("application/image");
+                emailIntent.putExtra(android.content.Intent.EXTRA_EMAIL, new String[]{"help@speakame.com"});
+                emailIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "I had Issues");
+                emailIntent.putExtra(android.content.Intent.EXTRA_TEXT, Description);
+
+                emailIntent.putExtra(Intent.EXTRA_STREAM, fileArrayList);
+               /* for(int i=0; i<fileArrayList.size(); i++){
+                    emailIntent.putExtra(Intent.EXTRA_STREAM, Uri.parse(fileArrayList.get(i).toString()));
+                }*/
+
+                startActivity(Intent.createChooser(emailIntent, "Send mail..."));
+
+                //new ContactusTask().execute();
 
 //                Uri packageURI = Uri.parse("package:"+"com.whatsapp");
 //                Intent uninstallIntent = new Intent(Intent.ACTION_DELETE, packageURI);
@@ -181,60 +185,73 @@ public class Contactus_Activity extends AnimRootActivity {
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == RESULT_OK) {
-            if (requestCode == CAMERA_CAPTURE) {
-                picUri = data.getData();
-                performCrop();
-            }//user is returning from cropping the files
-            else if (requestCode == PIC_CROP) {
-//get the returned data
-                Bundle extras = data.getExtras();
-//get the cropped bitmap
-                thePic = extras.getParcelable("data");
-                Log.d("pictureimage", String.valueOf(thePic));
+            if (requestCode == CAMERA_CAPTURE1) {
+                Uri photoUri = data.getData();
 
+                if (photoUri != null){
+                    try {
+                        //We get the file path from the media info returned by the content resolver
+                        String[] filePathColumn = {MediaStore.Images.Media.DATA};
+                        Cursor cursor = getContentResolver().query(photoUri, filePathColumn, null, null, null);
+                        cursor.moveToFirst();
+                        int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+                        String filePath = cursor.getString(columnIndex);
+                        cursor.close();
+                        File ImageFile = new File(filePath);
+                        fileArrayList.add(photoUri);
+                        Bitmap bitmap = BitmapFactory.decodeFile((filePath));
+                        img_one.setImageBitmap(bitmap);
 
-                img_one.setImageBitmap(thePic);
+                    }catch(Exception e){
+                    }
+                }
+            } else if (requestCode == CAMERA_CAPTURE2) {
+                Uri photoUri = data.getData();
 
-                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                thePic.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
-                byte[] byteArray = byteArrayOutputStream.toByteArray();
+                if (photoUri != null){
+                    try {
+                        //We get the file path from the media info returned by the content resolver
+                        String[] filePathColumn = {MediaStore.Images.Media.DATA};
+                        Cursor cursor = getContentResolver().query(photoUri, filePathColumn, null, null, null);
+                        cursor.moveToFirst();
+                        int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+                        String filePath = cursor.getString(columnIndex);
+                        cursor.close();
+                        File ImageFile = new File(filePath);
+                        fileArrayList.add(photoUri);
+                        Bitmap bitmap = BitmapFactory.decodeFile((ImageFile.getAbsolutePath()));
+                        img_two.setImageBitmap(bitmap);
 
-                First_image = Base64.encodeToString(byteArray, Base64.DEFAULT);
-                Log.d("pictureimage", First_image);
+                    }catch(Exception e){
+                    }
+                }
+            } else if (requestCode == CAMERA_CAPTURE3) {
+                Uri photoUri = data.getData();
+
+                if (photoUri != null){
+                    try {
+                        //We get the file path from the media info returned by the content resolver
+                        String[] filePathColumn = {MediaStore.Images.Media.DATA};
+                        Cursor cursor = getContentResolver().query(photoUri, filePathColumn, null, null, null);
+                        cursor.moveToFirst();
+                        int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+                        String filePath = cursor.getString(columnIndex);
+                        cursor.close();
+                        File ImageFile = new File(filePath);
+                        fileArrayList.add(photoUri);
+                        Bitmap bitmap = BitmapFactory.decodeFile((filePath));
+                        img_three.setImageBitmap(bitmap);
+
+                    }catch(Exception e){
+                    }
+                }
             }
 
+
         }
     }
 
-    private void performCrop() {
 
-        try {
-
-            //call the standard crop action intent (the user device may not support it)
-            Intent cropIntent = new Intent("com.android.camera.action.CROP");
-            //indicate files type and Uri
-            cropIntent.setDataAndType(picUri, "image/*");
-            //set crop properties
-            cropIntent.putExtra("crop", "true");
-            //indicate aspect of desired crop
-            cropIntent.putExtra("aspectX", 1);
-            cropIntent.putExtra("aspectY", 1);
-            //indicate output X and Y
-            cropIntent.putExtra("outputX", 256);
-            cropIntent.putExtra("outputY", 256);
-            //retrieve data on return
-            cropIntent.putExtra("return-data", true);
-            //start the activity - we handle returning in onActivityResult
-            startActivityForResult(cropIntent, PIC_CROP);
-
-        } catch (ActivityNotFoundException anfe) {
-            //display an error message
-            String errorMessage = "Whoops - your device doesn't support the crop action!";
-            Toast toast = Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT);
-            toast.show();
-        }
-
-    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode,

@@ -39,7 +39,6 @@ public class Main_Activity extends AnimRootActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(Main_Activity.this, SignIn_Activity.class);
                 startActivity(intent);
-                finish();
 
             }
         });
@@ -48,7 +47,6 @@ public class Main_Activity extends AnimRootActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(Main_Activity.this, SignUp_Activity.class);
                 startActivity(intent);
-                finish();
 
             }
         });
@@ -56,6 +54,7 @@ public class Main_Activity extends AnimRootActivity {
             @Override
             public void onClick(View v) {
 
+            startActivity(new Intent(Main_Activity.this,HelpFullActivity.class));
 
             }
         });

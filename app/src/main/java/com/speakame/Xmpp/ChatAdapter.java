@@ -846,7 +846,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                         vh1.imageView.setImageDrawable(Drawable.createFromPath(response));
                         vh1.progressBar.setVisibility(View.GONE);
                         chatMessageList.get(pos).files = response;
-                        notifyItemChanged(pos);
+                        //notifyItemChanged(pos);
                     }else if(message.fileName.contains(".mp4")|| message.fileName.contains(".3gp")|| message.fileName.contains(".MOV")) {
                         //vh1.video.setVisibility(View.VISIBLE);
                         File file = new File(response);
@@ -856,9 +856,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                         vh1.video.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                             @Override
                             public void onPrepared(final MediaPlayer mp) {
-
                                 mp.seekTo(1);
-
 
                             }
                         });
@@ -872,6 +870,8 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 File SpeakaMeDirectory = new File(SpeakaMe + "/SpeakaMe/image/recive");
                 String file = SpeakaMeDirectory+"/"+message.fileName;*/
                 mediaScanner(response);
+                Bitmap bitmap = BitmapFactory.decodeFile((message.files));
+                MediaStore.Images.Media.insertImage(context.getContentResolver(), bitmap,message.fileName, null);
             }
         }).execute(message.files, message.fileName);
     }
@@ -957,6 +957,8 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                                 });
                             }
                         }
+                        Bitmap bitmap = BitmapFactory.decodeFile((message.files));
+                        MediaStore.Images.Media.insertImage(context.getContentResolver(), bitmap,message.fileName, null);
                         mediaScanner(response);
                     }
                     });
@@ -991,6 +993,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                             chatMessageList.get(position).msgStatus = "1";
                             vh1.startUpload.setVisibility(View.GONE);
                             message.files = response;
+
                             XmppConneceted activity = new XmppConneceted();
                             message.fileData = new byte[0];
                             if(message.groupid == null ||

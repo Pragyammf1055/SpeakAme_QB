@@ -41,6 +41,36 @@ public class HelpFeedback_Activity extends AnimRootActivity {
         text_contact.setTypeface(tf2);
         text_refer.setTypeface(tf2);
 
+        text_about.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String url = "http://www.speakame.com/aboutus";
+                Intent i = new Intent(Intent.ACTION_VIEW);
+                i.setData(Uri.parse(url));
+                startActivity(i);
+            }
+        });
+
+        text_faq.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String url = "http://www.speakame.com/faqs";
+                Intent i = new Intent(Intent.ACTION_VIEW);
+                i.setData(Uri.parse(url));
+                startActivity(i);
+            }
+        });
+
+        text_term.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String url = "http://www.speakame.com/termsandconditions/";
+                Intent i = new Intent(Intent.ACTION_VIEW);
+                i.setData(Uri.parse(url));
+                startActivity(i);
+            }
+        });
+
         text_contact.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -55,7 +85,7 @@ public class HelpFeedback_Activity extends AnimRootActivity {
                 startActivity(intent);
                 finish();*/
 
-                String text = "Just See this app...";
+                String text = "Download SpeakAme messenger to chat with me in all languages.";
                // Uri uri = Uri.parse("android.resource://com.speakame/mipmap/ic_launcher.png");
                 //Uri pictureUri = Uri.parse("file://my_picture");
                 Intent shareIntent = new Intent();
@@ -67,6 +97,7 @@ public class HelpFeedback_Activity extends AnimRootActivity {
                 startActivity(Intent.createChooser(shareIntent, "Invite Friend"));
             }
         });
+
 
 
     }

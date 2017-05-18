@@ -25,7 +25,7 @@ public class AppController extends Application {
     public void onCreate() {
         super.onCreate();
         mInstance = this;
-
+        MultiDex.install(this);
         new AppPreferences(this);
     }
 
@@ -56,6 +56,6 @@ public class AppController extends Application {
     @Override
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
-        MultiDex.install(this);
+
     }
 }

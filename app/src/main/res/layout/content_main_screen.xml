@@ -36,7 +36,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="5dp"
                 android:lineSpacingExtra="5dp"
-                android:text="It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum"
+                android:text="Search your contacts and see who is already on SpeakAme!"
                 android:textAppearance="?android:attr/textAppearanceMedium" />
 
             <com.balysv.materialripple.MaterialRippleLayout
@@ -77,7 +77,7 @@
                 android:id="@+id/textview3"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Invite a friend"
+                android:text="Invite Friends"
                 android:textAppearance="?android:attr/textAppearanceLarge" />
 
             <TextView
@@ -86,7 +86,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="5dp"
                 android:lineSpacingExtra="5dp"
-                android:text="It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum"
+                android:text="Friends Don’t let friends SpeakAme alone!  Invite your contacts to share messages in all languages!"
                 android:textAppearance="?android:attr/textAppearanceMedium" />
 
             <com.balysv.materialripple.MaterialRippleLayout

@@ -225,6 +225,28 @@
                 android:textStyle="bold" />
         </com.balysv.materialripple.MaterialRippleLayout>
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_10sdp"
+            android:text="OR"
+            android:textSize="@dimen/_15sdp"
+            android:textStyle="bold"
+            android:textColor="#000000"
+            android:visibility="gone"/>
+
+
+        <com.facebook.login.widget.LoginButton
+            android:id="@+id/login_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="@dimen/_10sdp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:drawable="@drawable/facebook"
+            android:visibility="gone"/>
+
         <LinearLayout
             android:layout_width="300dp"
             android:layout_height="wrap_content"

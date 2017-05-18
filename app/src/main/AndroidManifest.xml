@@ -44,12 +44,12 @@
             android:name=".Activity.SignIn_Activity"
             android:label="@string/title_activity_sign_in_"
             android:theme="@style/AppTheme.NoActionBar"
-            android:windowSoftInputMode="adjustPan|stateHidden" />
+            android:windowSoftInputMode="adjustResize|stateHidden" />
         <activity
             android:name=".Activity.SignUp_Activity"
             android:label="@string/title_activity_sign_up_"
             android:theme="@style/AppTheme.NoActionBar"
-            android:windowSoftInputMode="adjustPan|stateHidden" />
+            android:windowSoftInputMode="adjustResize|stateHidden" />
         <activity
             android:name=".Activity.Verify_numberActivity"
             android:label="@string/title_activity_forgot__password"
@@ -292,7 +292,9 @@
                 android:resource="@xml/provider_paths" />
         </provider>
 
-        <activity android:name=".Activity.ReferFreindActivity"></activity>
+        <activity android:name=".Activity.ReferFreindActivity" />
+        <activity android:name=".Activity.HelpFullActivity"
+            android:label="Helpful Hints"></activity>
     </application>
 
 </manifest>

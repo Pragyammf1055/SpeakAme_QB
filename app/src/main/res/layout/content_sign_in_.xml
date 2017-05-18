@@ -35,7 +35,7 @@
                 android:layout_below="@+id/rl1"
                 android:layout_marginTop="15dp"
                 android:gravity="center"
-                android:text="No account register below"
+                android:text="No Account? Register Below!"
                 android:textAppearance="?android:attr/textAppearanceSmall"
                 android:textColor="@color/colorblack" />
 
@@ -168,7 +168,7 @@
                             android:layout_gravity="center_vertical"
                             android:background="@null"
                             android:gravity="center"
-                            android:text="Sign In"
+                            android:text="@string/signin"
                             android:textColor="@color/colorwhite"
                             android:textStyle="bold" />
                     </LinearLayout>
