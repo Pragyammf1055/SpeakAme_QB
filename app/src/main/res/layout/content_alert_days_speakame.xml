@@ -80,11 +80,11 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text=" 1st year of service FREE, Only 99cent (US) thereafter!"
-            android:textSize="@dimen/_12sdp"
-            android:padding="@dimen/_8sdp"
+            android:layout_marginTop="@dimen/_10sdp"
             android:gravity="center_horizontal"
-            android:layout_marginTop="@dimen/_30sdp"/>
+            android:padding="@dimen/_8sdp"
+            android:text=" 1st year of service FREE, Only 99cent (US) thereafter!"
+            android:textSize="@dimen/_12sdp" />
 
     </LinearLayout>
 </RelativeLayout>
