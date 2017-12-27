@@ -3,13 +3,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".BaseActivity">
 
-
     <item
         android:id="@+id/addcontact"
+        android:icon="@drawable/cuser"
         android:orderInCategory="1"
         android:title="Add Contact"
-        android:icon="@drawable/add_contact"
         app:showAsAction="always" />
-
+    <!--android:icon="@drawable/cuser"-->
 
 </menu>

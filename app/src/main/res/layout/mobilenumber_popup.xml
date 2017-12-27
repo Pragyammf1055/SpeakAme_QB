@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@drawable/rounded_corner_dialog"
@@ -20,7 +19,8 @@
             <TextView
                 android:id="@+id/textView4"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
                 android:layout_marginLeft="@dimen/_10sdp"
                 android:gravity="center"
                 android:text="Speakame"
@@ -28,7 +28,7 @@
                 android:textSize="@dimen/_15sdp" />
         </LinearLayout>
 
-        <AutoCompleteTextView
+        <!--    <AutoCompleteTextView
             android:id="@+id/country"
             android:layout_width="match_parent"
             android:layout_height="45dp"
@@ -40,6 +40,22 @@
             android:layout_marginLeft="15dp"
             android:layout_marginRight="15dp"
             android:inputType="text"
+            android:textColor="@color/inputeditcolor" />-->
+        <EditText
+            android:id="@+id/country"
+            android:layout_width="match_parent"
+            android:layout_height="45dp"
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="15dp"
+            android:layout_marginTop="15dp"
+            android:background="@color/editbg"
+            android:cursorVisible="false"
+            android:editable="false"
+            android:focusableInTouchMode="false"
+            android:gravity="center"
+            android:hint="Country"
+            android:inputType="text"
+            android:singleLine="true"
             android:textColor="@color/inputeditcolor" />
 
         <LinearLayout
@@ -56,10 +72,10 @@
                 android:layout_marginTop="15dp"
                 android:layout_weight="0.5"
                 android:background="@color/editbg"
-                android:gravity="center"
-                android:hint="+91"
                 android:cursorVisible="false"
                 android:focusableInTouchMode="false"
+                android:gravity="center"
+                android:hint="+91"
                 android:inputType="number"
                 android:maxLength="6"
                 android:singleLine="true"
@@ -81,29 +97,43 @@
 
         </LinearLayout>
 
+        <!-- <fr.ganfra.materialspinner.MaterialSpinner
+             android:id="@+id/spinner"
+             android:layout_width="match_parent"
+             android:layout_height="45dp"
+             android:layout_marginLeft="15dp"
+             android:layout_marginRight="15dp"
+             android:layout_marginTop="15dp"
+             android:background="@color/editbg"
+             android:gravity="center"
+             app:ms_alignLabels="false"
+             app:ms_arrowColor="@color/inputeditcolor"
+             app:ms_arrowSize="16dp"
+             app:ms_enableErrorLabel="false"
+             app:ms_enableFloatingLabel="false"
+             app:ms_floatingLabelText="floating label"
+             app:ms_hint="Select Language"
+             app:ms_multiline="false"
+             app:ms_thickness="2dp"
+             app:ms_typeface="OpenSans-Regular.ttf" />-->
 
-
-
-
-        <fr.ganfra.materialspinner.MaterialSpinner
-            android:id="@+id/spinner"
+        <EditText
+            android:id="@+id/selectLanguage"
             android:layout_width="match_parent"
             android:layout_height="45dp"
             android:layout_marginLeft="15dp"
             android:layout_marginRight="15dp"
             android:layout_marginTop="15dp"
+            android:layout_weight="1"
             android:background="@color/editbg"
+            android:cursorVisible="false"
+            android:editable="false"
+            android:focusableInTouchMode="false"
             android:gravity="center"
-            app:ms_alignLabels="false"
-            app:ms_arrowColor="@color/inputeditcolor"
-            app:ms_arrowSize="16dp"
-            app:ms_enableErrorLabel="false"
-            app:ms_enableFloatingLabel="false"
-            app:ms_floatingLabelText="floating label"
-            app:ms_hint="Select Language"
-            app:ms_multiline="false"
-            app:ms_thickness="2dp"
-            app:ms_typeface="OpenSans-Regular.ttf" />
+            android:hint="Language"
+            android:inputType="text"
+            android:singleLine="true"
+            android:textColor="@color/inputeditcolor" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -115,7 +145,6 @@
             android:orientation="horizontal"
             android:weightSum="2">
 
-
             <Button
                 android:id="@+id/btn_submit"
                 android:layout_width="match_parent"
@@ -126,6 +155,7 @@
                 android:text="Submit"
                 android:textColor="@color/colorwhite"
                 android:textStyle="bold" />
+
         </LinearLayout>
     </LinearLayout>
 </LinearLayout>

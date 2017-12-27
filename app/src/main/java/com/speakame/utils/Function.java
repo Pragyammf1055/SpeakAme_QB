@@ -2,11 +2,13 @@ package com.speakame.utils;
 
 
 import android.Manifest;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.content.ComponentName;
 import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -14,24 +16,36 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
+import android.graphics.Rect;
+import android.graphics.RectF;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
-import android.media.MediaScannerConnection;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.provider.ContactsContract;
+import android.provider.DocumentsContract;
+import android.provider.MediaStore;
 import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.telephony.TelephonyManager;
 import android.text.TextUtils;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.inputmethod.InputMethodManager;
 
+import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.speakame.AppController;
 
 import org.apache.commons.codec.binary.Base64;
@@ -45,7 +59,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -65,9 +83,38 @@ public class Function {
     public static final TreeSet<String> US_CODES = new TreeSet<String>();
     public static final TreeSet<String> DO_CODES = new TreeSet<String>();
     public static final TreeSet<String> PR_CODES = new TreeSet<String>();
+    private static final String TAG = "Function";
 
     public static JSONArray alContactsname = new JSONArray();
     public static JSONArray alContactsnumber = new JSONArray();
+    private Runnable stoppedTypingNotifier = new Runnable() {
+        @Override
+        public void run() {/*
+            //part A of the magic...
+            if (null != typingChangedListener) {
+                typingChangedListener.onIsTypingModified(msg_edittext, false);
+                currentTypingState = false;
+            }
+
+            String dummyDate = new DatabaseHelper(ChatActivity.this).getLastSeen(user2);
+            onlineStatus = new DatabaseHelper(ChatActivity.this).getLastSeen(user2);
+            Log.d(TAG, "dummyDat stop" + dummyDate + ">>" + user2);
+            Log.d(TAG, "dummyDat stop " + dummyDate + " onlineStatus >>" + onlineStatus);
+            Date date = new Date();
+            if (dummyDate == null || dummyDate.equalsIgnoreCase("")) {
+                status.setVisibility(View.GONE);
+            } else if (dummyDate.equalsIgnoreCase("online")) {
+                status.setVisibility(View.VISIBLE);
+            } else {
+                status.setVisibility(View.VISIBLE);
+                if (!dummyDate.equalsIgnoreCase("offline")) {
+                    date.setTime(Long.parseLong(dummyDate));
+                    lastseen = new TimeAgo(ChatActivity.this).timeAgo(date);
+                }
+            }*/
+            //status.setText(lastseen);
+        }
+    };
 
     public static boolean isEmailValid(String email) {
         Pattern pattern;
@@ -80,8 +127,14 @@ public class Function {
 
     public static void hideSoftKeyboard(Activity activity) {
         InputMethodManager inputMethodManager = (InputMethodManager) activity.getSystemService(Activity.INPUT_METHOD_SERVICE);
-        inputMethodManager.hideSoftInputFromWindow(activity.getCurrentFocus().getWindowToken(), 0);
+//        inputMethodManager.hideSoftInputFromWindow(activity.getCurrentFocus().getWindowToken(), 0);
+        inputMethodManager.hideSoftInputFromWindow(activity.getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
 
+    }
+
+    public static float dpToPx(Context context, float valueInDp) {
+        DisplayMetrics metrics = context.getResources().getDisplayMetrics();
+        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, valueInDp, metrics);
     }
 
     public static boolean CheckGpsEnableOrNot(Context context) {
@@ -136,9 +189,9 @@ public class Function {
         return false;
     }
 
-    public static String getCurrentDateTime() {
+    public static String getFullCurrentDateTime() {
         Calendar c = Calendar.getInstance();
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+        SimpleDateFormat sdf = new SimpleDateFormat("hh:mm");
         String strDate = sdf.format(c.getTime());
         return strDate;
     }
@@ -236,7 +289,6 @@ public class Function {
         }
     }
 
-
     public static void contactPermisstion(Activity activity, int request) {
 
 
@@ -267,7 +319,6 @@ public class Function {
             }
         }
     }
-
 
     public static void readphonestatePermisstion(Activity activity, int request) {
 
@@ -300,6 +351,13 @@ public class Function {
         }
     }
 
+   /* public void dialPhoneNumber(Context context, String number) {
+        String uri = "tel:" + number.trim();
+        Intent intent = new Intent(Intent.ACTION_CALL);
+        intent.setData(Uri.parse(uri));
+        context.startActivity(intent);
+    }*/
+
     public static boolean isAppIsInBackground(Context context) {
         boolean isInBackground = true;
         ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
@@ -324,13 +382,6 @@ public class Function {
 
         return isInBackground;
     }
-
-   /* public void dialPhoneNumber(Context context, String number) {
-        String uri = "tel:" + number.trim();
-        Intent intent = new Intent(Intent.ACTION_CALL);
-        intent.setData(Uri.parse(uri));
-        context.startActivity(intent);
-    }*/
 
     public static void importcontact(Context context) {
 
@@ -438,6 +489,7 @@ public class Function {
     public static byte[] base64ToBytes(String data) {
         return android.util.Base64.decode(data, android.util.Base64.DEFAULT);
     }
+
     public static byte[] bitmapToBytes(Bitmap bmp) {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         bmp.compress(Bitmap.CompressFormat.PNG, 100, stream);
@@ -472,6 +524,444 @@ public class Function {
             return null;
         }
         return json;
+    }
+
+    public static byte[] fileToByte(String path) {
+        File file = new File(path);
+
+        byte[] b = new byte[(int) file.length()];
+        try {
+            FileInputStream fileInputStream = new FileInputStream(file);
+            fileInputStream.read(b);
+            for (int i = 0; i < b.length; i++) {
+                System.out.print((char) b[i]);
+            }
+        } catch (FileNotFoundException e) {
+            System.out.println("byteArray File Not Found.");
+            e.printStackTrace();
+        } catch (IOException e1) {
+            System.out.println("byteArray Error Reading The File.");
+            e1.printStackTrace();
+        }
+        return b;
+    }
+
+    public static Bitmap getBitmapFromByte(byte[] byteArray) {
+        System.out.println("byteArray ." + byteArray);
+        return BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
+    }
+
+    public static String getFileName(String urlStr) {
+        return urlStr.substring(urlStr.lastIndexOf('/') + 1, urlStr.length());
+    }
+
+    public static String getFileExtention(String filename) {
+        return filename.substring(filename.lastIndexOf(".") + 1);
+    }
+
+    public static File createFolder(String folder) {
+        File SpeakaMe = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).getAbsoluteFile();
+        File SpeakaMeDirectory = new File(SpeakaMe + "/" + folder);//+ "/"+ type);
+        if (!SpeakaMeDirectory.exists()) {
+            SpeakaMeDirectory.mkdirs();
+        }
+
+        return SpeakaMeDirectory;
+    }
+
+    public static void mediaScanner(String response) {
+        File file = new File(response);
+        Intent intent =
+                new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+        intent.setData(Uri.fromFile(file));
+        AppController.getInstance().sendBroadcast(intent);
+        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
+        {
+            Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+            File f = new File("file://"+ Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES));
+            Uri contentUri = Uri.fromFile(f);
+            mediaScanIntent.setData(contentUri);
+            AppController.getInstance().sendBroadcast(mediaScanIntent);
+        }
+        else
+        {
+            AppController.getInstance().sendBroadcast(new Intent(Intent.ACTION_MEDIA_MOUNTED, Uri.parse("file://" + Environment.getExternalStorageDirectory())));
+        }*/
+    }
+
+    public static String generateNewFileName(String fileExte) {
+
+        String timeStamp = new SimpleDateFormat("ddMMyyyy_HHmmssSSS").format(new Date());
+        String s = "MS_" + timeStamp + "." + fileExte;
+        return s;
+    }
+
+    public static String copyFile(String inputPath, String outputPath) {
+
+        InputStream in = null;
+        OutputStream out = null;
+        try {
+
+            in = new FileInputStream(inputPath);
+            out = new FileOutputStream(outputPath);
+
+            byte[] buffer = new byte[1024];
+            int read;
+            while ((read = in.read(buffer)) != -1) {
+                out.write(buffer, 0, read);
+            }
+            in.close();
+            in = null;
+
+            // write the output file (You have now copied the file)
+            out.flush();
+            out.close();
+            out = null;
+
+        } catch (FileNotFoundException fnfe1) {
+            Log.e("tag :", fnfe1.getMessage());
+            fnfe1.printStackTrace();
+        } catch (Exception e) {
+            Log.e("tag", e.getMessage());
+            e.printStackTrace();
+        }
+        return outputPath;
+    }
+
+    public static int getFileSize(String selectedPath) {
+        File file = new File(selectedPath);
+        return Integer.parseInt(String.valueOf(file.length() / 1024));
+    }
+
+    public static Bitmap getBitmap(String filePath) {
+        File imgFile = new File(filePath);
+
+        if (imgFile.exists()) {
+
+            return BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+
+
+        } else {
+
+            return null;
+        }
+    }
+
+    public static boolean isStringInt(String s) {
+        Log.d("isStringInt", s.matches(".*\\d.*") + "");
+
+        return s.matches(".*\\d.*");
+
+    }
+
+    public static boolean checkPermission(Context context, String permission) {
+        int result = ContextCompat.checkSelfPermission(context, permission);
+        if (result == PackageManager.PERMISSION_GRANTED) {
+
+            return true;
+
+        } else {
+
+            return false;
+
+        }
+    }
+
+    public static void requestPermission(Activity activity, String permission, int PERMISSION_REQUEST_CODE) {
+
+        if (ActivityCompat.shouldShowRequestPermissionRationale(activity, permission)) {
+
+            //Toast.makeText(this,"GPS permission allows us to access location data. Please allow in App Settings for additional functionality.",Toast.LENGTH_LONG).show();
+
+        } else {
+
+            ActivityCompat.requestPermissions(activity, new String[]{permission}, PERMISSION_REQUEST_CODE);
+        }
+    }
+
+    public static String getCountryCode(TelephonyManager tm) {
+
+        PhoneNumberUtil phoneUtil = PhoneNumberUtil.getInstance();
+        String diallingCode = null;
+        int countryDiallingCode;
+        int simCardAV = tm.getSimState();
+        Log.v(TAG, "SimCardAV :- " + simCardAV);
+
+        if (tm.getSimState() != TelephonyManager.SIM_STATE_ABSENT) {
+            //the phone has a sim card
+            Log.v(TAG, "Sim Card Available :- " + tm.getSimState());
+            String SimCountryIso = tm.getSimCountryIso().toUpperCase();
+            Log.v(TAG, "Sim CountryIso if sim available :- " + SimCountryIso);
+
+            countryDiallingCode = phoneUtil.getCountryCodeForRegion(SimCountryIso);
+            diallingCode = String.valueOf(countryDiallingCode);
+            Log.d(TAG, "Dialling Code :- " + countryDiallingCode);
+            Log.d(TAG, "Dialling Code String :- " + diallingCode);
+        } else {
+            //no sim card available
+            Log.v(TAG, "SimCardAV not Available :- " + tm.getSimState());
+            String CountryCode = tm.getNetworkCountryIso().toUpperCase();
+            Log.v(TAG, "CountryCode :- " + CountryCode);
+
+            countryDiallingCode = phoneUtil.getCountryCodeForRegion(CountryCode);
+            diallingCode = String.valueOf(countryDiallingCode);
+            Log.d(TAG, "Dialling Code :- " + countryDiallingCode);
+            Log.d(TAG, "Dialling Code String :- " + diallingCode);
+        }
+
+        return diallingCode;
+    }
+
+    public static String getCountryFullName(TelephonyManager tm) {
+
+        Locale loc;
+        String countryName;
+        if (tm.getSimState() != TelephonyManager.SIM_STATE_ABSENT) {
+
+            String CountryCode = tm.getSimCountryIso().toUpperCase();
+            loc = new Locale("", CountryCode);
+            countryName = loc.getDisplayCountry();
+            Log.v(TAG, "Country Name full :- " + countryName);
+
+        } else {
+            String CountryCode = tm.getNetworkCountryIso().toUpperCase();
+            loc = new Locale("", CountryCode);
+            countryName = loc.getDisplayCountry();
+            Log.v(TAG, "Country Name full :- " + countryName);
+        }
+        return countryName;
+    }
+
+    public static Bitmap getBitmapFromURL(String userprofile) {
+        Bitmap myBitmap = null;
+        try {
+            URL url = new URL(userprofile);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setDoInput(true);
+            connection.connect();
+            InputStream input = connection.getInputStream();
+            myBitmap = BitmapFactory.decodeStream(input);
+            return myBitmap;
+        } catch (IOException e) {
+            e.printStackTrace();
+
+        }
+        return myBitmap;
+
+       /* Bitmap bitmap = null;
+        InputStream stream = null;
+        BitmapFactory.Options bmOptions = new BitmapFactory.Options();
+        bmOptions.inSampleSize = 1;
+
+        try {
+            stream = getHttpConnection(userprofile);
+            bitmap = BitmapFactory.decodeStream(stream, null, bmOptions);
+            stream.close();
+        }
+        catch (IOException e1) {
+            e1.printStackTrace();
+            System.out.println("downloadImage"+ e1.toString());
+        }
+        return bitmap;*/
+    }
+
+    public static InputStream getHttpConnection(String urlString) throws IOException {
+
+        InputStream stream = null;
+        URL url = new URL(urlString);
+        URLConnection connection = url.openConnection();
+
+        try {
+            HttpURLConnection httpConnection = (HttpURLConnection) connection;
+            httpConnection.setRequestMethod("POST");
+            httpConnection.connect();
+
+            if (httpConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                stream = httpConnection.getInputStream();
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            System.out.println("downloadImage" + ex.toString());
+        }
+        return stream;
+    }
+
+    public static Bitmap getCircleBitmap(Bitmap bitmap) {
+        final Bitmap output = Bitmap.createBitmap(bitmap.getWidth(),
+                bitmap.getHeight(), Bitmap.Config.ARGB_8888);
+        final Canvas canvas = new Canvas(output);
+
+        final int color = Color.RED;
+        final Paint paint = new Paint();
+        final Rect rect = new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight());
+        final RectF rectF = new RectF(rect);
+
+        paint.setAntiAlias(true);
+        canvas.drawARGB(0, 0, 0, 0);
+        paint.setColor(color);
+        canvas.drawOval(rectF, paint);
+
+        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
+        canvas.drawBitmap(bitmap, rect, rect, paint);
+
+        bitmap.recycle();
+
+        return output;
+    }
+
+    public static String getCurrentDateTime() {
+        Calendar c = Calendar.getInstance();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy MM dd, hh:mm a");
+        String strDate = sdf.format(c.getTime());
+        return strDate;
+    }
+
+    public static String formatToYesterdayOrToday(String date) throws ParseException {
+
+//        String old_date =  date + ", "+ time;
+        Date dateTime = new SimpleDateFormat("yyyy MM dd, hh:mm a").parse(date);
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(dateTime);
+        Calendar today = Calendar.getInstance();
+        Calendar yesterday = Calendar.getInstance();
+        yesterday.add(Calendar.DATE, -1);
+        DateFormat timeFormatter = new SimpleDateFormat("hh:mm a");
+
+        if (calendar.get(Calendar.YEAR) == today.get(Calendar.YEAR) && calendar.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR)) {
+            return /*"Today " +*/ timeFormatter.format(dateTime);
+        } else if (calendar.get(Calendar.YEAR) == yesterday.get(Calendar.YEAR) && calendar.get(Calendar.DAY_OF_YEAR) == yesterday.get(Calendar.DAY_OF_YEAR)) {
+            return "Yesterday "/* + timeFormatter.format(dateTime)*/;
+        } else {
+            return date;
+        }
+    }
+
+    public static String formatToYesterdayOrToday1(String date, String time) throws ParseException {
+
+        String old_date = date + ", " + time;
+        Date dateTime = new SimpleDateFormat("yyyy MM dd, hh:mm a").parse(old_date);
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(dateTime);
+        Calendar today = Calendar.getInstance();
+        Calendar yesterday = Calendar.getInstance();
+        yesterday.add(Calendar.DATE, -1);
+        DateFormat timeFormatter = new SimpleDateFormat("hh:mm a");
+
+        if (calendar.get(Calendar.YEAR) == today.get(Calendar.YEAR) && calendar.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR)) {
+            return /*"Today " +*/ timeFormatter.format(dateTime);
+        } else if (calendar.get(Calendar.YEAR) == yesterday.get(Calendar.YEAR) && calendar.get(Calendar.DAY_OF_YEAR) == yesterday.get(Calendar.DAY_OF_YEAR)) {
+            return "Yesterday "/* + timeFormatter.format(dateTime)*/;
+        } else {
+            return date;
+        }
+    }
+
+    public static String getDataColumn(Context context, Uri uri, String selection,
+                                       String[] selectionArgs) {
+
+        Cursor cursor = null;
+        final String column = "_data";
+        final String[] projection = {
+                column
+        };
+
+        try {
+            cursor = context.getContentResolver().query(uri, projection, selection, selectionArgs,
+                    null);
+            if (cursor != null && cursor.moveToFirst()) {
+                final int column_index = cursor.getColumnIndexOrThrow(column);
+                return cursor.getString(column_index);
+            }
+        } finally {
+            if (cursor != null)
+                cursor.close();
+        }
+        return null;
+    }
+
+    @TargetApi(Build.VERSION_CODES.KITKAT)
+    public static String getPathFile(final Context context, final Uri uri) {
+
+        final boolean isKitKat = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
+
+        // DocumentProvider
+        if (isKitKat && DocumentsContract.isDocumentUri(context, uri)) {
+            // ExternalStorageProvider
+            if (isExternalStorageDocument(uri)) {
+                final String docId = DocumentsContract.getDocumentId(uri);
+                final String[] split = docId.split(":");
+                final String type = split[0];
+
+                if ("primary".equalsIgnoreCase(type)) {
+                    return Environment.getExternalStorageDirectory() + "/" + split[1];
+                }
+                // TODO handle non-primary volumes
+            }
+            // DownloadsProvider
+            else if (isDownloadsDocument(uri)) {
+
+                final String id = DocumentsContract.getDocumentId(uri);
+                final Uri contentUri = ContentUris.withAppendedId(
+                        Uri.parse("content://downloads/public_downloads"), Long.valueOf(id));
+
+                return getDataColumn(context, contentUri, null, null);
+            }
+            // MediaProvider
+            else if (isMediaDocument(uri)) {
+                final String docId = DocumentsContract.getDocumentId(uri);
+                final String[] split = docId.split(":");
+                final String type = split[0];
+
+                Uri contentUri = null;
+                if ("image".equals(type)) {
+                    contentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+                } else if ("video".equals(type)) {
+                    contentUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
+                } else if ("audio".equals(type)) {
+                    contentUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+                }
+
+                final String selection = "_id=?";
+                final String[] selectionArgs = new String[]{
+                        split[1]
+                };
+
+                return getDataColumn(context, contentUri, selection, selectionArgs);
+            }
+        }
+        // MediaStore (and general)
+        else if ("content".equalsIgnoreCase(uri.getScheme())) {
+            Log.d("FileLoad content", getDataColumn(context, uri, null, null));
+
+            return Function.getDataColumn(context, uri, null, null);
+        }
+        // File
+        else if ("file".equalsIgnoreCase(uri.getScheme())) {
+            Log.d("FileLoad file", uri.getPath());
+
+            return uri.getPath();
+        }
+        return null;
+    }
+
+    public static boolean isExternalStorageDocument(Uri uri) {
+        return "com.android.externalstorage.documents".equals(uri.getAuthority());
+    }
+
+    /**
+     * @param uri The Uri to check.
+     * @return Whether the Uri authority is DownloadsProvider.
+     */
+    public static boolean isDownloadsDocument(Uri uri) {
+        return "com.android.providers.downloads.documents".equals(uri.getAuthority());
+    }
+
+    /**
+     * @param uri The Uri to check.
+     * @return Whether the Uri authority is MediaProvider.
+     */
+    public static boolean isMediaDocument(Uri uri) {
+        return "com.android.providers.media.documents".equals(uri.getAuthority());
     }
 
     public Address getLatLongFromGivenAddress(String addresses, Context context) {
@@ -555,160 +1045,7 @@ public class Function {
         alertDialog.show();
     }
 
-    public static byte[] fileToByte(String path){
-        File file = new File(path);
-
-        byte[] b = new byte[(int) file.length()];
-        try {
-            FileInputStream fileInputStream = new FileInputStream(file);
-            fileInputStream.read(b);
-            for (int i = 0; i < b.length; i++) {
-                System.out.print((char)b[i]);
-            }
-        } catch (FileNotFoundException e) {
-            System.out.println("byteArray File Not Found.");
-            e.printStackTrace();
-        }
-        catch (IOException e1) {
-            System.out.println("byteArray Error Reading The File.");
-            e1.printStackTrace();
-        }
-        return b;
-    }
-
-    public static Bitmap getBitmapFromByte(byte[] byteArray){
-        System.out.println("byteArray ."+byteArray);
-        return BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
-    }
-
-    public static String getFileName(String urlStr){
-        return urlStr.substring(urlStr.lastIndexOf('/')+1, urlStr.length());
-    }
-
-    public static String getFileExtention(String filename){
-        return filename.substring(filename.lastIndexOf(".")+1);
-    }
-
-    public static File createFolder(String folder){
-        File SpeakaMe = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).getAbsoluteFile();
-        File SpeakaMeDirectory = new File(SpeakaMe + "/" + folder );//+ "/"+ type);
-        if (!SpeakaMeDirectory.exists()) {
-            SpeakaMeDirectory.mkdirs();
-        }
-
-        return SpeakaMeDirectory;
-    }
-
-    public static void mediaScanner(String response){
-        File file = new File(response);
-        Intent intent =
-                new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-        intent.setData(Uri.fromFile(file));
-        AppController.getInstance().sendBroadcast(intent);
-        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
-        {
-            Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-            File f = new File("file://"+ Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES));
-            Uri contentUri = Uri.fromFile(f);
-            mediaScanIntent.setData(contentUri);
-            AppController.getInstance().sendBroadcast(mediaScanIntent);
-        }
-        else
-        {
-            AppController.getInstance().sendBroadcast(new Intent(Intent.ACTION_MEDIA_MOUNTED, Uri.parse("file://" + Environment.getExternalStorageDirectory())));
-        }*/
-    }
-
-    public static String generateNewFileName(String fileExte){
-        String timeStamp = new SimpleDateFormat("ddMMyyyy_HHmmssSSS").format(new Date());
-
-        String s = "MS_" + timeStamp + "."+fileExte;
-        return s;
-    }
-
-    public static String copyFile(String inputPath, String outputPath) {
-
-        InputStream in = null;
-        OutputStream out = null;
-        try {
-
-            in = new FileInputStream(inputPath);
-            out = new FileOutputStream(outputPath);
-
-            byte[] buffer = new byte[1024];
-            int read;
-            while ((read = in.read(buffer)) != -1) {
-                out.write(buffer, 0, read);
-            }
-            in.close();
-            in = null;
-
-            // write the output file (You have now copied the file)
-            out.flush();
-            out.close();
-            out = null;
-
-        }  catch (FileNotFoundException fnfe1) {
-            Log.e("tag :", fnfe1.getMessage());
-            fnfe1.printStackTrace();
-        }
-        catch (Exception e) {
-            Log.e("tag", e.getMessage());
-            e.printStackTrace();
-        }
-        return outputPath;
-    }
-    public static int getFileSize(String selectedPath){
-        File file = new File(selectedPath);
-        return Integer.parseInt(String.valueOf(file.length()/1024));
-    }
-    public static Bitmap getBitmap(String filePath){
-        File imgFile = new  File(filePath);
-
-        if(imgFile.exists()){
-
-            return  BitmapFactory.decodeFile(imgFile.getAbsolutePath());
-
-
-        }else {
-
-            return null;
-        }
-    }
-
-
-    public static boolean isStringInt(String s)
-    {
-            Log.d("isStringInt", s.matches(".*\\d.*")+"");
-
-            return s.matches(".*\\d.*");
-
-    }
-
-    public static boolean checkPermission(Context context, String permission){
-        int result = ContextCompat.checkSelfPermission(context, permission);
-        if (result == PackageManager.PERMISSION_GRANTED){
-
-            return true;
-
-        } else {
-
-            return false;
-
-        }
-    }
-    public static void requestPermission(Activity activity,String permission, int PERMISSION_REQUEST_CODE){
-
-        if (ActivityCompat.shouldShowRequestPermissionRationale(activity, permission)){
-
-            //Toast.makeText(this,"GPS permission allows us to access location data. Please allow in App Settings for additional functionality.",Toast.LENGTH_LONG).show();
-
-        } else {
-
-            ActivityCompat.requestPermissions(activity,new String[]{permission},PERMISSION_REQUEST_CODE);
-        }
-    }
-
-
-
 }
+
+
+

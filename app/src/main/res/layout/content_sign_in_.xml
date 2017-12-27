@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v4.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -12,65 +12,23 @@
     tools:context=".Activity.SignIn_Activity"
     tools:showIn="@layout/activity_sign_in_">
 
-
-    <RelativeLayout
-
-        android:layout_width="wrap_content"
+    <ScrollView
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="center">
+        android:scrollbars="none">
 
-
-        <RelativeLayout
-
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginTop="25dp"
-            android:gravity="center">
+            android:gravity="center"
+            android:orientation="vertical">
 
-
-            <TextView
-                android:id="@+id/textregister"
-                android:layout_width="match_parent"
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/userimageView"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/rl1"
-                android:layout_marginTop="15dp"
-                android:gravity="center"
-                android:text="No Account? Register Below!"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textColor="@color/colorblack" />
-
-            <LinearLayout
-                android:layout_width="250dp"
-                android:layout_height="45dp"
-                android:layout_below="@+id/textregister"
                 android:layout_centerHorizontal="true"
-                android:layout_marginTop="15dp"
-                android:background="@color/colorPrimary"
-                android:gravity="center"
-                android:orientation="horizontal"
-                android:weightSum="2">
-
-
-                <Button
-                    android:id="@+id/signupbutton"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:layout_weight="2"
-                    android:background="@null"
-                    android:gravity="center"
-                    android:text="Register"
-                    android:textColor="@color/colorwhite"
-                    android:textStyle="bold" />
-
-                <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:background="@color/colorPrimaryDark"
-                    android:padding="5dp"
-                    android:src="@drawable/user" />
-            </LinearLayout>
+                android:src="@drawable/user_icon" />
 
             <RelativeLayout
                 android:id="@+id/rl1"
@@ -81,13 +39,13 @@
                 android:background="@drawable/edittext_normal"
                 android:gravity="center_vertical">
 
-
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="25dp"
                     android:gravity="center"
-                    android:orientation="vertical">
+                    android:orientation="vertical"
+                    android:paddingBottom="@dimen/_10sdp">
 
                     <TextView
                         android:id="@+id/memberlogin"
@@ -110,24 +68,24 @@
                             android:id="@+id/countryCode"
                             android:layout_width="@dimen/_40sdp"
                             android:layout_height="match_parent"
-                            android:background="@color/editbg"
                             android:layout_gravity="center"
+                            android:background="@color/editbg"
                             android:gravity="center"
-                            android:hint="+91"/>
-
+                            android:hint="+91"
+                            android:textColor="@color/inputeditcolor" />
 
                         <EditText
                             android:id="@+id/username"
                             android:layout_width="match_parent"
                             android:layout_height="45dp"
+                            android:layout_marginLeft="@dimen/_10sdp"
                             android:background="@color/editbg"
                             android:gravity="center"
-                            android:layout_marginLeft="@dimen/_10sdp"
                             android:hint="Mobile number"
                             android:inputType="number"
                             android:textColor="@color/inputeditcolor" />
-                    </LinearLayout>
 
+                    </LinearLayout>
 
                     <EditText
                         android:id="@+id/password"
@@ -184,61 +142,106 @@
                         android:textAppearance="?android:attr/textAppearanceSmall"
                         android:textColor="@color/colorPrimary" />
 
-
+                    <!--
                     <TextView
                         android:id="@+id/ortext"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:layout_marginTop="15dp"
+                        android:layout_marginTop="@dimen/_15sdp"
                         android:gravity="center"
                         android:text="OR"
-                        android:textAppearance="?android:attr/textAppearanceMedium" />
+                        android:textAppearance="?android:attr/textAppearanceMedium"
+                        android:visibility="visible" />-->
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:layout_marginTop="15dp"
-                        android:gravity="center"
-                        android:orientation="horizontal"
-                        android:paddingBottom="15dp">
+                    <!-- <LinearLayout
+                         android:layout_width="match_parent"
+                         android:layout_height="match_parent"
+                         android:layout_marginTop="15dp"
+                         android:gravity="center"
+                         android:orientation="horizontal"
+                         android:paddingBottom="15dp">
 
-                        <!--<ImageView-->
-                        <!--android:id="@+id/fb"-->
-                        <!--android:layout_width="wrap_content"-->
-                        <!--android:layout_height="match_parent"-->
-                        <!--android:layout_marginRight="10dp"-->
-                        <!--android:src="@drawable/facebook" />-->
+                         &lt;!&ndash;<ImageView&ndash;&gt;
+                         &lt;!&ndash;android:id="@+id/fb"&ndash;&gt;
+                         &lt;!&ndash;android:layout_width="wrap_content"&ndash;&gt;
+                         &lt;!&ndash;android:layout_height="match_parent"&ndash;&gt;
+                         &lt;!&ndash;android:layout_marginRight="10dp"&ndash;&gt;
+                         &lt;!&ndash;android:src="@drawable/facebook" />&ndash;&gt;
 
 
-                        <com.facebook.login.widget.LoginButton
-                            android:id="@+id/login_button"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center_horizontal"
-                            android:layout_marginLeft="20dp"
-                            android:layout_marginRight="20dp"
-                            android:drawable="@drawable/facebook" />
+                         <com.facebook.login.widget.LoginButton
+                             android:id="@+id/login_button"
+                             android:layout_width="match_parent"
+                             android:layout_height="wrap_content"
+                             android:layout_gravity="center_horizontal"
+                             android:layout_marginLeft="20dp"
+                             android:layout_marginRight="20dp"
+                             android:drawable="@drawable/facebook" />
 
-                        <ImageView
-                            android:id="@+id/twit"
-                            android:layout_width="wrap_content"
-                            android:layout_height="match_parent"
-                            android:src="@drawable/twitter"
-                            android:visibility="gone" />
-                    </LinearLayout>
+                         <ImageView
+                             android:id="@+id/twit"
+                             android:layout_width="wrap_content"
+                             android:layout_height="match_parent"
+                             android:src="@drawable/twitter"
+                             android:visibility="gone" />
+                     </LinearLayout>-->
 
                 </LinearLayout>
             </RelativeLayout>
 
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginTop="@dimen/_10sdp"
+                android:gravity="center">
 
-        </RelativeLayout>
+                <TextView
+                    android:id="@+id/textregister"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="15dp"
+                    android:gravity="center"
+                    android:text="No Account? Register Below!"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:textColor="@color/colorblack" />
 
-        <de.hdodenhof.circleimageview.CircleImageView
-            android:id="@+id/userimageView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:src="@drawable/user_icon" />
+                <LinearLayout
+                    android:layout_width="250dp"
+                    android:layout_height="45dp"
+                    android:layout_below="@+id/textregister"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="15dp"
+                    android:background="@color/colorPrimary"
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    android:weightSum="2">
 
-    </RelativeLayout>
-</android.support.v4.widget.NestedScrollView>
+                    <Button
+                        android:id="@+id/signupbutton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_weight="2"
+                        android:background="@null"
+                        android:gravity="center"
+                        android:text="Register"
+                        android:textColor="@color/colorwhite"
+                        android:textStyle="bold" />
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:background="@color/colorPrimaryDark"
+                        android:padding="5dp"
+                        android:src="@drawable/user" />
+                </LinearLayout>
+
+            </RelativeLayout>
+
+        </LinearLayout>
+
+    </ScrollView>
+
+
+</LinearLayout>

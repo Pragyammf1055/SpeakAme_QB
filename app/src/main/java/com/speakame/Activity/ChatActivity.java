@@ -4,13 +4,12 @@ import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ActivityOptions;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.NotificationManager;
 import android.content.ContentResolver;
-import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -19,14 +18,17 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Rect;
 import android.graphics.Typeface;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.provider.ContactsContract;
-import android.provider.DocumentsContract;
 import android.provider.MediaStore;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -47,32 +49,68 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.gson.Gson;
+import com.quickblox.auth.session.QBSettings;
+import com.quickblox.chat.QBChatService;
+import com.quickblox.chat.QBIncomingMessagesManager;
+import com.quickblox.chat.QBMessageStatusesManager;
+import com.quickblox.chat.QBPrivacyListsManager;
+import com.quickblox.chat.QBRestChatService;
+import com.quickblox.chat.QBRoster;
+import com.quickblox.chat.exception.QBChatException;
+import com.quickblox.chat.listeners.QBChatDialogMessageListener;
+import com.quickblox.chat.listeners.QBChatDialogMessageSentListener;
+import com.quickblox.chat.listeners.QBChatDialogTypingListener;
+import com.quickblox.chat.listeners.QBMessageStatusListener;
+import com.quickblox.chat.listeners.QBPrivacyListListener;
+import com.quickblox.chat.listeners.QBRosterListener;
+import com.quickblox.chat.listeners.QBSubscriptionListener;
+import com.quickblox.chat.model.QBChatDialog;
+import com.quickblox.chat.model.QBChatMessage;
+import com.quickblox.chat.model.QBDialogType;
+import com.quickblox.chat.model.QBPresence;
+import com.quickblox.chat.model.QBPrivacyList;
+import com.quickblox.chat.model.QBPrivacyListItem;
+import com.quickblox.content.QBContent;
+import com.quickblox.content.model.QBFile;
+import com.quickblox.core.QBEntityCallback;
+import com.quickblox.core.QBProgressCallback;
+import com.quickblox.core.exception.QBResponseException;
+import com.quickblox.core.helper.StringifyArrayList;
+import com.quickblox.messages.QBPushNotifications;
+import com.quickblox.messages.model.QBEnvironment;
+import com.quickblox.messages.model.QBEvent;
+import com.quickblox.messages.model.QBNotificationType;
 import com.rockerhieu.emojicon.EmojiconEditText;
 import com.rockerhieu.emojicon.EmojiconGridFragment;
 import com.rockerhieu.emojicon.EmojiconsFragment;
 import com.rockerhieu.emojicon.emoji.Emojicon;
 import com.speakame.Beans.AllBeans;
+import com.speakame.Beans.User;
 import com.speakame.Classes.AnimRootActivity;
-import com.speakame.Classes.TimeAgo;
+import com.speakame.Database.BlockUserDataBaseHelper;
 import com.speakame.Database.DatabaseHelper;
+import com.speakame.QuickBlox.QbChatDialogMessageListenerImp;
+import com.speakame.QuickBlox.VerboseQbChatConnectionListener;
 import com.speakame.R;
-import com.speakame.Services.XmppConneceted;
+import com.speakame.Services.QBService;
 import com.speakame.Xmpp.ChatAdapter;
 import com.speakame.Xmpp.ChatMessage;
 import com.speakame.Xmpp.CommonMethods;
-import com.speakame.Xmpp.MyXMPP;
 import com.speakame.utils.AppConstants;
 import com.speakame.utils.AppPreferences;
 import com.speakame.utils.Function;
@@ -83,7 +121,13 @@ import com.speakame.utils.TextTranslater;
 import com.speakame.utils.VolleyCallback;
 import com.squareup.picasso.Picasso;
 
+import org.apache.commons.lang3.SerializationUtils;
+import org.jivesoftware.smack.ConnectionListener;
+import org.jivesoftware.smack.SmackException;
+import org.jivesoftware.smack.XMPPConnection;
+import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Message;
+import org.jivesoftware.smackx.muc.DiscussionHistory;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -97,29 +141,34 @@ import java.io.OutputStreamWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
 import cn.pedant.SweetAlert.SweetAlertDialog;
+import dmax.dialog.SpotsDialog;
 import io.codetail.animation.SupportAnimator;
 import io.codetail.animation.ViewAnimationUtils;
 
 
-import static com.speakame.Xmpp.MyXMPP.numMessages;
-
-
 public class ChatActivity extends AnimRootActivity implements View.OnClickListener, EmojiconGridFragment.OnEmojiconClickedListener,
         EmojiconsFragment.OnEmojiconBackspaceClickedListener, RecyclerView.OnItemTouchListener, ActionMode.Callback, ChatAdapter.OnLongClickPressListener {
+    public static final String EXTRA_DIALOG_ID = "dialogId";
     private static final String TAG = "ChatActivity";
     private static final int PICK_CONTACT = 1000;
     private static final int TypingInterval = 1000;
     private static final int NO_OF_EMOTICONS = 54;
+    private static final String PROPERTY_SAVE_TO_HISTORY = "save_to_history";
     public static ArrayList<ChatMessage> chatlist;
     public static ChatAdapter chatAdapter;
     public static ChatActivity instance = null;
     public static String FriendMobileTWO;
     public static LinearLayoutManager mLayoutManager;
+    public static TextView toolbartext;
+    public static ImageView conversationimage;
+    public static String groupName;
+    public static RecyclerView mRecyclerView;
     //keep track of camera capture intent
     final int REQUEST_TAKE_GALLERY_VIDEO = 23;
     final int PICKFILE_REQUEST_CODE = 1;
@@ -127,21 +176,21 @@ public class ChatActivity extends AnimRootActivity implements View.OnClickListen
     final int ADDCONTACT = 24;
     //keep track of cropping intent
     final int PIC_CROP = 2;
-    public String FriendMobile;
-    public static TextView toolbartext;
-    TextView status;
-    String lastseen = "";
+    final Handler handler = new Handler();
+    public TextView status;
+    public String FriendMobile, MobileWithCountryCode;
+    public int qbFileId = 0;
+    public String qbFileUid = "";
     Toolbar toolbar;
     ImageView img_eye, smily_img;
-    public static ImageView conversationimage;
     AllBeans allBeans;
     String FriendStatus, reciverlanguages = "", FriendName, FriendImage, FriendId, senderName, groupId;
-    public static String groupName;
     Dialog markerDialog;
     LinearLayout mRevealView;
     boolean hidden = true;
     ImageButton btn1, btn2, btn3, btn4;
-    ImageButton sendButton;
+    FloatingActionButton sendButton;
+    //    ImageButton sendButton;
     FrameLayout fm;
     LinearLayout linearLayout;
     Button mbtnblock, mbtnadd;
@@ -152,241 +201,641 @@ public class ChatActivity extends AnimRootActivity implements View.OnClickListen
     int previousHeightDiffrence = 0;
     GestureDetectorCompat gestureDetector;
     ActionMode actionMode;
-    public static RecyclerView mRecyclerView;
+    String onlineStatus = "";
+    CoordinatorLayout coordinateLayout;
+    RelativeLayout relative_layout;
+    String QB_Name, QB_Mobile, QB_LoginId;
+    Integer QB_Friend_Id;
+    QBChatService chatService;
+    String message = "";
+    // String file = "";
+    String fileName = "";
+    String filePath = "";
+    Gson gson;
+    QBService qbService;
+    String lastSeen;
+    String groupDialodId;
+    QBRosterListener rosterListener;
+    String GroupName = "";
+    QBMessageStatusListener messageStatusListener;
+    long delay = 1000; // 1 seconds after user stops typing
+    long last_text_edit = 0;
+    QBPrivacyListsManager privacyListsManager;
+    QBPrivacyListListener privacyListListener = new QBPrivacyListListener() {
+        @Override
+        public void setPrivacyList(String listName, List<QBPrivacyListItem> listItem) {
+            Log.d(TAG, " Set PrivacyList method");
+        }
+
+        @Override
+        public void updatedPrivacyList(String listName) {
+            Log.d(TAG, "updatedPrivacyList method");
+
+        }
+    };
+    private String fileUrl = "";
     private EmojiconEditText msg_edittext;
     private String user1 = "", user2 = "", GroupImage;
     private Random random;
     private ActionMode mActionMode;
-    private OnTypingModified typingChangedListener;
     private boolean currentTypingState = false;
-    private Handler handler = new Handler();
-    private Runnable stoppedTypingNotifier = new Runnable() {
-        @Override
+    private QBChatDialog privateChatDialog, groupChatDialog;
+    private ChatMessageListener chatMessageListener;
+    private ConnectionListener chatConnectionListener;
+    private QBIncomingMessagesManager incomingMessagesManager;
+    private QBChatDialogTypingListener privateChatDialogTypingListener, groupChatDialogTypingListener;
+    private QBChatDialogMessageSentListener privateChatDialogMessageSentListener, groupChatDialogMessageSentListener;
+    private QBChatDialogMessageListener globalChatDialogMessageListener;
+    //
+    ///////////////////////////////////////////// 1-1 Chat /////////////////////////////////////////////
+    //
+    private QBChatDialogMessageListener privateChatDialogMessageListener, groupChatDialogMessageListener;
+    private QBMessageStatusesManager messageStatusesManager;
+    private Runnable input_finish_checker = new Runnable() {
         public void run() {
-            //part A of the magic...
-            if (null != typingChangedListener) {
-                typingChangedListener.onIsTypingModified(msg_edittext, false);
-                currentTypingState = false;
-            }
-
-            String dummyDate = new DatabaseHelper(ChatActivity.this).getLastSeen(user2);
-            Log.d("dummyDat stop", dummyDate +">>"+ user2);
-            Date date = new Date();
-            if (dummyDate == null  || dummyDate.equalsIgnoreCase("")) {
-                status.setVisibility(View.GONE);
-            } else if (dummyDate.equalsIgnoreCase("online")) {
-                status.setVisibility(View.VISIBLE);
-            } else {
-                status.setVisibility(View.VISIBLE);
-                date.setTime(Long.parseLong(dummyDate));
-                lastseen = new TimeAgo(ChatActivity.this).timeAgo(date);
+            if (System.currentTimeMillis() > (last_text_edit + delay - 500)) {
+                // TODO: send stop typing status here and display it on status
+                // ............
+                // ............
+                sendStopTypingInPrivateChat();
+                status.setText(lastSeen);
 
             }
-            //status.setText(lastseen);
-
         }
     };
+    private byte[] qbChatDialogBytes;
 
-    @TargetApi(Build.VERSION_CODES.KITKAT)
-    public static String getPathFile(final Context context, final Uri uri) {
+    public static void startForResult(Activity activity, int code, QBChatDialog dialogId) {
+        Toast.makeText(activity, "new code 2", Toast.LENGTH_SHORT).show();
 
-        final boolean isKitKat = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
-
-        // DocumentProvider
-        if (isKitKat && DocumentsContract.isDocumentUri(context, uri)) {
-            // ExternalStorageProvider
-            if (isExternalStorageDocument(uri)) {
-                final String docId = DocumentsContract.getDocumentId(uri);
-                final String[] split = docId.split(":");
-                final String type = split[0];
-
-                if ("primary".equalsIgnoreCase(type)) {
-                    return Environment.getExternalStorageDirectory() + "/" + split[1];
-                }
-
-                // TODO handle non-primary volumes
-            }
-            // DownloadsProvider
-            else if (isDownloadsDocument(uri)) {
-
-                final String id = DocumentsContract.getDocumentId(uri);
-                final Uri contentUri = ContentUris.withAppendedId(
-                        Uri.parse("content://downloads/public_downloads"), Long.valueOf(id));
-
-                return getDataColumn(context, contentUri, null, null);
-            }
-            // MediaProvider
-            else if (isMediaDocument(uri)) {
-                final String docId = DocumentsContract.getDocumentId(uri);
-                final String[] split = docId.split(":");
-                final String type = split[0];
-
-                Uri contentUri = null;
-                if ("image".equals(type)) {
-                    contentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-                } else if ("video".equals(type)) {
-                    contentUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
-                } else if ("audio".equals(type)) {
-                    contentUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-                }
-
-                final String selection = "_id=?";
-                final String[] selectionArgs = new String[]{
-                        split[1]
-                };
-
-                return getDataColumn(context, contentUri, selection, selectionArgs);
-            }
-        }
-        // MediaStore (and general)
-        else if ("content".equalsIgnoreCase(uri.getScheme())) {
-            Log.d("FileLoad content", getDataColumn(context, uri, null, null));
-
-            return getDataColumn(context, uri, null, null);
-        }
-        // File
-        else if ("file".equalsIgnoreCase(uri.getScheme())) {
-            Log.d("FileLoad file", uri.getPath());
-
-            return uri.getPath();
-        }
-
-        return null;
+        Intent intent = new Intent(activity, ChatActivity.class);
+        intent.putExtra(ChatActivity.EXTRA_DIALOG_ID, dialogId);
+        activity.startActivityForResult(intent, code);
     }
-
-    /**
-     * Get the value of the data column for this Uri. This is useful for
-     * MediaStore Uris, and other file-based ContentProviders.
-     *
-     * @param context       The context.
-     * @param uri           The Uri to query.
-     * @param selection     (Optional) Filter used in the query.
-     * @param selectionArgs (Optional) Selection arguments used in the query.
-     * @return The value of the _data column, which is typically a file path.
-     */
-    public static String getDataColumn(Context context, Uri uri, String selection,
-                                       String[] selectionArgs) {
-
-        Cursor cursor = null;
-        final String column = "_data";
-        final String[] projection = {
-                column
-        };
-
-        try {
-            cursor = context.getContentResolver().query(uri, projection, selection, selectionArgs,
-                    null);
-            if (cursor != null && cursor.moveToFirst()) {
-                final int column_index = cursor.getColumnIndexOrThrow(column);
-                return cursor.getString(column_index);
-            }
-        } finally {
-            if (cursor != null)
-                cursor.close();
-        }
-        return null;
-    }
-
-    /**
-     * @param uri The Uri to check.
-     * @return Whether the Uri authority is ExternalStorageProvider.
-     */
-    public static boolean isExternalStorageDocument(Uri uri) {
-        return "com.android.externalstorage.documents".equals(uri.getAuthority());
-    }
-
-    /**
-     * @param uri The Uri to check.
-     * @return Whether the Uri authority is DownloadsProvider.
-     */
-    public static boolean isDownloadsDocument(Uri uri) {
-        return "com.android.providers.downloads.documents".equals(uri.getAuthority());
-    }
-
-    /**
-     * @param uri The Uri to check.
-     * @return Whether the Uri authority is MediaProvider.
-     */
-    public static boolean isMediaDocument(Uri uri) {
-        return "com.android.providers.media.documents".equals(uri.getAuthority());
-    }
-
-    public void setOnTypingModified(OnTypingModified typingChangedListener) {
-        this.typingChangedListener = typingChangedListener;
-    }
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+        // TODO: onCreate() method
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat_list_);
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayShowTitleEnabled(false);
-        getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_arrow_back_white_24dp);
-        instance = this;
-        toolbartext = (TextView) findViewById(R.id.toolbar_title);
-        status = (TextView) findViewById(R.id.status);
-        conversationimage = (ImageView) findViewById(R.id.conversation_contact_photo);
-        status.setSelected(true);
-        status.setEllipsize(TextUtils.TruncateAt.MARQUEE);
-        status.setSingleLine(true);
 
-        numMessages = 0;
+        setToolbar();
 
-        toolbartext.setText("Chat list");
-        toolbartext.setSingleLine();
-        Typeface tf1 = Typeface.createFromAsset(getAssets(), "Raleway-Regular.ttf");
-        toolbartext.setTypeface(tf1);
-        img_eye = (ImageView) findViewById(R.id.iv_chat_eye);
-        smily_img = (ImageView) findViewById(R.id.iv_smily);
-        msg_edittext = (EmojiconEditText) findViewById(R.id.messageEditText);
-        mRecyclerView = (RecyclerView) findViewById(R.id.my_recycler_view);
-        sendButton = (ImageButton) findViewById(R.id.sendMessageButton);
-        btn1 = (ImageButton) findViewById(R.id.pic_id);
-        btn2 = (ImageButton) findViewById(R.id.vidoid);
-        btn3 = (ImageButton) findViewById(R.id.docid);
-        btn4 = (ImageButton) findViewById(R.id.contactid);
-        fm = (FrameLayout) findViewById(R.id.emojicons);
-
-        if(!Function.checkPermission(ChatActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE)){
-            Function.requestPermission(ChatActivity.this,Manifest.permission.READ_EXTERNAL_STORAGE, 1);
+        if (!Function.checkPermission(ChatActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
+            Function.requestPermission(ChatActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE, 1);
         }
 
-        linearLayout = (LinearLayout) findViewById(R.id.linear);
-        mbtnadd = (Button) findViewById(R.id.btn2);
-        mbtnblock = (Button) findViewById(R.id.btn1);
+        initViews();
 
-
-        ImageView imgback = (ImageView) findViewById(R.id.up);
-
-        imgback.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
-
-        mRevealView = (LinearLayout) findViewById(R.id.reveal_items);
-        mRevealView.setVisibility(View.INVISIBLE);
+        getLastSeen();
 
         // startService(new Intent(ChatActivity.this, HomeService.class));
-
 
         String ns = Context.NOTIFICATION_SERVICE;
         NotificationManager nMgr = (NotificationManager) getSystemService(ns);
         nMgr.cancel(0);
 
-
         Function.callPermisstion(ChatActivity.this, 1);
         Function.cameraPermisstion(ChatActivity.this, 1);
+
+        getDataFromIntent();
+
+//        startServiceForStatus();)
+        ifEnterIsSend();
+
+        mLayoutManager = new LinearLayoutManager(this);
+        mLayoutManager.setStackFromEnd(true);
+        //mLayoutManager.setReverseLayout(true);
+        mRecyclerView.setLayoutManager(mLayoutManager);
+
+        //mRecyclerView.setHasFixedSize(true);
+        mRecyclerView.addItemDecoration(new VerticalSpaceItemDecoration(5));
+        mRecyclerView.setItemAnimator(new DefaultItemAnimator());
+        // ----Set autoscroll of listview when a new message arrives----//
+       /* mRecyclerView.setTranscriptMode(ListView.TRANSCRIPT_MODE_ALWAYS_SCROLL);
+        mRecyclerView.setStackFromBottom(true);*/
+
+        chatlist = new ArrayList<ChatMessage>();
+
+        callAdapter();
+
+        isStoragePermissionGranted();
+        //mRecyclerView.addOnItemTouchListener(this);
+
+        gestureDetector = new GestureDetectorCompat(this, new RecyclerViewDemoOnGestureListener());
+
+        final ChatMessage chatMessage = new ChatMessage(user1, AppPreferences.getFirstUsername(ChatActivity.this), user1, AppPreferences.getFirstUsername(ChatActivity.this),
+                groupName, "Start chat with " + FriendName, "" + 1, "", true);
+        chatMessage.setMsgID();
+        chatMessage.Date = CommonMethods.getCurrentDate();
+        chatMessage.Time = CommonMethods.getCurrentTime();
+        chatMessage.type = Message.Type.chat.name();
+        chatMessage.formID = String.valueOf(AppPreferences.getLoginId(ChatActivity.this));
+        msg_edittext.setText("");
+        fm.setVisibility(View.GONE);
+
+        if (chatlist.isEmpty()) {
+            chatlist.add(0, chatMessage);
+            chatAdapter.notifyDataSetChanged();
+        }
+
+        QBInit(groupName);
+        initConnectionListener();
+//        markMessageAsRead(privateChatDialog.getDialogId());
+
+        Log.v(TAG, "TEST 1 UNIVERSAL privateChatDialog :- " + privateChatDialog);
+
+        setListener();
+        keyboardVisible();
+//        getUserLastSeen();
+
+    }
+
+    private void getLastSeen() {
+
+       /* handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                //Do something after 100ms
+
+                Log.v(TAG, "QB status online from database QB_Friend_Id 9 dec :- " + QB_Friend_Id);
+                lastSeen = DatabaseHelper.getInstance(ChatActivity.this).getLastSeenQB(QB_Friend_Id);
+                Log.v(TAG, "QB status online from database new 9 dec :- " + lastSeen);
+                status.setText(lastSeen);
+            }
+        }, 100);
+
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+
+                final Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        //add your code here
+
+                        Log.v(TAG, "QB status online from database QB_Friend_Id 9 dec 2:- " + QB_Friend_Id);
+                        lastSeen = DatabaseHelper.getInstance(ChatActivity.this).getLastSeenQB(QB_Friend_Id);
+                        Log.v(TAG, "QB status online from database new 9 dec 2:- " + lastSeen);
+                        status.setText(lastSeen);
+                    }
+                }, 1000);
+            }
+        });
+*/
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                // TODO : Code for get last seen after every 1 secs
+                while (true) {
+                    try {
+                        Thread.sleep(1000);
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+
+                                Log.v(TAG, "QB status online from database QB_Friend_Id 9 dec 3:- " + QB_Friend_Id);
+                                lastSeen = DatabaseHelper.getInstance(ChatActivity.this).getLastSeenQB(QB_Friend_Id);
+
+                                Log.v(TAG, "QB status online from database new 9 dec 4:- " + lastSeen);
+                                status.setText(lastSeen);
+
+
+                            }
+                        });
+                    } catch (Exception e) {
+
+                    }
+                }
+            }
+        }).start();
+
+    }
+
+    public void callAdapter() {
+
+        if (groupName.equalsIgnoreCase("")) {
+            chatlist = DatabaseHelper.getInstance(ChatActivity.this).getChat("chat", FriendMobile);
+
+        } else {
+            chatlist = DatabaseHelper.getInstance(ChatActivity.this).getChat("group", groupName);
+        }
+        Log.v(TAG, "CHATLISTSS :- " + chatlist.toString());
+        chatAdapter = new ChatAdapter(ChatActivity.this, chatlist, this);
+        mRecyclerView.setAdapter(chatAdapter);
+    }
+
+    private void ifEnterIsSend() {
+
+        if (AppPreferences.getEnetrSend(ChatActivity.this).equalsIgnoreCase("1")) {
+
+            msg_edittext.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+                @Override
+                public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                    String message = msg_edittext.getEditableText().toString();
+                    if (!message.equalsIgnoreCase("")) {
+                        Log.d("ChatListData", chatlist.get(0).toString());
+                        Log.d("PrivacyItem", ">>>");
+
+                        if (groupName.equalsIgnoreCase("")) {
+
+//                            if (dvssssssssssssssssssaefaaaaaaaaaaa
+
+//                            if (privacy == true){
+//                                unblockpopup();
+//                            } else {
+
+                            sendTextMessage(message, "", "", 0, "0", "");
+                            sendStopTypingInPrivateChat();
+
+//                            }
+
+                        } else {
+                            sendGroupMessage(message, "", "", 0, "", "");
+                        }
+                    } else {
+                        Toast.makeText(ChatActivity.this, "Please enter message", Toast.LENGTH_LONG).show();
+                    }
+                    return true;
+                }
+            });
+        }
+    }
+
+    public void keyboardVisible() {
+
+//        Toast.makeText(getApplicationContext(), "Inside Keyboard visible ...", Toast.LENGTH_SHORT).show();
+
+        final View activityRootView = findViewById(R.id.list_parent);
+        activityRootView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                int heightDiff = activityRootView.getRootView().getHeight() - activityRootView.getHeight();
+                if (heightDiff > Function.dpToPx(ChatActivity.this, 200)) { // if more than 200 dp, it's probably a keyboard...
+                    // ... do something here
+
+//                    Toast.makeText(getApplicationContext(), "Keyboard is visible ...", Toast.LENGTH_SHORT).show();
+                } else {
+//                    Toast.makeText(getApplicationContext(), "Keyboard is not visible ...", Toast.LENGTH_SHORT).show();
+                    sendStopTypingInPrivateChat();
+                }
+            }
+        });
+
+    }
+
+/*
+
+    private void QBInit1(String groupName) {
+
+        chatService = QBChatService.getInstance();
+
+        initGlobalMessageListener();
+
+        Log.v(TAG, "onCreate ChatActivity on Thread ID = " + Thread.currentThread().getId());
+
+        QBChatMessage qbChatMessage = null;
+
+        if (getIntent().getAction().equalsIgnoreCase("PrivateChatClick")) {
+
+          */
+/*  privateChatDialog = (QBChatDialog) getIntent().getSerializableExtra(EXTRA_DIALOG_ID);
+
+            Log.v(TAG, "QB Chat Dialog otuside :- 1233   --- " + privateChatDialog);
+
+
+            List<Integer> occupants_id = new ArrayList<>();
+            occupants_id.add(QB_Friend_Id);
+
+//            onPresenceChanged();
+//            subscribeUserForStatus(QB_Friend_Id);
+//            readDeliverdStatus();
+
+            privateChatDialog.setOccupantsIds(occupants_id);*//*
+
+
+
+            Toast.makeText(getApplicationContext(), "Inside Private chat click", Toast.LENGTH_SHORT).show();
+
+            String dialog_id = getIntent().getStringExtra(EXTRA_DIALOG_ID);
+            Log.v(TAG, "ChatActivity dialog _id while click on ONE-TO-ONE chat :- " + dialog_id);
+
+            getQBChatDialogByDialogID(dialog_id, "ONE-TO-ONE chat");
+
+//            privateChatDialog = SerializationUtils.deserialize(qbChatDialogBytes);
+
+            Log.v(TAG, "QB Chat Dialog otuside :- 1233 deserialized  lunch --- " + privateChatDialog);
+
+//            privateChatDialog = (QBChatDialog) getIntent().getSerializableExtra(EXTRA_DIALOG_ID);
+//            qbChatMessage = (QBChatMessage) getIntent().getExtras().getSerializable("EXTRA_CHAT_MESSAGE");
+
+        } else if (getIntent().getAction().equalsIgnoreCase("GroupChatClick")) {
+
+            Toast.makeText(getApplicationContext(), "Inside Group chat click", Toast.LENGTH_SHORT).show();
+
+            String dialog_id = getIntent().getStringExtra(EXTRA_DIALOG_ID);
+            Log.v(TAG, "ChatActivity dialog _id while click on GROUP chat :- " + dialog_id);
+
+            getQBChatDialogByDialogID(dialog_id, "GROUP chat");
+
+        }
+
+        */
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ *//*
+
+        */
+/*   Created by me if two tab send dialdg id then this code will be used *//*
+
+
+        else if (getIntent().getAction().equalsIgnoreCase("fromContact")) {
+
+            Toast.makeText(getApplicationContext(), "Inside create dialog from contact click ...", Toast.LENGTH_SHORT).show();
+            Log.v(TAG, " INSIDE from contact creating dialog ");
+
+            privateChatDialog = (QBChatDialog) getIntent().getSerializableExtra(EXTRA_DIALOG_ID);
+
+            Log.v(TAG, "TEST 2 QB Chat Dialog from :- " + privateChatDialog);
+
+            if (privateChatDialog.getType().getCode() == 3) {
+
+                Log.v(TAG, " INSIDE CHAT ACTIVITY FOR PRIVATE CHAT ");
+
+                List<Integer> occupants_id = new ArrayList<>();
+                occupants_id.add(QB_Friend_Id);
+
+                onPresenceChanged();
+                subscribeUserForStatus(QB_Friend_Id);
+//                readDeliverdStatus();
+
+                privateChatDialog.setOccupantsIds(occupants_id);
+
+            } else if (privateChatDialog.getType().getCode() == 2) {
+
+                Log.v(TAG, "INSIDE CHAT ACTIVITY FOR GROUP CHAT");
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        joinGroupChat(privateChatDialog);
+                    }
+                });
+
+//            groupDialodId = privateChatDialog.getDialogId();
+
+//            getQBChatDialogByDialogID(groupDialodId, "", null);
+
+                Log.v(TAG, "TEST 3  Group dialog ID 1:- " + privateChatDialog.getId());
+                Log.v(TAG, " Group dialog ID 2:- " + groupDialodId);
+            }
+
+            Log.v(TAG, "TEST 4 deserialized dialog = " + privateChatDialog);
+
+            privateChatDialog.initForChat(QBChatService.getInstance());
+
+            chatMessageListener = new ChatMessageListener();
+//
+            privateChatDialog.addMessageListener(chatMessageListener);
+        }
+//        initChatConnectionListener();
+    }
+
+    private void getQBChatDialogByDialogID(String dialog_id, final String from) {
+
+        Log.v(TAG, "inside creating QBChatDialog in 1234 from:- " + from);
+
+        QBRestChatService.getChatDialogById(dialog_id).performAsync(new QBEntityCallback<QBChatDialog>() {
+            @Override
+            public void onSuccess(final QBChatDialog qbChatDialog, Bundle bundle) {
+
+                Log.v(TAG, "QB group Chat dialog in Chat Activity 1234:- " + qbChatDialog);
+
+                qbChatDialogBytes = SerializationUtils.serialize(qbChatDialog);
+
+                Log.v(TAG, "QBChatdialog TYPE in Chat Activity 1234:- " + privateChatDialog.getType());
+
+                Log.v(TAG, "TEST 5 privateChatDialog " + privateChatDialog);
+//                Log.v(TAG, "QB ChatMessage PrivateChat :- " + qbChatMessage);
+
+                if (privateChatDialog.getType().getCode() == 3) {
+
+                    Log.v(TAG, " INSIDE CHAT ACTIVITY FOR PRIVATE CHAT 1234 ");
+
+                    List<Integer> occupants_id = new ArrayList<>();
+                    occupants_id.add(QB_Friend_Id);
+
+                    privateChatDialog.setOccupantsIds(occupants_id);
+
+                    onPresenceChanged();
+                    subscribeUserForStatus(QB_Friend_Id);
+
+                } else if (privateChatDialog.getType().getCode() == 2) {
+
+                    Log.v(TAG, "INSIDE CHAT ACTIVITY FOR GROUP CHAT");
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            joinGroupChat(privateChatDialog);
+                        }
+                    });
+
+                    Log.v(TAG, "TEST 6  Group dialog ID 1:- " + privateChatDialog.getDialogId());
+                    Log.v(TAG, " Group dialog ID 2:- " + groupDialodId);
+                }
+
+                Log.v(TAG, "TEST 7 deserialized dialog 1234 :- " + privateChatDialog);
+
+                privateChatDialog.initForChat(QBChatService.getInstance());
+
+                chatMessageListener = new ChatMessageListener();
+//
+                privateChatDialog.addMessageListener(chatMessageListener);
+            }
+
+            @Override
+            public void onError(QBResponseException e) {
+
+                Log.v(TAG, "Error in getting QBChatDialog from dialod id " + e.getMessage());
+
+            }
+        });
+
+        initIsTypingListener();
+        initPrivateChatMessageListener();
+
+    }
+*/
+
+    private void QBInit(String groupName) {
+
+        // TODO: QBInit() iniitalize Quick blox data
+        chatService = QBChatService.getInstance();
+        privacyListsManager = chatService.getPrivacyListsManager();
+        initIsTypingListener();
+        Log.d("TRhisljsdjf ...  ", "  kkkkk   " + groupName);
+        if (groupName.equalsIgnoreCase("")) {
+            initMessageSentListener();
+        } else {
+//            groupMessageSend();
+        }
+
+        initPrivateChatMessageListener();
+        initGlobalMessageListener();
+
+        Log.v(TAG, "onCreate ChatActivity on Thread ID = " + Thread.currentThread().getId());
+
+        privateChatDialog = (QBChatDialog) getIntent().getSerializableExtra(EXTRA_DIALOG_ID);
+
+        privateChatDialog.initForChat(QBChatService.getInstance());
+
+        Log.v(TAG, "QB Chat Dialog from :- " + privateChatDialog);
+
+        if (privateChatDialog.getType().getCode() == 3) {
+
+            Log.v(TAG, " INSIDE CHAT ACTIVITY FOR PRIVATE CHAT ");
+
+            Log.v(TAG, "QB_Friend_Id in QBInit Method :-  " + QB_Friend_Id);
+
+            List<Integer> occupants_id = new ArrayList<>();
+            occupants_id.add(QB_Friend_Id);
+
+            onPresenceChanged();
+//            subscribeUserForStatus(QB_Friend_Id);
+//            readDeliverdStatus();
+            initMessageStatusManagerAndListener();
+
+            privateChatDialog.setOccupantsIds(occupants_id);
+/*
+
+            try {
+                privateChatDialog.readMessage(qbChatMessage);
+            } catch (XMPPException e) {
+                e.printStackTrace();
+            } catch (SmackException.NotConnectedException e) {
+                e.printStackTrace();
+            }
+*/
+
+//            markMessageAsRead(privateChatDialog.getDialogId());
+
+        } else if (privateChatDialog.getType().getCode() == 2) {
+
+            Log.v(TAG, "INSIDE CHAT ACTIVITY FOR GROUP CHAT");
+
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    joinGroupChat(privateChatDialog);
+                }
+            });
+
+//            groupDialodId = privateChatDialog.getDialogId();
+
+//            getQBChatDialogByDialogID(groupDialodId, "", null);
+
+            Log.v(TAG, " Group dialog ID 1:- " + privateChatDialog.getId());
+            Log.v(TAG, " Group dialog ID 2:- " + groupDialodId);
+        }
+
+        Log.v(TAG, "deserialized dialog = " + privateChatDialog);
+
+        privateChatDialog.initForChat(QBChatService.getInstance());
+
+        chatMessageListener = new ChatMessageListener();
+//
+        privateChatDialog.addMessageListener(chatMessageListener);
+
+//        initChatConnectionListener();
+    }
+
+    private void joinGroupChat(final QBChatDialog qbChatDialog) {
+
+        DiscussionHistory discussionHistory = new DiscussionHistory();
+        discussionHistory.setMaxStanzas(0);
+
+        final QBEntityCallback clbck = new QBEntityCallback<Void>() {
+            @Override
+            public void onSuccess(Void result, Bundle bundle) {
+
+                Log.v(TAG, "Joinning grp done");
+                Log.v(TAG, "Group joining completed ...");
+                Toast.makeText(getApplicationContext(), "Group join done", Toast.LENGTH_SHORT).show();
+
+                // add listeners
+                qbChatDialog.addMessageListener(groupChatDialogMessageListener);
+//                qbChatDialog.addParticipantListener(participantListener);
+                qbChatDialog.addMessageSentListener(groupChatDialogMessageSentListener);
+                qbChatDialog.addIsTypingListener(groupChatDialogTypingListener);
+            }
+
+            @Override
+            public void onError(final QBResponseException list) {
+                Log.e(TAG, "Group joining Error :- " + list.getMessage());
+                Snackbar.make(findViewById(android.R.id.content), R.string.connection_error, Snackbar.LENGTH_SHORT).show();
+                qbChatDialog.initForChat(QBChatService.getInstance());
+            }
+        };
+
+        qbChatDialog.join(discussionHistory, clbck);
+
+       /* qbChatDialog.join(discussionHistory, new QBEntityCallback() {
+            @Override
+            public void onSuccess(Object o, Bundle bundle) {
+
+                Log.v(TAG, "Joinning grp done" );
+                Log.v(TAG , "Group joining completed ...");
+                Toast.makeText(getApplicationContext(), "Group join done", Toast.LENGTH_SHORT).show();
+
+            }
+
+            @Override
+            public void onError(QBResponseException e) {
+
+                Log.v(TAG , "Group joining Error :- " + e.getMessage());
+                Snackbar.make(findViewById(android.R.id.content), R.string.connection_error, Snackbar.LENGTH_SHORT).show();
+
+            }
+        });*/
+
+    }
+
+    private void setToolbar() {
+
+        // TODO: setToolbar() method
+
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
+//        getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_arrow_back_white_24dp);
+    }
+
+    private void getDataFromIntent() {
+/*
+        if (getIntent().getAction().equalsIgnoreCase("ChatAct")) {
+
+            Toast.makeText(getApplicationContext(), "calling inside chat activity", Toast.LENGTH_SHORT).show();
+            allBeans = getIntent().getParcelableExtra("value");
+        } else if (getIntent().getAction().equalsIgnoreCase("PrivateChat")) {
+            allBeans = getIntent().getParcelableExtra("value");
+        } else if (getIntent().getAction().equalsIgnoreCase("GroupChat")) {
+            allBeans = getIntent().getParcelableExtra("value");
+        } else if (getIntent().getAction().equalsIgnoreCase("FavoriteAdapter")) {
+        }
+        */
+
+        // TODO: getDataFromIntent() get data from bundle
 
         allBeans = getIntent().getParcelableExtra("value");
 
         FriendStatus = allBeans.getFriendStatus();
         FriendName = allBeans.getFriendname();
-        FriendMobile = allBeans.getFriendmobile().replace(" ","").replace("+","");
+        FriendMobile = allBeans.getFriendmobile().replace(" ", "").replace("+", "");
+        MobileWithCountryCode = allBeans.getFriendmobile().replace(" ", "");
+        Log.v(TAG, "friend MobileWithCountryCode :- " + MobileWithCountryCode + " ---- " + FriendMobile);
+
         FriendImage = allBeans.getFriendimage();
         FriendId = allBeans.getFriendid();
         reciverlanguages = allBeans.getLanguages();
@@ -395,32 +844,38 @@ public class ChatActivity extends AnimRootActivity implements View.OnClickListen
 
         System.out.println("grpiddddd" + groupId);
         GroupImage = allBeans.getGroupImage();
+        QB_Friend_Id = allBeans.getFriendQB_id();
+/*
+        QBPrivacyListItem qbPrivacyListItem = new QBPrivacyListItem();
+        qbPrivacyListItem.setAllow(false);
+        qbPrivacyListItem.setType(QBPrivacyListItem.Type.USER_ID);
+        qbPrivacyListItem.setValueForType(QB_Friend_Id.toString());
 
+    */
         if (FriendName.matches("[0-9]+") && FriendName.length() > 9) {
             linearLayout.setVisibility(View.VISIBLE);
         } else {
             linearLayout.setVisibility(View.GONE);
         }
 
-        Log.d("UserList", FriendMobile + ">>>mob>>>" + FriendName + "/n" + FriendStatus + "/n" + groupName + "/n");
+        Log.v(TAG, "UserList :- " + FriendMobile + ">>>mob>>>" + FriendName + "/n" + FriendStatus + "/n" + groupName + "/n QB ID of user :- " + QB_Friend_Id);
         if (groupName.equalsIgnoreCase("")) {
             img_eye.setVisibility(View.VISIBLE);
-            if(Function.isStringInt(FriendName)){
-                toolbartext.setText("+"+FriendName);
-            }else{
+            if (Function.isStringInt(FriendName)) {
+                toolbartext.setText("+" + FriendName);
+            } else {
                 toolbartext.setText(FriendName);
             }
 
-            if(FriendImage == null){
+            if (FriendImage == null) {
 
-            }else
-            if (!FriendImage.equalsIgnoreCase("")) {
+            } else if (!FriendImage.equalsIgnoreCase("")) {
                 Picasso.with(ChatActivity.this).load(FriendImage).error(R.drawable.user_icon)
                         .resize(200, 200)
                         .into(conversationimage);
-
             }
         } else {
+
             img_eye.setVisibility(View.GONE);
             toolbartext.setText(groupName);
             if (GroupImage == null) {
@@ -433,26 +888,544 @@ public class ChatActivity extends AnimRootActivity implements View.OnClickListen
             }
         }
 
-
         user1 = AppPreferences.getMobileuser(getApplicationContext());
         user2 = FriendMobile;
         FriendMobileTWO = user2;
         Log.d("frndnumber", user2);
         senderName = AppPreferences.getFirstUsername(getApplicationContext());
 
-        String dummyDate = new DatabaseHelper(ChatActivity.this).getLastSeen(user2);
+        lastSeen = DatabaseHelper.getInstance(ChatActivity.this).getLastSeenQB(QB_Friend_Id);
+        Log.v(TAG, "QB status online from database 4444444444444 :- " + lastSeen);
+        status.setText(lastSeen);
+    }
 
-        if (dummyDate == null || dummyDate.equalsIgnoreCase("")) {
-            status.setVisibility(View.GONE);
-        } else if (dummyDate.equalsIgnoreCase("online")) {
-            status.setVisibility(View.VISIBLE);
-        } else {
-            status.setVisibility(View.VISIBLE);
-            Date date = new Date();
-            date.setTime(Long.parseLong(dummyDate));
-            lastseen = new TimeAgo(ChatActivity.this).timeAgo(date);
-            status.setText(new TimeAgo(ChatActivity.this).timeAgo(date));
+    private void initGlobalMessageListener() {
+
+        Log.v(TAG, " Inside initGlobalMessageListener()  -----" + " downloaded");
+
+
+        globalChatDialogMessageListener = new QBChatDialogMessageListener() {
+            @Override
+            public void processMessage(String dialogId, QBChatMessage qbChatMessage, Integer senderId) {
+
+                QBRestChatService.getChatDialogById(dialogId).performAsync(new QBEntityCallback<QBChatDialog>() {
+                    @Override
+                    public void onSuccess(QBChatDialog chatDialog, Bundle bundle) {
+                        Log.v(TAG, chatDialog.getType().toString() + " chat with id " + chatDialog.getDialogId() + " downloaded");
+
+                        Log.v(TAG, "\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n\n" +
+                                "GLOBAL MESSAGE LISTENER :--" + chatDialog
+                                + "\n\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+
+                        if (QBDialogType.PRIVATE.equals(chatDialog.getType())) {
+                            privateChatDialog = chatDialog;
+                            privateChatDialog.addMessageListener(privateChatDialogMessageListener);
+                            privateChatDialog.addMessageSentListener(privateChatDialogMessageSentListener);
+                            privateChatDialog.addIsTypingListener(privateChatDialogTypingListener);
+                        } else {
+                            groupChatDialog = chatDialog;
+                            groupChatDialog.addMessageListener(groupChatDialogMessageListener);
+                            groupChatDialog.addMessageSentListener(groupChatDialogMessageSentListener);
+                            groupChatDialog.addIsTypingListener(groupChatDialogTypingListener);
+                        }
+                    }
+
+                    @Override
+                    public void onError(QBResponseException e) {
+                        Log.v(TAG, "Error loading dialog from global message listener: " + e);
+                    }
+                });
+            }
+
+            @Override
+            public void processError(String dialogId, QBChatException e, QBChatMessage qbChatMessage, Integer senderId) {
+                Log.v(TAG, "Received error message to message listener :- " + e.getMessage());
+            }
+        };
+
+//        QBChatService.getInstance().getIncomingMessagesManager().addDialogMessageListener(globalChatDialogMessageListener);
+    }
+
+    private void sendStopTypingInPrivateChat() {
+
+
+        Log.v(TAG, "inside typing status and");
+        if (privateChatDialog == null) {
+            Log.v(TAG, "Please create private dialog first");
+            return;
         }
+
+        privateChatDialog.addIsTypingListener(privateChatDialogTypingListener);
+
+        try {
+            privateChatDialog.sendStopTypingNotification();
+        } catch (XMPPException | SmackException.NotConnectedException e) {
+            Log.v(TAG, "send stop typing error: " + e.getClass().getSimpleName());
+        }
+    }
+
+    private void initChatConnectionListener() {
+
+
+        chatConnectionListener = new VerboseQbChatConnectionListener(findViewById(android.R.id.content)) {
+            @Override
+            public void reconnectionSuccessful() {
+                super.reconnectionSuccessful();
+                /*
+                switch (privateChatDialog.getType()) {
+                    case GROUP:
+                        chatAdapter = null;
+                        // Join active room if we're in Group Chat
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+//                                joinGroupChat();
+                            }
+                        });
+                        break;
+                }*/
+            }
+        };
+    }
+
+    private void sendDialogId() {
+
+        Log.v(TAG, "TEST 9 CHAT Dialog sending result to Two Tab activity :- " + privateChatDialog);
+
+        Intent result = new Intent();
+        result.putExtra(EXTRA_DIALOG_ID, privateChatDialog);
+        setResult(RESULT_OK, result);
+
+    }
+
+    private void sendNotification(List<Integer> occupants, String normal_message, String senderNameNew, String sender) {
+
+        Log.v(TAG, "send Notification occupants :- " + occupants);
+        Log.v(TAG, "send Notification senderNameNew :- " + senderNameNew);
+        Log.v(TAG, "send Notification senderNo :- " + sender);
+
+        StringifyArrayList<Integer> userIds = new StringifyArrayList<>();
+
+        userIds.addAll(occupants);
+
+        QBEvent qbEvent = new QBEvent();
+        qbEvent.setNotificationType(QBNotificationType.PUSH);
+        qbEvent.setEnvironment(QBEnvironment.DEVELOPMENT);
+        qbEvent.setUserIds(userIds);
+
+        JSONObject json = new JSONObject();
+        try {
+
+            json.put("message_new", normal_message);
+            json.put("qb_sender", senderNameNew);
+            json.put("qb_sender_no", sender); // sender no
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+//        qbEvent.setMessage(json.toString());
+        Log.v(TAG, "send Notification qbEvent :- " + qbEvent);
+        Log.v(TAG, "send Notification Json  :- " + json.toString());
+        qbEvent.setMessage(json.toString());
+
+        QBPushNotifications.createEvent(qbEvent).performAsync(new QBEntityCallback<QBEvent>() {
+            @Override
+            public void onSuccess(QBEvent qbEvent, Bundle bundle) {
+                Log.v(TAG, "onSuccess.............");
+                Log.v(TAG, "onSuccess.............qbEvent" + qbEvent);
+                Log.v(TAG, "onSuccess.............bundle" + bundle);
+                QBSettings.getInstance().setEnablePushNotification(true);
+            }
+
+            @Override
+            public void onError(QBResponseException e) {
+
+
+                Log.v(TAG, "onError.............");
+                Log.v(TAG, "onError.............e" + e);
+            }
+        });
+    }
+
+    private void sendChatMessage(final String text, final ChatMessage chatMessage) {
+        // TODO: send chatMessage() method for sending message to QuickBlox
+
+        Log.d(TAG, "ChatMessage save inside QB message send :- " + chatMessage.toString());
+//        try {hii
+
+        QBChatMessage qbChatMessage = new QBChatMessage();
+        qbChatMessage.setBody(text);
+        qbChatMessage.setProperty(PROPERTY_SAVE_TO_HISTORY, "1");
+        qbChatMessage.setDateSent(System.currentTimeMillis() / 1000);
+        qbChatMessage.setMarkable(true);
+        qbChatMessage.setSenderId(chatMessage.sender_QB_Id);
+
+        chatMessage.qbMessageId = qbChatMessage.getId();
+        Log.v(TAG, "QB Message n Dialog Id :- \n" + "1. " + chatMessage.qbMessageId + "\n2. " + chatMessage.dialog_id);
+
+        chatMessage.dialog_id = privateChatDialog.getDialogId();
+
+        chatMessage.qbChatDialogBytes = SerializationUtils.serialize(privateChatDialog);
+
+        Log.v(TAG, "QB Serialize sending dialog bytes data  :- " + chatMessage.qbChatDialogBytes);
+        Log.v(TAG, "QB Message n Dialog Id :- \n" + "1. " + chatMessage.qbMessageId + "\n2. " + chatMessage.dialog_id);
+        Log.d(TAG, "ChatMessage save inside QB message send 1:- " + chatMessage.toString());
+
+        if (chatMessage.groupName.equalsIgnoreCase("")) {
+            qbChatMessage.setRecipientId(chatMessage.receiver_QB_Id);
+        }
+
+        if (!QBDialogType.PRIVATE.equals(privateChatDialog.getType()) && !privateChatDialog.isJoined()) {
+            Toast.makeText(getApplicationContext(), "You're still joining a group chat, please wait a bit", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (chatMessage.groupName.equalsIgnoreCase("")) {
+            privateChatDialog.addMessageSentListener(privateChatDialogMessageSentListener);
+        } else {
+            privateChatDialog.addMessageSentListener(groupChatDialogMessageSentListener);
+
+        }
+        try {
+
+            Log.e(TAG, "privateChatDialog while sending message to prsonal chat :- " + privateChatDialog);
+            Log.e(TAG, "Messsage body sendQB CHAT Message :- " + qbChatMessage);
+            privateChatDialog.sendMessage(qbChatMessage);  // msg send to all online / offline users
+//            rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+            if (chatMessage.groupName.equalsIgnoreCase("")) {
+
+//dsvvvvvvvvvvvvvvsvsv
+                byte[] qbChatDialogBytes = SerializationUtils.serialize(privateChatDialog);
+                Log.v(TAG, "QB Serialize dialog to data 1 :- " + chatMessage.qbChatDialogBytes);
+                Log.v(TAG, "QB Serialize dialog to data 2 :- " + qbChatDialogBytes);
+
+//                QBChatDialog yourObject = SerializationUtils.deserialize(chatMessage.qbChatDialogBytes);
+                QBChatDialog yourObject = SerializationUtils.deserialize(qbChatDialogBytes);
+                Log.v(TAG, "QB Serialize data to dialog 2 :- " + yourObject);
+//sdvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+
+//                Toast.makeText(getApplicationContext(), "inside sending message to one to one chat ...", Toast.LENGTH_SHORT).show();
+                DatabaseHelper.getInstance(ChatActivity.this).insertChat(chatMessage);
+                DatabaseHelper.getInstance(ChatActivity.this).UpdateMsgRead("1", chatMessage.receiver);
+                chatAdapter.add(chatMessage, chatAdapter.getItemCount() - 1);
+                mRecyclerView.scrollToPosition(chatAdapter.getItemCount() - 1);
+            } else {
+//                Toast.makeText(getApplicationContext(), "inside sending message to Groups chat ...", Toast.LENGTH_SHORT).show();
+                DatabaseHelper.getInstance(ChatActivity.this).insertChat(chatMessage);
+                DatabaseHelper.getInstance(ChatActivity.this).UpdateMsgRead("1", chatMessage.receiver);
+                chatAdapter.add(chatMessage, chatAdapter.getItemCount() - 1);
+                mRecyclerView.scrollToPosition(chatAdapter.getItemCount() - 1);
+            }
+
+
+            if (TwoTab_Activity.instance == null && ChatActivity.instance == null) {
+
+                Log.e(TAG, "send notification ");
+//                        generateNofification(chatMessage, context);
+            }
+//fbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+            sendNotification(privateChatDialog.getOccupants(), chatMessage.body, chatMessage.senderName, chatMessage.sender);
+
+            MediaPlayer mp = MediaPlayer.create(ChatActivity.this, R.raw.tick);
+            if (AppPreferences.getConvertTone(ChatActivity.this).equalsIgnoreCase("false")) {
+                mp.stop();
+            } else {
+                mp.start();
+            }
+
+        } catch (SmackException.NotConnectedException e) {
+            e.printStackTrace();
+            Log.e(TAG, "Error in sendMessage(chatMessage) to QuickBlox 2:- " + e.getMessage());
+        }
+    }
+
+    public void sendGroupMessage(String message, String file, String fileName, int qbFileId, String qbFileUid, String fileUrl) {
+
+        // TODO: sendGroupMessage() method for sending group message to QuickBlox
+
+        Log.v(TAG, "Inside text message sendTextMessage \n File :- " + file);
+        Log.v(TAG, "Filename :- " + fileName);
+        Log.v(TAG, "QB file id :- " + qbFileId);
+        Log.v(TAG, "QB qbFileUid :- " + qbFileUid);
+        Log.v(TAG, "User QB id  i.e. Sender id :- " + AppPreferences.getQBUserId(ChatActivity.this));
+
+        // final ChatMessage chatMessage = new ChatMessage(FriendName, FriendName, FriendName, FriendName,
+        final ChatMessage chatMessage = new ChatMessage(user1, AppPreferences.getFirstUsername(ChatActivity.this), user2, FriendName,
+                groupName, message, "" + random.nextInt(1000), file, true);
+        chatMessage.setMsgID();
+        chatMessage.body = message;
+        chatMessage.fileName = fileName;
+        chatMessage.Date = CommonMethods.getCurrentDate();
+        chatMessage.Time = CommonMethods.getCurrentTime();
+        chatMessage.type = Message.Type.groupchat.name();
+        chatMessage.formID = String.valueOf(AppPreferences.getLoginId(ChatActivity.this));
+        chatMessage.senderlanguages = AppPreferences.getUSERLANGUAGE(ChatActivity.this);
+        chatMessage.reciverlanguages = reciverlanguages;
+        chatMessage.groupid = groupId;
+        chatMessage.Groupimage = GroupImage;
+        chatMessage.dialog_id = groupDialodId;
+        chatMessage.lastseen = new DatabaseHelper(ChatActivity.this).getLastSeen(user2);
+        onlineStatus = new DatabaseHelper(ChatActivity.this).getLastSeen(user2);
+        chatMessage.sender_QB_Id = AppPreferences.getQBUserId(ChatActivity.this);
+        msg_edittext.setText("");
+
+        chatMessage.msgStatus = "0";
+
+        if (!fileName.equalsIgnoreCase("")) {
+
+            String fileExte = Function.getFileExtention(fileName);
+            String folderType;
+
+            String msg = chatMessage.body;
+            if ((fileExte.equalsIgnoreCase("png") || fileExte.equalsIgnoreCase("jpg") || fileExte.equalsIgnoreCase("jpeg")) && msg.contains(AppConstants.KEY_CONTACT)) {
+                folderType = "SpeakAme Contact";
+                chatMessage.Contact = msg;
+            } else if (fileExte.equalsIgnoreCase("png") || fileExte.equalsIgnoreCase("jpg") || fileExte.equalsIgnoreCase("jpeg")) {
+                folderType = "SpeakAme Image";
+                chatMessage.Image = file;
+            } else if (fileExte.equalsIgnoreCase("mp4") || fileExte.equalsIgnoreCase("3gp")) {
+                folderType = "SpeakAme Video";
+                chatMessage.Video = file;
+            } else if (fileExte.equalsIgnoreCase("pdf")) {
+                folderType = "SpeakAme Document";
+                chatMessage.Document = file;
+            } else {
+                folderType = "SpeakAme Test";
+            }
+
+            File SpeakAmeDirectory = Function.createFolder(folderType);
+            chatMessage.fileName = Function.generateNewFileName(fileExte);
+            chatMessage.files = Function.copyFile(file, SpeakAmeDirectory + "/" + chatMessage.fileName);
+
+            chatMessage.qbFileUploadId = qbFileId;
+            chatMessage.qbFileUid = qbFileUid;
+
+            Log.v(TAG, "Image upload 1 :- " + SpeakAmeDirectory + "\n" + chatMessage.fileName + "\n" + chatMessage.files);
+            Log.v(TAG, "Image upload 2 :- " + SpeakAmeDirectory + "\n" + chatMessage.fileName + "\n" + chatMessage.qbFileUploadId);
+
+        } else {
+
+        }
+
+        Log.v(TAG, "ChatMessage save group message :- " + chatMessage.toString());
+        Log.v(TAG, "ChatMessage Save 1:- " + chatMessage.toString());
+        chatMessage.qbChatDialogBytes = SerializationUtils.serialize(privateChatDialog);
+
+        String body = gson.toJson(chatMessage);
+
+//        sendChatMessage(chatMessage.toString(), chatMessage);
+        sendChatMessage(body, chatMessage);
+
+/*        DatabaseHelper.getInstance(ChatActivity.this).insertChat(chatMessage);
+        DatabaseHelper.getInstance(ChatActivity.this).UpdateMsgRead("1", chatMessage.receiver);
+
+        mRecyclerView.scrollToPosition(chatAdapter.getItemCount() - 1);*/
+    }
+
+    public void sendTextMessage(String message, String file, String fileName, int qbFileId, String qbFileUid, String fileUrl) {
+
+        // TODO: sendTextMessage() method for sending private chat message to QuickBlox
+
+        Log.v(TAG, "Inside text message sendTextMessage \n File :- " + file);
+        Log.v(TAG, "Filename :- " + fileName);
+        Log.v(TAG, "QB file id :- " + qbFileId);
+        Log.v(TAG, "QB qbFileUid :- " + qbFileUid);
+        Log.v(TAG, "User QB id  i.e. Sender id :- " + AppPreferences.getQBUserId(ChatActivity.this));
+        String MyImage = "";
+        String MyStatus = "";
+        if (AppPreferences.getPicprivacy(ChatActivity.this).equalsIgnoreCase(AppConstants.EVERYONE)) {
+            MyImage = AppPreferences.getUserprofile(ChatActivity.this);
+            MyStatus = AppPreferences.getUserstatus(ChatActivity.this);
+        } else if (AppPreferences.getPicprivacy(ChatActivity.this).equalsIgnoreCase(AppConstants.MYFRIENDS)) {
+            if (!Function.isStringInt(FriendName)) {
+                MyImage = AppPreferences.getUserprofile(ChatActivity.this);
+                MyStatus = AppPreferences.getUserstatus(ChatActivity.this);
+            }
+        }
+
+        final ChatMessage chatMessage = new ChatMessage(user1, AppPreferences.getFirstUsername(ChatActivity.this), user2, FriendName,
+                groupName, message, "" + random.nextInt(1000), file, true);
+        chatMessage.setMsgID();
+        chatMessage.body = message;
+        chatMessage.fileName = fileName;
+        chatMessage.Date = CommonMethods.getCurrentDate();
+        chatMessage.Time = CommonMethods.getCurrentTime();
+        chatMessage.type = Message.Type.chat.name();
+        chatMessage.formID = String.valueOf(AppPreferences.getLoginId(ChatActivity.this));
+        chatMessage.senderlanguages = AppPreferences.getUSERLANGUAGE(ChatActivity.this);
+        chatMessage.reciverlanguages = reciverlanguages;
+        chatMessage.MyImage = MyImage;
+        chatMessage.userStatus = MyStatus;
+        chatMessage.lastseen = new DatabaseHelper(ChatActivity.this).getLastSeen(user2);
+        chatMessage.receiver_QB_Id = QB_Friend_Id;
+        chatMessage.sender_QB_Id = AppPreferences.getQBUserId(ChatActivity.this);
+        chatMessage.friend_QB_Id = QB_Friend_Id;
+        chatMessage.readStatus = "0";
+
+        onlineStatus = new DatabaseHelper(ChatActivity.this).getLastSeen(user2);
+        //chatMessage.fileData = fileData;
+        msg_edittext.setText("");
+        fm.setVisibility(View.GONE);
+        //TwoTab_Activity activity = new TwoTab_Activity();
+
+        chatMessage.ReciverFriendImage = FriendImage;
+        chatMessage.msgStatus = "0";
+
+        Log.v(TAG, "TOTF MESSAGE Testing message files before :- " + chatMessage.files);
+        chatMessage.files = "";
+        Log.v(TAG, "TOTF MESSAGE Testing message files after :- " + chatMessage.files);
+
+        if (!fileName.equalsIgnoreCase("")) {
+
+            String fileExte = Function.getFileExtention(fileName);
+            String folderType;
+
+            String msg = chatMessage.body;
+            if ((fileExte.equalsIgnoreCase("png") || fileExte.equalsIgnoreCase("jpg") || fileExte.equalsIgnoreCase("jpeg")) && msg.contains(AppConstants.KEY_CONTACT)) {
+                folderType = "SpeakAme Contact";
+                chatMessage.Contact = msg;
+            } else if (fileExte.equalsIgnoreCase("png") || fileExte.equalsIgnoreCase("jpg") || fileExte.equalsIgnoreCase("jpeg")) {
+                folderType = "SpeakAme Image";
+                chatMessage.Image = qbFileUid;
+            } else if (fileExte.equalsIgnoreCase("mp4") || fileExte.equalsIgnoreCase("3gp")) {
+                folderType = "SpeakAme Video";
+                chatMessage.Video = qbFileUid;
+            } else if (fileExte.equalsIgnoreCase("pdf")) {
+                folderType = "SpeakAme Document";
+                chatMessage.Document = qbFileUid;
+            } else {
+                folderType = "SpeakAme Test";
+            }
+
+            File SpeakAmeDirectory = Function.createFolder(folderType);
+            chatMessage.fileName = Function.generateNewFileName(fileExte);
+            chatMessage.files = Function.copyFile(file, SpeakAmeDirectory + "/" + chatMessage.fileName);
+
+            chatMessage.qbFileUploadId = qbFileId;
+            chatMessage.qbFileUid = qbFileUid;
+
+            Log.d(TAG, "Files name : while sending data :- " + SpeakAmeDirectory + "\n -- " + chatMessage.fileName + "\n -- " + chatMessage.files);
+            Log.d(TAG, SpeakAmeDirectory + "\n" + chatMessage.fileName + "\n" + chatMessage.qbFileUploadId);
+
+        } else {
+
+            /*XmppConneceted activity = new XmppConneceted();
+            activity.getmService().xmpp.sendMessage(chatMessage);*/
+        }
+//        chatMessage.qbChatDialogBytes = SerializationUtils.serialize(privateChatDialog);
+//        Log.v(TAG, "QB Serialized dialog to data ````````````-=-- " + chatMessage.qbChatDialogBytes);
+        Log.v(TAG, "ChatMessage Save 1:- " + chatMessage.toString());
+
+        String body = gson.toJson(chatMessage);
+
+
+//        sendChatMessage(chatMessage.toString(), chatMessage);
+
+        Log.v(TAG, "ChatMessage Save 1:- " + chatMessage.toString());
+        BlockUserDataBaseHelper blockUserDataBaseHelper = new BlockUserDataBaseHelper(ChatActivity.this);
+        Log.d(TAG, " FriendNameMessa : " + FriendName + " FriendMobileMessa : " + FriendMobile + " FriendOcupantIdMessa : " + QB_Friend_Id);
+        ArrayList<Integer> allBlockedUsers = blockUserDataBaseHelper.getAllBlockedUsers();
+        Log.d(TAG, " GetAllBlokedUsersMessa .. " + allBlockedUsers.toString());
+        if (allBlockedUsers.contains(QB_Friend_Id)) {
+            Log.d(TAG, " That user is blocked");
+            unblockpopup();
+        } else {
+//            String body = gson.toJson(chatMessage);
+            sendChatMessage(body, chatMessage);
+            Log.d(TAG, "That user is Unblocked");
+        }
+
+    }
+
+    private void initConnectionListener() {
+
+        chatConnectionListener = new ConnectionListener() {
+            @Override
+            public void connected(XMPPConnection xmppConnection) {
+                Log.i(TAG, "connected()");
+            }
+
+            @Override
+            public void authenticated(XMPPConnection xmppConnection, boolean b) {
+                Log.i(TAG, "authenticated()");
+            }
+
+            @Override
+            public void connectionClosed() {
+                Log.i(TAG, "connectionClosed()");
+            }
+
+            @Override
+            public void connectionClosedOnError(Exception e) {
+
+            }
+
+            @Override
+            public void reconnectionSuccessful() {
+
+            }
+
+            @Override
+            public void reconnectingIn(int i) {
+
+            }
+
+            @Override
+            public void reconnectionFailed(Exception e) {
+
+            }
+        };
+
+        chatService.addConnectionListener(chatConnectionListener);
+    }
+
+    private void initViews() {
+
+        // TODO: initViews() views initialization
+
+        instance = this;
+        qbService = new QBService();
+//        registerQbChatListeners();
+        gson = new Gson();
+        toolbartext = (TextView) findViewById(R.id.toolbar_title);
+        status = (TextView) findViewById(R.id.status);
+        conversationimage = (ImageView) findViewById(R.id.conversation_contact_photo);
+        status.setSelected(true);
+        status.setEllipsize(TextUtils.TruncateAt.MARQUEE);
+        status.setSingleLine(true);
+
+        toolbartext.setText("Chat list");
+        toolbartext.setSingleLine();
+        Typeface tf1 = Typeface.createFromAsset(getAssets(), "Raleway-Regular.ttf");
+        toolbartext.setTypeface(tf1);
+        img_eye = (ImageView) findViewById(R.id.iv_chat_eye);
+        smily_img = (ImageView) findViewById(R.id.iv_smily);
+        msg_edittext = (EmojiconEditText) findViewById(R.id.messageEditText);
+        mRecyclerView = (RecyclerView) findViewById(R.id.my_recycler_view);
+        sendButton = (FloatingActionButton) findViewById(R.id.fab_sendMessageButton);
+//        sendButton = (ImageButton) findViewById(R.id.sendMessageButton);
+        btn1 = (ImageButton) findViewById(R.id.pic_id);
+        btn2 = (ImageButton) findViewById(R.id.vidoid);
+        btn3 = (ImageButton) findViewById(R.id.docid);
+        btn4 = (ImageButton) findViewById(R.id.contactid);
+        fm = (FrameLayout) findViewById(R.id.emojicons);
+
+        linearLayout = (LinearLayout) findViewById(R.id.linear);
+        mbtnadd = (Button) findViewById(R.id.btn2);
+        mbtnblock = (Button) findViewById(R.id.btn1);
+
+        coordinateLayout = (CoordinatorLayout) findViewById(R.id.coordinateLayout);
+        relative_layout = (RelativeLayout) findViewById(R.id.relative_layout);
+
+        mRevealView = (LinearLayout) findViewById(R.id.reveal_items);
+        mRevealView.setVisibility(View.INVISIBLE);
+
+        random = new Random();
+        Log.v(TAG, "Recipient Id :- " + QB_Friend_Id);
+
+    }
+
+    private void setListener() {
 
         msg_edittext.addTextChangedListener(new TextWatcher() {
 
@@ -460,85 +1433,170 @@ public class ChatActivity extends AnimRootActivity implements View.OnClickListen
             public void afterTextChanged(Editable s) {
                 if (s.length() >= 1 || s.toString().trim().length() >= 1) {
                     sendButton.setVisibility(View.VISIBLE);
+                    handler.postDelayed(input_finish_checker, delay);
                 } else {
                     sendButton.setVisibility(View.GONE);
                 }
-                if (null != typingChangedListener) {
-                    if (!currentTypingState) {
-                        typingChangedListener.onIsTypingModified(msg_edittext, true);
-                        currentTypingState = true;
-                    }
+//                sendIsTypingInPrivateChat();
+//                initGlobalMessageListener();
+                if (groupName.equalsIgnoreCase("")) {
+//                    qbService.sendIsTypingInPrivateChat(privateChatDialog, privateChatDialogTypingListener);
 
-                    handler.removeCallbacks(stoppedTypingNotifier);
-                    handler.postDelayed(stoppedTypingNotifier, TypingInterval);
+                    try {
+                        sendIsTypingInPrivateChat();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
             }
 
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
+                if (count <= 0) {
+                    Log.v(TAG, "edit text is blank ....:- " + QB_Friend_Id);
+                    sendStopTypingInPrivateChat();
+                    status.setText(lastSeen);
+                }
 
             }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
+//                sendStopTypingInPrivateChat();
 
+                handler.removeCallbacks(input_finish_checker);
+                Log.v(TAG, "Count after text changed edit text....:- " + count);
             }
 
         });
 
 
-        setOnTypingModified(new OnTypingModified() {
+        btn1.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onIsTypingModified(EditText view, boolean isTyping) {
-                XmppConneceted activity = new XmppConneceted();
+            public void onClick(View v) {
+                Intent intent = new Intent(ChatActivity.this, SendImageActivity.class);
+                intent.setAction("gallary");
+                intent.putExtra("user1", user1);
+                intent.putExtra("user2", user2);
+                intent.putExtra("FriendName", FriendName);
+                intent.putExtra("requestCode", SENDIMAGE);
+                startActivityForResult(intent, SENDIMAGE);
+                revalmethod();
 
-                Log.d("frndnumber", user2);
-                MyXMPP.Composing composing = (isTyping) ? MyXMPP.Composing.typing : MyXMPP.Composing.pause;
-
-                activity.getmService().xmpp.sendIsComposing(composing, user2);
             }
         });
 
-
-        XmppConneceted activity = new XmppConneceted();
-        activity.getmService().xmpp.setStatusModified(new MyXMPP.TypingModified() {
+        btn2.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onIsTypingModified(final String s, final String reciver) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-
-                        Log.d("dummyDat>>>", s + ":::" + reciver + "/" + user2);
-                        if (!reciver.equals(user2)) {
-                            status.setVisibility(View.GONE);
-                        } else if (s.equalsIgnoreCase("offline")) {
-                            String dummyDate = new DatabaseHelper(ChatActivity.this).getLastSeen(user2);
-                            Log.d("dummyDat>>>", s + ":Lastseen::" + dummyDate);
-                            if (dummyDate == null || dummyDate.equalsIgnoreCase("")) {
-                                status.setVisibility(View.GONE);
-                            } else if (dummyDate.equalsIgnoreCase("online")) {
-                                status.setVisibility(View.VISIBLE);
-                            } else {
-                                status.setVisibility(View.VISIBLE);
-                                Date date = new Date();
-                                date.setTime(Long.parseLong(dummyDate));
-                                lastseen = new TimeAgo(ChatActivity.this).timeAgo(date);
-
-                            }
-                            status.setText(lastseen);
-
-                        } else {
-                            status.setVisibility(View.VISIBLE);
-                            status.setText(s);
-                        }
-
-
-                    }
-                });
-
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
+                intent.setType("video/*");
+                //intent.setAction(Intent.ACTION_GET_CONTENT);
+                startActivityForResult(Intent.createChooser(intent, "Select Video"), REQUEST_TAKE_GALLERY_VIDEO);
+                revalmethod();
             }
         });
+
+        btn3.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+//                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+//                //intent.setType("application/pdf");
+//                String[] mimetypes = {"application|text"};
+//                intent.setType("application|text");
+//                //intent.putExtra(Intent.EXTRA_MIME_TYPES, mimetypes);
+//                intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
+//                startActivityForResult(Intent.createChooser(intent, "Select file"), PICKFILE_REQUEST_CODE);
+
+/*
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+//                intent.setType("application*/
+/*|text*/
+/*");
+                Uri uri = Uri.parse(Environment.getExternalStorageDirectory().getPath()
+                        + "/Documents/");
+//                intent.setData(uri);
+//                intent.setType("text/csv");
+                startActivityForResult(Intent.createChooser(intent, "Open with ..."), PICKFILE_REQUEST_CODE);
+//                startActivityForResult(Intent.createChooser(intent, "Select file"), PICKFILE_REQUEST_CODE);
+*/
+                Uri uri = Uri.parse(Environment.getExternalStorageDirectory().getPath()
+                        + "/Documents/");
+                Uri uri1 = Uri.parse(Environment.getDownloadCacheDirectory().getPath().toString() + "/Documents/");
+                Log.v(TAG, "Uri :- " + uri);
+                Log.v(TAG, "Uri 1 :- " + uri1);
+
+                Intent chooser = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                chooser.addCategory(Intent.CATEGORY_OPENABLE);
+                chooser.setDataAndType(uri, "application/pdf");
+//                chooser.addCategory(Intent.CATEGORY_DEFAULT);
+//                chooser.setDataAndType(uri, "resource/folder");
+//                chooser.setDataAndType(uri, "text/csv");
+                startActivityForResult(Intent.createChooser(chooser, "Select File"), PICKFILE_REQUEST_CODE);
+
+                revalmethod();
+            }
+        });
+
+        btn4.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
+                startActivityForResult(intent, PICK_CONTACT);
+                revalmethod();
+            }
+        });
+
+        mbtnblock.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                blockpopup();
+            }
+        });
+
+        mbtnadd.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(ChatActivity.this, Addnewcontact_activity.class);
+                intent.putExtra("contactnumber", FriendMobileTWO);
+                startActivity(intent);
+            }
+        });
+
+        mRevealView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+
+                return false;
+            }
+        });
+
+        coordinateLayout.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+
+                if (mRevealView.getVisibility() == View.VISIBLE) {
+                    mRevealView.setVisibility(View.INVISIBLE);
+                    hidden = true;
+                }
+                return true;
+            }
+        });
+
+        relative_layout.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+
+                if (mRevealView.getVisibility() == View.VISIBLE) {
+                    mRevealView.setVisibility(View.INVISIBLE);
+                    hidden = true;
+                }
+                return true;
+            }
+        });
+
 
         img_eye.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -563,9 +1621,9 @@ public class ChatActivity extends AnimRootActivity implements View.OnClickListen
                     InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                     imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
                 }
-
             }
         });
+
         msg_edittext.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -575,151 +1633,28 @@ public class ChatActivity extends AnimRootActivity implements View.OnClickListen
         });
         setEmojiconFragment(false);
 
-        random = new Random();
-
         sendButton.setOnClickListener(this);
 
-        if (AppPreferences.getEnetrSend(ChatActivity.this).equalsIgnoreCase("1")) {
+    }
 
-            msg_edittext.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-                @Override
-                public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                    String message = msg_edittext.getEditableText().toString();
-                    if (!message.equalsIgnoreCase("")) {
-                        Log.d("ChatListData", chatlist.get(0).toString());
-                        XmppConneceted activity = new XmppConneceted();
+    private void sendIsTypingInPrivateChat() {
 
 
-                        Log.d("PrivacyItem", ">>>");
-                        if (groupName.equalsIgnoreCase("")) {
-                            boolean isAllow = activity.getmService().xmpp.checkUserBlock(user2);
-                            if (!isAllow) {
-                                unblockpopup();
-                            } else {
-                                sendTextMessage(message, "", "");
-                            }
-                        } else {
-                            sendGroupMessage(message, "", "");
-                        }
-                    } else {
-                        Toast.makeText(ChatActivity.this, "Please enter message", Toast.LENGTH_LONG).show();
-                    }
-                    return true;
-                }
-            });
-
+        Log.v(TAG, "inside typing status and");
+        if (privateChatDialog == null) {
+            Log.v(TAG, "Please create private dialog first");
+            return;
         }
 
+        privateChatDialog.addIsTypingListener(privateChatDialogTypingListener);
 
-        mLayoutManager = new LinearLayoutManager(this);
-        mLayoutManager.setStackFromEnd(true);
-        //mLayoutManager.setReverseLayout(true);
-        mRecyclerView.setLayoutManager(mLayoutManager);
-
-        //mRecyclerView.setHasFixedSize(true);
-        mRecyclerView.addItemDecoration(new VerticalSpaceItemDecoration(5));
-        mRecyclerView.setItemAnimator(new DefaultItemAnimator());
-        // ----Set autoscroll of listview when a new message arrives----//
-       /* mRecyclerView.setTranscriptMode(ListView.TRANSCRIPT_MODE_ALWAYS_SCROLL);
-        mRecyclerView.setStackFromBottom(true);*/
-
-        chatlist = new ArrayList<ChatMessage>();
-
-        if (groupName.equalsIgnoreCase("")) {
-            chatlist = DatabaseHelper.getInstance(ChatActivity.this).getChat("chat", FriendMobile);
-        } else {
-            chatlist = DatabaseHelper.getInstance(ChatActivity.this).getChat("group", groupName);
-
+        try {
+            privateChatDialog.sendIsTypingNotification();
+        } catch (XMPPException | SmackException.NotConnectedException e) {
+            Log.v(TAG, "send typing error: " + e.getClass().getSimpleName());
         }
 
-        Log.d("CHATLISTSS", chatlist.toString());
-        chatAdapter = new ChatAdapter(ChatActivity.this, chatlist, this);
-        mRecyclerView.setAdapter(chatAdapter);
-        isStoragePermissionGranted();
-
-        //mRecyclerView.addOnItemTouchListener(this);
-
-        gestureDetector = new GestureDetectorCompat(this, new RecyclerViewDemoOnGestureListener());
-
-        final ChatMessage chatMessage = new ChatMessage(user1, AppPreferences.getFirstUsername(ChatActivity.this), user1, AppPreferences.getFirstUsername(ChatActivity.this),
-                groupName, "Start chat with " + FriendName, "" + 1, "", true);
-        chatMessage.setMsgID();
-        chatMessage.Date = CommonMethods.getCurrentDate();
-        chatMessage.Time = CommonMethods.getCurrentTime();
-        chatMessage.type = Message.Type.chat.name();
-        chatMessage.formID = String.valueOf(AppPreferences.getLoginId(ChatActivity.this));
-        msg_edittext.setText("");
-        fm.setVisibility(View.GONE);
-        if (chatlist.isEmpty()) {
-            chatlist.add(0, chatMessage);
-            chatAdapter.notifyDataSetChanged();
-        }
-
-
-        btn1.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(ChatActivity.this, SendImageActivity.class);
-                intent.setAction("gallary");
-                intent.putExtra("user1", user1);
-                intent.putExtra("user2", user2);
-                intent.putExtra("FriendName", FriendName);
-                intent.putExtra("requestCode", SENDIMAGE);
-                startActivityForResult(intent, SENDIMAGE);
-                revalmethod();
-
-            }
-        });
-        btn2.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
-                intent.setType("video/*");
-                //intent.setAction(Intent.ACTION_GET_CONTENT);
-                startActivityForResult(Intent.createChooser(intent, "Select Video"), REQUEST_TAKE_GALLERY_VIDEO);
-                revalmethod();
-            }
-        });
-        btn3.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                //intent.setType("application/pdf");
-                String[] mimetypes = {"application/*|text/*"};
-                intent.setType("application/*|text/*");
-                //intent.putExtra(Intent.EXTRA_MIME_TYPES, mimetypes);
-                intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
-                startActivityForResult(Intent.createChooser(intent, "Select file"), PICKFILE_REQUEST_CODE);
-                revalmethod();
-            }
-        });
-        btn4.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
-                startActivityForResult(intent, PICK_CONTACT);
-                revalmethod();
-
-            }
-        });
-
-
-        mbtnblock.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                blockpopup();
-            }
-        });
-        mbtnadd.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(ChatActivity.this, Addnewcontact_activity.class);
-                intent.putExtra("contactnumber", FriendMobileTWO);
-                startActivity(intent);
-            }
-        });
-
-
+//        qbService.sendIsTypingInPrivateChat(privateChatDialog, privateChatDialogTypingListener);
     }
 
     @Override
@@ -733,7 +1668,8 @@ public class ChatActivity extends AnimRootActivity implements View.OnClickListen
             MenuItem menuItem = menu.findItem(R.id.user);
             menuItem.setVisible(false);//
 
-        }*/
+        }
+        */
         return true;
 
     }
@@ -753,31 +1689,46 @@ public class ChatActivity extends AnimRootActivity implements View.OnClickListen
             return true;
         }
         if (id == R.id.overflow) {
+
             View menuItemView = findViewById(R.id.overflow);
             final PopupMenu popup = new PopupMenu(this, menuItemView);
             popup.getMenuInflater().inflate(R.menu.menu_chatmenu, popup.getMenu());
-            if (groupId  != null &&  groupName  != null){
+
+            final MenuItem menuItem22 = popup.getMenu().findItem(R.id.block);
+
+            BlockUserDataBaseHelper blockUserDataBaseHelper = new BlockUserDataBaseHelper(ChatActivity.this);
+            ArrayList<QBPrivacyListItem> items = new ArrayList<QBPrivacyListItem>();
+            ArrayList<Integer> allBlockedUsersNew = blockUserDataBaseHelper.getAllBlockedUsers();
+            Log.d(TAG, " all users list how got bloced " + allBlockedUsersNew.toString());
+            menuItem22.setTitle("Block");
+            for (int i = 0; i < allBlockedUsersNew.size(); i++) {
+                Log.d(TAG, " Loop lo s " + allBlockedUsersNew.get(i) + " : " + QB_Friend_Id);
+
+                if (allBlockedUsersNew.get(i).toString().equalsIgnoreCase(String.valueOf(QB_Friend_Id))) {
+                    menuItem22.setTitle("UnBlock");
+                } else {
+                    menuItem22.setTitle("Block");
+                }
+            }
+
+            if (groupId != null && groupName != null) {
                 MenuItem menuItem = popup.getMenu().findItem(R.id.vireprof);
                 menuItem.setTitle("Group info");
                 MenuItem menuItem2 = popup.getMenu().findItem(R.id.block);
                 menuItem2.setVisible(false);//
-
             }
+
             popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                 public boolean onMenuItemClick(MenuItem item) {
-
-
-
                     switch (item.getItemId()) {
                         case R.id.vireprof:
-                         if (groupName.equalsIgnoreCase("")) {
+                            if (groupName.equalsIgnoreCase("")) {
                                 Intent intent = new Intent(ChatActivity.this, ViewContact_DetailActivity.class);
                                 intent.putExtra("name", FriendName);
                                 intent.putExtra("number", FriendMobile);
                                 intent.putExtra("status", FriendStatus);
                                 intent.putExtra("image", FriendImage);
                                 intent.putExtra("value", "");
-
                                 startActivity(intent);
                             } else {
                                 Intent intent = new Intent(ChatActivity.this, ViewGroupDetail_Activity.class);
@@ -827,8 +1778,18 @@ public class ChatActivity extends AnimRootActivity implements View.OnClickListen
                         case R.id.block:
 //                            Intent intent3 = new Intent(TwoTab_Activity.this, CreateGroupChatActivity.class);
 //                            startActivity(intent2);
+//                            blockpopup();
 
-                            blockpopup();
+                            if (item.getTitle().toString().equalsIgnoreCase("Block")) {
+                                Log.d(TAG, " menu item text get IF " + item.getTitle());
+                                blockpopup();
+                                menuItem22.setTitle("UnBlock");
+                            } else if (item.getTitle().toString().equalsIgnoreCase("UnBlock")) {
+                                Log.d(TAG, " menu item text get ELSE" + item.getTitle());
+                                unblockpopup();
+                                menuItem22.setTitle("Block");
+                            }
+
                             break;
 
                     }
@@ -842,11 +1803,8 @@ public class ChatActivity extends AnimRootActivity implements View.OnClickListen
 
             return true;
         }
-
-
         return super.onOptionsItemSelected(item);
     }
-
 
     public void chathistoryDialog() {
         final Dialog markerDialog = new Dialog(this, R.style.RadioDialogTheme);
@@ -894,7 +1852,6 @@ public class ChatActivity extends AnimRootActivity implements View.OnClickListen
             }
         });
 
-
         img_on1.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -917,7 +1874,6 @@ public class ChatActivity extends AnimRootActivity implements View.OnClickListen
                 return true;
             }
         });
-
 
         btn_done.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -948,6 +1904,7 @@ public class ChatActivity extends AnimRootActivity implements View.OnClickListen
 
                         for (int i = 0; i < dateWiseChatList.size(); i++) {
                             Log.d("ChatList>>>", dateWiseChatList.get(i).toString());
+                            Log.d(TAG, "Get Chat history :- " + dateWiseChatList.get(i).toString());
 
                             String Sender = dateWiseChatList.get(i).sender;
                             String Sendername = dateWiseChatList.get(i).senderName;
@@ -971,7 +1928,6 @@ public class ChatActivity extends AnimRootActivity implements View.OnClickListen
                             } catch (Exception e) {
                             }
 
-
                             Finaldata.append(setDate);
                             Finaldata.append(", ");
                             Finaldata.append(Time);
@@ -987,7 +1943,7 @@ public class ChatActivity extends AnimRootActivity implements View.OnClickListen
                     } else {
                         dateWiseChatList = DatabaseHelper.getInstance(ChatActivity.this).getDateWiseChat("group", groupName, date);
                         for (int i = 0; i < dateWiseChatList.size(); i++) {
-                            Log.d(TAG, "ChatListGroup :- " +dateWiseChatList.get(i).toString());
+                            Log.d(TAG, "ChatListGroup :- " + dateWiseChatList.get(i).toString());
 
                             String Sender = dateWiseChatList.get(i).sender;
                             String Sendername = dateWiseChatList.get(i).senderName;
@@ -997,7 +1953,7 @@ public class ChatActivity extends AnimRootActivity implements View.OnClickListen
                             String Date = dateWiseChatList.get(i).Date;
                             String Message = dateWiseChatList.get(i).body;
 
-                            Log.v(TAG, "~~~~~~~ Group CHAT ~~~~~~~~\nSender Name :- " +Sendername + "\n Message :- " + Message + "\nDate & Time :- " + Date +" at " +Time );
+                            Log.v(TAG, "~~~~~~~ Group CHAT ~~~~~~~~\nSender Name :- " + Sendername + "\n Message :- " + Message + "\nDate & Time :- " + Date + " at " + Time);
 
                             SimpleDateFormat formatter = new SimpleDateFormat("yyyy MM dd");
                             Date datee = null;
@@ -1042,8 +1998,6 @@ public class ChatActivity extends AnimRootActivity implements View.OnClickListen
                         // DrawerDialog();
                     }
                 } else if (img_on1.getVisibility() == View.GONE && img_on2.getVisibility() == View.VISIBLE) {
-
-
                     String date = "";
                     if (rd1.isChecked()) {
                         date = CommonMethods.getCalculatedDate(CommonMethods.getCurrentDate(), "yyyy MM dd", 5);
@@ -1065,6 +2019,7 @@ public class ChatActivity extends AnimRootActivity implements View.OnClickListen
 /*if(chatlist.contains(date)){
 chatlist.remove();
 }*/
+                        callAdapter();
 
                         chatAdapter.notifyDataSetChanged();
                         chatAdapter.notifyItemRangeChanged(0, chatlist.size());
@@ -1072,15 +2027,13 @@ chatlist.remove();
                     } else {
                         DatabaseHelper.getInstance(ChatActivity.this).ChatDelete_ByDate("group", groupName, date);
                         chatAdapter.notifyDataSetChanged();
+                        callAdapter();
                     }
                     Toast.makeText(getApplicationContext(), "Deleted chat", Toast.LENGTH_LONG).show();
-
-
                 }
-
-
             }
         });
+
         btn_cancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -1096,18 +2049,15 @@ chatlist.remove();
 
         File cacheDirectory = Environment.getExternalStorageDirectory();
 
-        File cacheDir = new File(cacheDirectory.getPath() + "/Speakame");
-
+        File cacheDir = new File(cacheDirectory.getPath() + "/SpeakAme");
 
         if (!cacheDir.exists())
             cacheDir.mkdirs();
-
         Log.e("dir", cacheDir.toString());
-
 
         FileOutputStream fos;
         try {
-            String a = cacheDir + "/SpeakameChatHistory" + ".txt";
+            String a = cacheDir + "/SpeakAmeChatHistory" + ".txt";
             Log.e("files", a);
             File myFile = new File(a);
             try {
@@ -1121,8 +2071,6 @@ chatlist.remove();
             myOutWriter.close();
             fos.flush();
             fos.close();
-
-
             //deleteFile(myFile.toString(),mContext);
             return myFile;
         } catch (Exception e) {
@@ -1135,17 +2083,16 @@ chatlist.remove();
     public void PriviewmsgDialog(String sorcountry, String descountry, final String message) {
 
         ListCountry country = new ListCountry();
-        String sorcountrycode = country.getCode(ChatActivity.this,sorcountry.trim());
-        if(sorcountrycode.equalsIgnoreCase("")){
+        String sorcountrycode = country.getCode(ChatActivity.this, sorcountry.trim());
+        if (sorcountrycode.equalsIgnoreCase("")) {
             sorcountrycode = "en";
         }
-        String descountrycode = country.getCode(ChatActivity.this,descountry.trim());
-        if(descountrycode.equalsIgnoreCase("")){
+        String descountrycode = country.getCode(ChatActivity.this, descountry.trim());
+        if (descountrycode.equalsIgnoreCase("")) {
             descountrycode = "en";
         }
 
         final Dialog markerDialog = new Dialog(this, R.style.RadioDialogTheme);
-
         markerDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         Window window = markerDialog.getWindow();
 //        window.setBackgroundDrawable(getResources().getDrawable(R.drawable.rounded_corner_dialog));
@@ -1162,7 +2109,7 @@ chatlist.remove();
             Log.d("TranslateText", "Connecting to " + e.getMessage());
         }*/
 
-        TextTranslater.getInstance().translate(ChatActivity.this,sorcountrycode, descountrycode, message, new VolleyCallback() {
+        TextTranslater.getInstance().translate(ChatActivity.this, sorcountrycode, descountrycode, message, new VolleyCallback() {
             @Override
             public void backResponse(final String response) {
                 if (response.equalsIgnoreCase("")) {
@@ -1188,32 +2135,26 @@ chatlist.remove();
             }
 
         });
+
         btn_send.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                String message = msg_edittext.getEditableText().toString();
                 if (!message.equalsIgnoreCase("")) {
-                    XmppConneceted activity = new XmppConneceted();
-
 
                     if (groupName.equalsIgnoreCase("")) {
-                        boolean isAllow = activity.getmService().xmpp.checkUserBlock(user2);
-                        if (!isAllow) {
-                            unblockpopup();
-                        } else {
-                            sendTextMessage(message, "", "");
-                        }
+                        sendTextMessage(message, "", "", 0, "0", "");
                     } else {
-                        sendGroupMessage(message, "", "");
+                        sendGroupMessage(message, "", "", 0, "", "");
                     }
+
                 } else {
                     Toast.makeText(ChatActivity.this, "Please enter message", Toast.LENGTH_LONG).show();
                 }
                 markerDialog.dismiss();
-
-
             }
         });
+
         btn_cancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -1240,205 +2181,67 @@ chatlist.remove();
         }
     }
 
-    public void sendTextMessage(String message, String file, String fileName) {
-        String MyImage = "";
-        String MyStatus = "";
-        if(AppPreferences.getPicprivacy(ChatActivity.this).equalsIgnoreCase(AppConstants.EVERYONE)){
-            MyImage = AppPreferences.getUserprofile(ChatActivity.this);
-            MyStatus = AppPreferences.getUserstatus(ChatActivity.this);
-        }else if(AppPreferences.getPicprivacy(ChatActivity.this).equalsIgnoreCase(AppConstants.MYFRIENDS)){
-            if(!Function.isStringInt(FriendName)){
-                MyImage = AppPreferences.getUserprofile(ChatActivity.this);
-                MyStatus = AppPreferences.getUserstatus(ChatActivity.this);
-            }
-        }
-
-        final ChatMessage chatMessage = new ChatMessage(user1, AppPreferences.getFirstUsername(ChatActivity.this), user2, FriendName,
-                groupName, message, "" + random.nextInt(1000), file, true);
-        chatMessage.setMsgID();
-        chatMessage.body = message;
-        chatMessage.fileName = fileName;
-        chatMessage.Date = CommonMethods.getCurrentDate();
-        chatMessage.Time = CommonMethods.getCurrentTime();
-        chatMessage.type = Message.Type.chat.name();
-        chatMessage.formID = String.valueOf(AppPreferences.getLoginId(ChatActivity.this));
-        chatMessage.senderlanguages = AppPreferences.getUSERLANGUAGE(ChatActivity.this);
-        chatMessage.reciverlanguages = reciverlanguages;
-        chatMessage.MyImage = MyImage;
-        chatMessage.userStatus = MyStatus;
-        chatMessage.lastseen = new DatabaseHelper(ChatActivity.this).getLastSeen(user2);
-        //chatMessage.fileData = fileData;
-        msg_edittext.setText("");
-        fm.setVisibility(View.GONE);
-        //TwoTab_Activity activity = new TwoTab_Activity();
-
-
-        chatMessage.ReciverFriendImage = FriendImage;
-        chatMessage.msgStatus = "0";
-
-        if (!fileName.equalsIgnoreCase("")) {
-
-            String fileExte = Function.getFileExtention(fileName);
-            String folderType;
-
-            String msg = chatMessage.body;
-            if ((fileExte.equalsIgnoreCase("png") || fileExte.equalsIgnoreCase("jpg") || fileExte.equalsIgnoreCase("jpeg")) && msg.contains(AppConstants.KEY_CONTACT)) {
-                folderType = "SpeakaMeContact";
-            } else if (fileExte.equalsIgnoreCase("png") || fileExte.equalsIgnoreCase("jpg") || fileExte.equalsIgnoreCase("jpeg")) {
-                folderType = "SpeakaMeImage";
-            } else if (fileExte.equalsIgnoreCase("mp4") || fileExte.equalsIgnoreCase("3gp")) {
-                folderType = "SpeakaMeVideo";
-            } else if (fileExte.equalsIgnoreCase("pdf")) {
-                folderType = "SpeakaMeDocument";
-            } else {
-                folderType = "SpeakaMeTest";
-            }
-
-
-            File SpeakaMeDirectory = Function.createFolder(folderType);
-            chatMessage.fileName = Function.generateNewFileName(fileExte);
-            chatMessage.files = Function.copyFile(file, SpeakaMeDirectory +"/"+ chatMessage.fileName );
-
-
-           /* File file2= null;
-            try {
-                file2 = Function.decodeBase64BinaryToFile(SpeakaMeDirectory.toString(), Function.generateNewFileName(fileExte), file);
-                chatMessage.fileName = file2.getAbsolutePath();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }*/
-
-            Log.d("IMAGEPATH filename",SpeakaMeDirectory+"\n"+chatMessage.fileName+"\n"+chatMessage.files);
-
-        }else{
-
-
-            /*XmppConneceted activity = new XmppConneceted();
-            activity.getmService().xmpp.sendMessage(chatMessage);*/
-
-        }
-
-        Log.d("ChatMessage save",chatMessage.toString());
-       /* if(chatMessage.fileName.contains("mp4") || chatMessage.fileName.contains("jpg")|| chatMessage.fileName.contains("pdf")){
-            chatMessage.files = chatMessage.fileName;
-        }*/
-        DatabaseHelper.getInstance(ChatActivity.this).insertChat(chatMessage);
-        DatabaseHelper.getInstance(ChatActivity.this).UpdateMsgRead("1", chatMessage.receiver);
-        chatAdapter.add(chatMessage, chatAdapter.getItemCount() - 1);
-        mRecyclerView.scrollToPosition(chatAdapter.getItemCount()- 1);
-
-    }
-
-    public void sendGroupMessage(String message, String file, String fileName) {
-
-        // final ChatMessage chatMessage = new ChatMessage(FriendName, FriendName, FriendName, FriendName,
-        final ChatMessage chatMessage = new ChatMessage(user1, AppPreferences.getFirstUsername(ChatActivity.this), user2, FriendName,
-                groupName, message, "" + random.nextInt(1000), file, true);
-        chatMessage.setMsgID();
-        chatMessage.body = message;
-        chatMessage.fileName = fileName;
-        chatMessage.Date = CommonMethods.getCurrentDate();
-        chatMessage.Time = CommonMethods.getCurrentTime();
-        chatMessage.type = Message.Type.groupchat.name();
-        chatMessage.formID = String.valueOf(AppPreferences.getLoginId(ChatActivity.this));
-        chatMessage.senderlanguages = AppPreferences.getUSERLANGUAGE(ChatActivity.this);
-        chatMessage.reciverlanguages = reciverlanguages;
-        chatMessage.groupid = groupId;
-        chatMessage.Groupimage = GroupImage;
-        chatMessage.lastseen = new DatabaseHelper(ChatActivity.this).getLastSeen(user2);
-        msg_edittext.setText("");
-
-
-        chatMessage.msgStatus = "0";
-
-        if (!fileName.equalsIgnoreCase("")) {
-
-            String fileExte = Function.getFileExtention(fileName);
-            String folderType;
-
-            String msg = chatMessage.body;
-            if ((fileExte.equalsIgnoreCase("png") || fileExte.equalsIgnoreCase("jpg") || fileExte.equalsIgnoreCase("jpeg")) && msg.contains(AppConstants.KEY_CONTACT)) {
-                folderType = "SpeakaMeContact";
-            } else if (fileExte.equalsIgnoreCase("png") || fileExte.equalsIgnoreCase("jpg") || fileExte.equalsIgnoreCase("jpeg")) {
-                folderType = "SpeakaMeImage";
-            } else if (fileExte.equalsIgnoreCase("mp4") || fileExte.equalsIgnoreCase("3gp")) {
-                folderType = "SpeakaMeVideo";
-            } else if (fileExte.equalsIgnoreCase("pdf")) {
-                folderType = "SpeakaMeDocument";
-            } else {
-                folderType = "SpeakaMeTest";
-            }
-
-
-            File SpeakaMeDirectory = Function.createFolder(folderType);
-            chatMessage.fileName = Function.generateNewFileName(fileExte);
-            chatMessage.files = Function.copyFile(file, SpeakaMeDirectory +"/"+ chatMessage.fileName );
-
-            Log.d("IMAGEPATH filename",SpeakaMeDirectory+"\n"+chatMessage.fileName+"\n"+chatMessage.files);
-
-        }else{
-
-
-        }
-
-        Log.d("ChatMessage save",chatMessage.toString());
-       /* if(chatMessage.fileName.contains("mp4") || chatMessage.fileName.contains("jpg")|| chatMessage.fileName.contains("pdf")){
-            chatMessage.files = chatMessage.fileName;
-        }*/
-        DatabaseHelper.getInstance(ChatActivity.this).insertChat(chatMessage);
-        DatabaseHelper.getInstance(ChatActivity.this).UpdateMsgRead("1", chatMessage.receiver);
-        chatAdapter.add(chatMessage, chatAdapter.getItemCount() + 1);
-        mRecyclerView.scrollToPosition(chatAdapter.getItemCount()- 1);
-
-
-
-    }
-
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Override
     public void onClick(View v) {
+
         switch (v.getId()) {
-            case R.id.sendMessageButton:
+//            case R.id.sendMessageButton:
+            case R.id.fab_sendMessageButton:
+
+                sendStopTypingInPrivateChat();
+
+                Log.v(TAG, "Recipient Id :- " + QB_Friend_Id);
                 String message = msg_edittext.getEditableText().toString();
+
                 if (!message.equalsIgnoreCase("")) {
-                    Log.d("ChatListData", chatlist.get(0).toString());
-                    XmppConneceted activity = new XmppConneceted();
 
+                    if (Function.isConnectingToInternet(ChatActivity.this)) {
 
-                    Log.d("PrivacyItem", ">>>");
-                    if (groupName.equalsIgnoreCase("")) {
-                        boolean isAllow = activity.getmService().xmpp.checkUserBlock(user2);
-                        if (!isAllow) {
-                            unblockpopup();
+                        Log.v(TAG, "Recipient Id :- " + QB_Friend_Id);
+
+                        if (groupName.equalsIgnoreCase("")) {
+
+                            sendTextMessage(message, "", "", 0, "0", "");
+
                         } else {
-                           // mLayoutManager.scrollToPosition(chatlist.size());
-                            sendTextMessage(message, "", "");
+                            // mLayoutManager.scrollToPosition(chatlist.size());
+                            sendGroupMessage(message, "", "", 0, "", "");
                         }
+
+//                        sendChatMessage(message, QB_Friend_Id);
+//                        sendMessageToQuickBlox(message, "", "", 0);
+
                     } else {
-                       // mLayoutManager.scrollToPosition(chatlist.size());
-                        sendGroupMessage(message, "", "");
+                        Toast.makeText(ChatActivity.this, "Internet not Connected.", Toast.LENGTH_LONG).show();
                     }
+
                 } else {
                     Toast.makeText(ChatActivity.this, "Please enter message", Toast.LENGTH_LONG).show();
                 }
                 break;
+
             case R.id.bubble_layout_parent:
+
                 int idx = mRecyclerView.getChildPosition(v);
 
                 ChatMessage data = chatAdapter.getItem(idx);
                 View innerContainer = v.findViewById(R.id.bubble_layout);
-                innerContainer.setTransitionName("innerContainer" + "_" + data.msgid);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    innerContainer.setTransitionName("innerContainer" + "_" + data.msgid);
+                }
 
                 if (actionMode != null) {
                     myToggleSelection(idx);
                     return;
                 }
 
-
                 Intent startIntent = new Intent(this, ChatActivity.class);
                 startIntent.putExtra("value", allBeans);
-                ActivityOptions options = ActivityOptions
-                        .makeSceneTransitionAnimation(this, innerContainer, "innerContainer");
+                ActivityOptions options = null;
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                    options = ActivityOptions
+                            .makeSceneTransitionAnimation(this, innerContainer, "innerContainer");
+                }
                 this.startActivity(startIntent, options.toBundle());
                 break;
         }
@@ -1447,6 +2250,8 @@ chatlist.remove();
     @Override
     public void onBackPressed() {
         super.onBackPressed();
+        sendDialogId();
+        sendStopTypingInPrivateChat();
         startActivity(new Intent(this, TwoTab_Activity.class));
     }
 
@@ -1454,34 +2259,36 @@ chatlist.remove();
 
         //Log.d("onActivityResult", requestCode + "::" + resultCode);
 
-        String message = "";
-       // String file = "";
-        String fileName = "";
-        String filePath = "";
+        File qbFile = null;
 
 
         if (resultCode == RESULT_OK) {
 
             if (requestCode == ADDCONTACT) {
+
                 chatAdapter.onActivityResult(requestCode, resultCode, data);
 
-            }else if (requestCode == SENDIMAGE) {
+            } else if (requestCode == SENDIMAGE) {
+
                 message = data.getStringExtra("msg");
                 String filepath = data.getStringExtra("file");
-                Log.d("file>>", filepath);
+                Log.d(TAG, "file>>" + filepath);
                 filePath = filepath;
                 File file1 = new File(filepath);
+                qbFile = file1;
                 fileName = file1.getName();
-                Log.d("file>1>", fileName);
-                filepath = filepath.replace(" ","");
+                Log.d(TAG, "file>1>" + fileName);
+                filepath = filepath.replace(" ", "");
                 // file=filePath;
 
-                  //  file = filePath;
-                    //file = Function.encodeFileToBase64Binary(filepath);
+                //  file = filePath;
+                //file = Function.encodeFileToBase64Binary(filepath);
+//                sendImageToQB(fileName);
+//                bkjbjbjb
 
             } else if (requestCode == REQUEST_TAKE_GALLERY_VIDEO) {
-                Uri selectedImageUri = data.getData();
 
+                Uri selectedImageUri = data.getData();
                 // MEDIA GALLERY
                 String selectedImagePath = getPath(selectedImageUri);
                 //selectedImagePath = selectedImagePath.replace(" ","");
@@ -1489,13 +2296,15 @@ chatlist.remove();
                     message = "";
                     filePath = selectedImagePath;
                     File file1 = new File(selectedImagePath);
+                    qbFile = file1;
                     fileName = file1.getName();
 
                     //file = selectedImagePath;
 
-                   // Log.d("filebase64", file.toString());
+                    // Log.d("filebase64", file.toString());
                 }
             } else if (requestCode == PICK_CONTACT) {
+
                 if (resultCode == Activity.RESULT_OK) {
 
                     Uri uri = data.getData();
@@ -1503,12 +2312,14 @@ chatlist.remove();
                     Cursor contentCursor = contentResolver.query(uri, null, null, null, null);
 
                     if (contentCursor.moveToFirst()) {
+
                         String id = contentCursor.getString(contentCursor.getColumnIndexOrThrow(ContactsContract.Contacts._ID));
 
                         String hasPhone =
                                 contentCursor.getString(contentCursor.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER));
 
                         if (hasPhone.equalsIgnoreCase("1")) {
+
                             Cursor phones = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,
                                     ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = " + id, null, null);
                             phones.moveToFirst();
@@ -1516,7 +2327,7 @@ chatlist.remove();
                             String contactName = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
                             String picUrl = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.PHOTO_URI));
                             // long contactId = phones.getLong(phones.getColumnIndex("_ID"));
-                            Log.i("phoneNUmber", "The phone number is " + contactNumber + contactName + " picUrl" + picUrl);
+                            Log.i(TAG, "The phone number is " + contactNumber + contactName + " picUrl" + picUrl);
 
                             message = contactName + AppConstants.KEY_CONTACT + contactNumber;
 
@@ -1542,10 +2353,12 @@ chatlist.remove();
                             // Bitmap bitmap = BitmapFactory.decodeByteArray(photoByte, 0, photoByte.length);
                             // Getting Caching directory
                             //File cacheDirectory = getBaseContext().getCacheDir();
-                            File SpeakaMeDirectory = Function.createFolder("SpeakaMeContact");
+                            File SpeakAmeDirectory = Function.createFolder("SpeakAme Contact");
 
                             // Temporary file to store the contact files
-                            File tmpFile = new File(SpeakaMeDirectory.getPath() + "/contact.png");
+                            File tmpFile = new File(SpeakAmeDirectory.getPath() + "/contact.png");
+
+                            qbFile = tmpFile;
 
                             // The FileOutputStream to the temporary file
                             try {
@@ -1565,8 +2378,9 @@ chatlist.remove();
                             }
 
                             filePath = tmpFile.getPath();
-                            Log.d("contactImage", tmpFile.getPath());
+                            Log.d(TAG, "contactImage" + tmpFile.getPath());
                             fileName = tmpFile.getName();
+
                             /*String photoPath = null;
                             Uri uri1 = null;
                             Bitmap bitmap = null;
@@ -1591,7 +2405,7 @@ chatlist.remove();
                             File cacheDirectory = getBaseContext().getCacheDir();
 
                             // Temporary file to store the contact files
-                            File tmpFile = new File(cacheDirectory.getPath() + "/SpeakaMe" + new Random().nextInt(100) + "img.png");
+                            File tmpFile = new File(cacheDirectory.getPath() + "/SpeakAme" + new Random().nextInt(100) + "img.png");
 
                             // The FileOutputStream to the temporary file
                             try {
@@ -1624,70 +2438,99 @@ chatlist.remove();
 
                             }*/
 
+                        } else {
 
-                        }else {
                             Toast.makeText(ChatActivity.this, "Contact number is not available!", Toast.LENGTH_LONG).show();
                             return;
+
                         }
                     }
                     //  super.onActivityResult(requestCode, resultCode, data);
                 }
             } else if (requestCode == PICKFILE_REQUEST_CODE) {
+
                 Uri selectedImageUri = data.getData();
-                Log.d("selectedImagePath", selectedImageUri.toString());
+                Log.v(TAG, "Document sending path URI :- " + selectedImageUri.toString());
                 // MEDIA GALLERY
                 //String selectedImagePath = getPathFile(ChatActivity.this, selectedImageUri);
+
+
                 String selectedImagePath = GetFilePath.getPath(ChatActivity.this, selectedImageUri);
                 //selectedImagePath = selectedImagePath.replace(" ","");
-                Log.d("selectedImagePath", selectedImagePath);
+                Log.v(TAG, "Document sending path in ofpj :- " + selectedImagePath);
+
                 if (selectedImagePath != null) {
                     File file1 = new File(selectedImagePath);
+                    qbFile = file1;
                     message = file1.getName();
+//                    message = "";
                     filePath = selectedImagePath;
                     fileName = file1.getName();
-
-                   // file = selectedImagePath;
-                        //file = Function.encodeFileToBase64Binary(selectedImagePath);
-
+                    // file = selectedImagePath;
+                    //file = Function.encodeFileToBase64Binary(selectedImagePath);
                 }
             }
-
-           // byte[] fileData = Function.fileToByte(filePath);
-
-            XmppConneceted activity = new XmppConneceted();
-
             int fileSize = Function.getFileSize(filePath);
-            Log.d("fileSize", groupName+">>>" + fileSize);
+            Log.d(TAG, "fileSize" + groupName + ">>>" + fileSize);
             //if(fileSize < ) {
-                if (groupName.equalsIgnoreCase("")) {
-                    boolean isAllow = true;
-                    try {
-                        isAllow = activity.getmService().xmpp.checkUserBlock(user2);
-                    } catch (Exception e) {
-                    }
-                    if (!isAllow) {
-                        unblockpopup();
-                    } else {
-                        sendTextMessage(message, filePath, fileName);
-                    }
-                } else {
-                    sendGroupMessage(message, filePath, fileName);
+
+            Boolean fileIsPublic = false;
+
+            QBContent.uploadFileTask(qbFile, fileIsPublic, null, new QBProgressCallback() {
+                @Override
+                public void onProgressUpdate(int i) {
+
                 }
-           /* }else {
+            }).performAsync(new QBEntityCallback<QBFile>() {
+                @Override
+                public void onSuccess(QBFile qbFile, Bundle bundle) {
 
-            }*/
+                    Log.i(TAG, ">>> QBFile:" + qbFile.toString());
 
+                    Log.v(TAG, "public url:" + qbFile.getPublicUrl());
+                    Log.v(TAG, "private url:" + qbFile.getPrivateUrl());
+                    //
+                    Log.v(TAG, "public url static:" + QBFile.getPublicUrlForUID(qbFile.getUid()));
+                    Log.v(TAG, "private url static:" + QBFile.getPrivateUrlForUID(qbFile.getUid()));
+                    Log.v(TAG, "QB file uploaded ID 1 :- " + qbFile.getId());
+                    Log.v(TAG, "QB file uploaded U_ID 2 :- " + qbFile.getUid());
+//                        Log.i(TAG, "QB file uploaded U_ID 2 :- " + qbFile.get());
+                    qbFileId = qbFile.getId();
+                    qbFileUid = qbFile.getUid();
+                    fileUrl = QBFile.getPrivateUrlForUID(qbFile.getUid());
+
+                    Log.v(TAG, "QB file upload ID 1 :- " + qbFileId);
+                    Log.v(TAG, "QB file upload U_ID 2 :- " + qbFileUid);
+                    Log.v(TAG, "QB file upload U_ID 3 :- " + fileUrl);
+
+                    if (groupName.equalsIgnoreCase("")) {
+
+                        Log.v(TAG, "Inside sending private chat message:- " + fileUrl);
+                        sendTextMessage(message, filePath, fileName, qbFileId, qbFileUid, fileUrl);
+
+//                        cxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+
+                    } else {
+                        Log.v(TAG, "Inside sending group chat message:- " + fileUrl);
+                        sendGroupMessage(message, filePath, fileName, qbFileId, qbFileUid, fileUrl);
+                    }
+                }
+
+                @Override
+                public void onError(QBResponseException e) {
+
+                    Log.e(TAG, "Error in uploading image :- " + e.getMessage());
+                    Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+
+                }
+            });
         }
-
-
-        //  }
-
-
     }
 
     public boolean isStoragePermissionGranted() {
-        if (Build.VERSION.SDK_INT >= 23) {
 
+        if (Build.VERSION.SDK_INT >= 23) {
             if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
                     == PackageManager.PERMISSION_GRANTED) {
                 Log.v(TAG, "Permission is granted");
@@ -1697,12 +2540,12 @@ chatlist.remove();
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
                 return false;
             }
+
         } else {
             //permission is automatically granted on sdk<23 upon installation
             Log.v(TAG, "Permission is granted");
             return true;
         }
-
     }
 
     // UPDATED!
@@ -1720,13 +2563,18 @@ chatlist.remove();
             return null;
     }
 
-
     private void sendBlockstatus() {
+
+        /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ BLock user from QuickBlox if response status is 200 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  */
+
+        final AlertDialog mProgressDialog = new SpotsDialog(ChatActivity.this);
+        mProgressDialog.setTitle("Please wait a moment...");
+        mProgressDialog.setCancelable(false);
+        mProgressDialog.show();
 
         JSONObject jsonObject = new JSONObject();
         JSONArray jsonArray = new JSONArray();
         try {
-
             jsonObject.put("method", "blockstatus");
             jsonObject.put("blockunblockstaus", "1");
             jsonObject.put("friend_mobile", user2);
@@ -1744,37 +2592,64 @@ chatlist.remove();
             @Override
             public void backResponse(String response) {
 
-
-                Log.d("response>>>>>", response);
+                mProgressDialog.dismiss();
+                Log.d(TAG, "response>>>>>" + response);
                 //  mProgressDialog.dismiss();
                 if (response != null) {
                     try {
                         JSONObject mainObject = new JSONObject(response);
 
                         if (mainObject.getString("status").equalsIgnoreCase("200")) {
+                            blockUsersCode();
                             JSONArray orderArray = mainObject.getJSONArray("result");
 
                             for (int i = 0; orderArray.length() > i; i++) {
                                 JSONObject topObject = orderArray.getJSONObject(i);
                                 AppPreferences.setBlockList(ChatActivity.this, topObject.getString("block_users"));
-
-
                             }
 
+                            QBPrivacyList list = new QBPrivacyList();
+                            list.setName("Speakame");
+
+                            ArrayList<QBPrivacyListItem> items = new ArrayList<QBPrivacyListItem>();
+
+                            QBPrivacyListItem item1 = new QBPrivacyListItem();
+                            item1.setAllow(false);
+                            item1.setType(QBPrivacyListItem.Type.USER_ID);
+                            item1.setValueForType(String.valueOf(QB_Friend_Id));
+                            item1.setMutualBlock(true);
+
+                            items.add(item1);
+
+                            list.setItems(items);
+
+                            try {
+                                privacyListsManager.setPrivacyList(list);
+                                privacyListsManager.setPrivacyListAsDefault("public");
+                            } catch (SmackException.NotConnectedException e) {
+                                e.printStackTrace();
+                                Log.e(TAG, "SmackException.NotConnectedException while setting privacy list :- " + e.getMessage());
+                            } catch (XMPPException.XMPPErrorException e) {
+                                e.printStackTrace();
+                                Log.e(TAG, "XMPPException.XMPPErrorException while setting privacy list :- " + e.getMessage());
+                            } catch (SmackException.NoResponseException e) {
+                                e.printStackTrace();
+                                Log.e(TAG, "SmackException.NoResponseException while setting privacy list :- " + e.getMessage());
+                            }
+
+                            /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ BLock user from QuickBlox if response status is 200 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  */
+
                             Toast.makeText(getApplicationContext(), "Block successfully", Toast.LENGTH_LONG).show();
-
-
                         } else if (mainObject.getString("status").equalsIgnoreCase("400")) {
 
                         } else if (mainObject.getString("status").equalsIgnoreCase("100")) {
                             Toast.makeText(getApplicationContext(), "Check network connection", Toast.LENGTH_LONG).show();
                         }
-
                     } catch (JSONException e) {
                         e.printStackTrace();
+                        mProgressDialog.dismiss();
                     }
                 }
-
             }
         });
         System.out.println("AppConstants.COMMONURL---------" + AppConstants.DEMOCOMMONURL);
@@ -1783,16 +2658,19 @@ chatlist.remove();
 
     private void sendUnBlockstatus() {
 
+        final AlertDialog mProgressDialog = new SpotsDialog(ChatActivity.this);
+        mProgressDialog.setTitle("Please wait a moment...");
+        mProgressDialog.setCancelable(false);
+        mProgressDialog.show();
+
         JSONObject jsonObject = new JSONObject();
         JSONArray jsonArray = new JSONArray();
         try {
-
             jsonObject.put("method", "blockstatus");
             jsonObject.put("blockunblockstaus", "0");
             jsonObject.put("friend_mobile", user2);
             jsonObject.put("user_id", AppPreferences.getLoginId(ChatActivity.this));
             // jsonObject.put("mobile_number", AppPreferences.getMobileuser(MainScreenActivity.this));
-
             jsonArray.put(jsonObject);
             System.out.println("send>json--" + jsonArray);
 
@@ -1803,9 +2681,8 @@ chatlist.remove();
         jsonParser.parseVollyJsonArray(AppConstants.DEMOCOMMONURL, 1, jsonArray, new VolleyCallback() {
             @Override
             public void backResponse(String response) {
-
-
-                Log.d("response>>>>>", response);
+                mProgressDialog.dismiss();
+                Log.d(TAG, "response>>>>>" + response);
                 //  mProgressDialog.dismiss();
                 if (response != null) {
                     try {
@@ -1817,8 +2694,6 @@ chatlist.remove();
                             for (int i = 0; orderArray.length() > i; i++) {
                                 JSONObject topObject = orderArray.getJSONObject(i);
                                 AppPreferences.setBlockList(ChatActivity.this, topObject.getString("block_users"));
-
-
                             }
 
                         } else if (mainObject.getString("status").equalsIgnoreCase("400")) {
@@ -1829,16 +2704,14 @@ chatlist.remove();
 
                     } catch (JSONException e) {
                         e.printStackTrace();
+                        mProgressDialog.dismiss();
                     }
                 }
-
             }
         });
         System.out.println("AppConstants.COMMONURL---------" + AppConstants.DEMOCOMMONURL);
         System.out.println("jsonObject" + jsonObject);
     }
-
-
 
     public void revalmethod() {
 
@@ -1891,12 +2764,14 @@ chatlist.remove();
             }
         } else {
             if (hidden) {
+
                 Animator anim = android.view.ViewAnimationUtils.createCircularReveal(mRevealView, cx, cy, 0, radius);
                 mRevealView.setVisibility(View.VISIBLE);
                 anim.start();
                 hidden = false;
 
             } else {
+
                 Animator anim = android.view.ViewAnimationUtils.createCircularReveal(mRevealView, cx, cy, radius, 0);
                 anim.addListener(new AnimatorListenerAdapter() {
                     @Override
@@ -1907,7 +2782,6 @@ chatlist.remove();
                     }
                 });
                 anim.start();
-
             }
         }
     }
@@ -1915,13 +2789,13 @@ chatlist.remove();
     @Override
     protected void onStart() {
         super.onStart();
+
+
       /*  XmppConneceted activity = new XmppConneceted();
 
         MyXMPP.Composing composing = MyXMPP.Composing.active;
 
         activity.getmService().xmpp.sendIsComposing(composing,user2);*/
-
-
     }
 
     @Override
@@ -1933,6 +2807,7 @@ chatlist.remove();
         MyXMPP.Composing composing = MyXMPP.Composing.inactive;
 
         activity.getmService().xmpp.sendIsComposing(composing,user2);*/
+
     }
 
     @Override
@@ -1940,13 +2815,15 @@ chatlist.remove();
         super.onDestroy();
         instance = null;
         user2 = "";
-       /* XmppConneceted activity = new XmppConneceted();
 
-        MyXMPP.Composing composing = MyXMPP.Composing.gone;
+       /*
+       XmppConneceted activity = new XmppConneceted();
+       MyXMPP.Composing composing = MyXMPP.Composing.gone;
+       activity.getmService().xmpp.sendIsComposing(composing,user2);
+       */
 
-        activity.getmService().xmpp.sendIsComposing(composing,user2);*/
+//        stopService(new Intent(ChatActivity.this, LastSeenService.class));
     }
-
 
     @Override
     public void onEmojiconClicked(Emojicon emojicon) {
@@ -1960,14 +2837,13 @@ chatlist.remove();
 
     private void setEmojiconFragment(boolean useSystemDefault) {
 
-
         getSupportFragmentManager()
                 .beginTransaction()
                 .replace(R.id.emojicons, EmojiconsFragment.newInstance(useSystemDefault))
                 .commit();
     }
 
-    private void myToggleSelection( int idx) {
+    private void myToggleSelection(int idx) {
         chatAdapter.toggleSelection(idx);
         @SuppressLint("StringFormatMatches") String title = getString(R.string.selected_count, chatAdapter.getSelectedCount());
         actionMode.setTitle(title);
@@ -2083,10 +2959,13 @@ chatlist.remove();
                     @Override
                     public void onClick(SweetAlertDialog sDialog) {
 
-                        XmppConneceted activity = new XmppConneceted();
-                        activity.getmService().xmpp.blockedUser(user2);
+//                        XmppConneceted activity = new XmppConneceted();
+//                        activity.getmService().xmpp.blockedUser(user2);
                         sendBlockstatus();
                         sDialog.cancel();
+//dsvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+
+                        QBPrivacyListsManager qbPrivacyListsManager = chatService.getPrivacyListsManager();
 
 
                     }
@@ -2105,8 +2984,8 @@ chatlist.remove();
                 .setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
                     @Override
                     public void onClick(SweetAlertDialog sDialog) {
-                        XmppConneceted activity = new XmppConneceted();
-                        activity.getmService().xmpp.unBlockedUser(user2);
+//                        XmppConneceted activity = new XmppConneceted();
+//                        activity.getmService().xmpp.unBlockedUser(user2);
                         sendUnBlockstatus();
                         sDialog.cancel();
 
@@ -2177,6 +3056,257 @@ chatlist.remove();
         toggleSelection(position);
         return true;
     }
+/*
+    private void sendChatMessage(String text, QBAttachment attachment, final String file, final String fileName) {
+
+        QBChatMessage chatMessage = new QBChatMessage();
+        *//*if (attachment != null) {
+            chatMessage.addAttachment(attachment);
+        } else {
+        }*//*
+        chatMessage.setBody(text);
+        chatMessage.setProperty(PROPERTY_SAVE_TO_HISTORY, "1");
+        chatMessage.setDateSent(System.currentTimeMillis() / 1000);
+        chatMessage.setMarkable(true);
+
+        if (!QBDialogType.PRIVATE.equals(privateChatDialog.getType()) && !privateChatDialog.isJoined()) {
+            Toast.makeText(this, "You're still joining a group chat, please wait a bit", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        try {
+
+            privateChatDialog.sendMessage(chatMessage);
+            if (QBDialogType.PRIVATE.equals(privateChatDialog.getType())) {
+//                showMessage(chatMessage);
+                sendTextMessage(text, file, fileName);
+            }
+
+            if (attachment != null) {
+//                attachmentPreviewAdapter.remove(attachment);
+            } else {
+                msg_edittext.setText("");
+            }
+
+        } catch (SmackException.NotConnectedException e) {
+            Log.w(TAG, e);
+            Toast.makeText(this, "Can't send a message, You are not connected to chat", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+
+    private void sendMessageToQuickBlox(final String message, final String file, final String fileName, Integer friend_id) {
+
+
+        final HashMap<String, QBChatDialog> opponentsDialogMap = new HashMap<>();
+
+        Log.v(TAG, "Inside send message method ");
+        Log.v(TAG, "QB_Friend_Id :- " + friend_id);
+        Log.v(TAG, "QB_Friend_Id 1 :- " + QB_Friend_Id);
+
+        QBPrivateChatManager privateChatManager = QBChatService.getInstance().getPrivateChatManager();
+
+        final QBMessageListener<QBPrivateChat> privateChatMessageListener = new QBMessageListener<QBPrivateChat>() {
+            @Override
+            public void processMessage(QBPrivateChat privateChat, final QBChatMessage chatMessage) {
+                Log.v(TAG, "Inside process message 1");
+            }
+
+            @Override
+            public void processError(QBPrivateChat privateChat, QBChatException error, QBChatMessage originMessage) {
+
+                Log.v(TAG, "Inside process message 2");
+                Log.v(TAG, "originMessage :- "+ originMessage.getBody());
+                Log.v(TAG, "Error :-  " + error.getMessage());
+                Log.e(TAG, "Error :-  " + error.getMessage());
+            }
+        };
+
+        QBPrivateChatManagerListener privateChatManagerListener = new QBPrivateChatManagerListener() {
+            @Override
+            public void chatCreated(final QBPrivateChat privateChat, final boolean createdLocally) {
+                if (!createdLocally) {
+                    privateChat.addMessageListener(privateChatMessageListener);
+                }
+            }
+        };
+        privateChatManager.addPrivateChatManagerListener(privateChatManagerListener);
+
+        Integer opponentId = QB_Friend_Id;
+        Log.v(TAG, "QB_Friend_Id 1 :- " + QB_Friend_Id);
+//        try {
+        final QBChatMessage chatMessage = new QBChatMessage();
+        chatMessage.setBody(message);
+        chatMessage.setProperty("save_to_history", "1"); // Save a message to history
+
+        QBPrivateChat privateChat = privateChatManager.getChat(QB_Friend_Id);
+        if (privateChat == null) {
+            privateChat = privateChatManager.createChat(QB_Friend_Id, privateChatMessageListener);
+        }
+
+        privateChat.sendMessage(chatMessage, new QBEntityCallback<Void>() {
+            @Override
+            public void onSuccess(Void aVoid, Bundle bundle) {
+                Toast.makeText(ChatActivity.this, "Message sent", Toast.LENGTH_SHORT).show();
+                sendTextMessage(message, file, fileName);
+
+                Log.v(TAG, "Message body Send :- " + chatMessage.getBody());
+                msg_edittext.setText("");
+            }
+
+            @Override
+            public void onError(QBResponseException e) {
+                Toast.makeText(ChatActivity.this, "Message not sent", Toast.LENGTH_SHORT).show();
+                Log.v(TAG, "Error in sending message :-" + e.getMessage());
+            }
+        });
+       *//* } catch (Exception e) {
+            Log.e(TAG, "Error in sending message 3 :- " + e.getMessage());
+        }*//*
+
+
+
+            incomingMessagesManager.addDialogMessageListener(new QBChatDialogMessageListener() {
+            @Override
+            public void processMessage(String dialogId, QBChatMessage qbChatMessage, Integer senderId) {
+
+                Log.v(TAG, "Inside message incoming listener");
+
+                Log.v(TAG, "Message body Receive :- " + qbChatMessage.getBody());
+                Log.v(TAG, "2. :-" + qbChatMessage.getDialogId());
+                Log.v(TAG, "3. :-" + qbChatMessage.getRecipientId());
+                Log.v(TAG, "4. :-" + qbChatMessage.getSenderId());
+                Log.v(TAG, "5. :-" + qbChatMessage.getSmackMessage());
+
+                if (!opponentsDialogMap.containsKey(dialogId)) {
+                    QBChatDialog opponentDialog = new QBChatDialog();
+                    ArrayList<Integer> occupantIds = new ArrayList<>();
+                    occupantIds.add(qbChatMessage.getSenderId());
+                    opponentDialog.setOccupantsIds(occupantIds);
+
+                    //init Dialog for chatting
+                    opponentDialog.initForChat(dialogId, QBDialogType.PRIVATE, chatService);
+
+                    //add message listener on this Dialog
+//                    opponentDialog.addMessageListener(opponentDialogMsgListener);
+
+                    //put Dialog in cache
+                    opponentsDialogMap.put(dialogId, opponentDialog);
+
+//                    ChatMessage chatMessage = qbChatMessage.getBody().toString();
+
+//                    DatabaseHelper.getInstance(ChatActivity.this).insertChat(chatMessage);
+//                    DatabaseHelper.getInstance(ChatActivity.this).UpdateMsgRead("1", chatMessage.receiver);
+//                    chatAdapter.add(chatMessage, chatAdapter.getItemCount() - 1);
+//                    mRecyclerView.scrollToPosition(chatAdapter.getItemCount() - 1);
+
+                }
+            }
+
+            @Override
+            public void processError(String s, QBChatException e, QBChatMessage qbChatMessage, Integer senderId) {
+                Log.e(TAG, "Error in getting message 2:- " + e.getMessage());
+            }
+        });
+
+    }
+
+    private ArrayList<QBUser> getUserDetailsByPhoneNumber(String mobileWithCountryCode) {
+
+        final ArrayList<QBUser> selectedUsers = new ArrayList<>();
+        QBRoster roster = QBChatService.getInstance().getRoster();
+
+        QBPagedRequestBuilder pagedRequestBuilder = new QBPagedRequestBuilder();
+        pagedRequestBuilder.setPage(1);
+        pagedRequestBuilder.setPerPage(10);
+
+        ArrayList<String> phones = new ArrayList<String>();
+        phones.add(mobileWithCountryCode);
+
+        QBUsers.getUsersByPhoneNumbers(phones, pagedRequestBuilder).performAsync(new QBEntityCallback<ArrayList<QBUser>>() {
+            @Override
+            public void onSuccess(ArrayList<QBUser> qbUsers, Bundle bundle) {
+//                mDialog.dismiss();
+
+//                userModelArrayList = new ArrayList<UserModel>();
+                for (QBUser user : qbUsers) {
+
+                    Log.v(TAG, "User id :- " + user.getId().toString());
+                    Log.v(TAG, "User namne :- " + user.getFullName());
+                    Log.v(TAG, "User number:- " + user.getPhone());
+                    Log.v(TAG, "User Login Id:- " + user.getLogin());
+
+                    QB_Friend_Id = user.getId();
+                    QB_Name = user.getFullName().toString();
+                    QB_Mobile = user.getPhone().toString();
+                    QB_LoginId = user.getLogin().toString();
+                    selectedUsers.add(user);
+                }
+            }
+
+            @Override
+            public void onError(QBResponseException e) {
+                Log.e(TAG, "Error in getting contact :- " + e.getMessage());
+            }
+        });
+        return selectedUsers;
+    }
+
+    private Integer getUserIdByPhoneNumber(String mobileWithCountryCode) {
+
+        Log.v(TAG, "Inside getting user details by phone no ");
+        final Integer selectedUsers = 0;
+        QBRoster roster = QBChatService.getInstance().getRoster();
+
+        QBPagedRequestBuilder pagedRequestBuilder = new QBPagedRequestBuilder();
+        pagedRequestBuilder.setPage(1);
+        pagedRequestBuilder.setPerPage(10);
+
+        ArrayList<String> phones = new ArrayList<String>();
+        phones.add(mobileWithCountryCode);
+
+        QBUsers.getUsersByPhoneNumbers(phones, pagedRequestBuilder).performAsync(new QBEntityCallback<ArrayList<QBUser>>() {
+            @Override
+            public void onSuccess(ArrayList<QBUser> qbUsers, Bundle bundle) {
+//                mDialog.dismiss();
+//                userModelArrayList = new ArrayList<UserModel>();
+
+                for (QBUser user : qbUsers) {
+
+                    Log.v(TAG, "User id :- " + user.getId().toString());
+                    Log.v(TAG, "User namne :- " + user.getFullName());
+                    Log.v(TAG, "User number:- " + user.getPhone());
+                    Log.v(TAG, "User Login Id:- " + user.getLogin());
+
+                    QB_Friend_Id = user.getId();
+                    QB_Name = user.getFullName().toString();
+                    QB_Mobile = user.getPhone().toString();
+                    QB_LoginId = user.getLogin().toString();
+                }
+            }
+
+            @Override
+            public void onError(QBResponseException e) {
+
+                Log.v(TAG, "Error occured");
+                Log.v(TAG, "Error getting contact details :- " + e.getMessage());
+
+            }
+        });
+        return QB_Friend_Id;
+    }
+
+
+
+    private void initChatDialogs() {
+        try {
+            QBChatService.getInstance().enableCarbons();
+        } catch (XMPPException e) {
+            e.printStackTrace();
+        } catch (SmackException e) {
+            e.printStackTrace();
+        }
+    }*/
 
     private void toggleSelection(int position) {
         chatAdapter.toggleSelection(position);
@@ -2190,8 +3320,417 @@ chatlist.remove();
         }
     }
 
-    public interface OnTypingModified {
-        public void onIsTypingModified(EditText view, boolean isTyping);
+    @Override
+    protected void onResume() {
+        super.onResume();
+//        startServiceForStatus();
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent event) {
+
+        View view = getCurrentFocus();
+        boolean ret = super.dispatchTouchEvent(event);
+
+        if (view instanceof LinearLayout) {
+
+            View w = getCurrentFocus();
+            int scrcoords[] = new int[2];
+            w.getLocationOnScreen(scrcoords);
+            float x = event.getRawX() + w.getLeft() - scrcoords[0];
+            float y = event.getRawY() + w.getTop() - scrcoords[1];
+
+            if (event.getAction() == MotionEvent.ACTION_UP
+                    && (x < w.getLeft() || x >= w.getRight()
+                    || y < w.getTop() || y > w.getBottom())) {
+
+                mRevealView.setVisibility(View.INVISIBLE);
+                hidden = true;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        boolean ret = super.onTouchEvent(event);
+        float touchPointX = event.getX();
+        float touchPointY = event.getY();
+        int[] coordinates = new int[2];
+        mRevealView.getLocationOnScreen(coordinates);
+        if (touchPointX < coordinates[0] || touchPointX > coordinates[0] + mRevealView.getWidth() || touchPointY < coordinates[1] || touchPointY > coordinates[1] + mRevealView.getHeight()) {
+            mRevealView.setVisibility(View.INVISIBLE);
+            hidden = true;
+        }
+        return false;
+    }
+
+    private void initIsTypingListener() {
+//
+//        // Create 'is typing' listener
+//        //
+
+        privateChatDialogTypingListener = new QBChatDialogTypingListener() {
+            @Override
+            public void processUserIsTyping(String dialogId, Integer senderId) {
+                Log.v(TAG, "user " + senderId + " is typing. Private dialog id: " + dialogId);
+                status.setVisibility(View.VISIBLE);
+
+                status.setText("is typing...");
+            }
+
+            @Override
+            public void processUserStopTyping(String dialogId, Integer senderId) {
+                Log.v(TAG, "user " + senderId + " stop typing. Private dialog id: " + dialogId);
+                status.setText(lastSeen);
+            }
+        };
+
+        groupChatDialogTypingListener = new QBChatDialogTypingListener() {
+            @Override
+            public void processUserIsTyping(String dialogId, Integer senderId) {
+                Log.v(TAG, "user " + senderId + " is typing. Group dialog id: " + dialogId);
+            }
+
+            @Override
+            public void processUserStopTyping(String dialogId, Integer senderId) {
+                Log.v(TAG, "user " + senderId + " stop typing. Group dialog id: " + dialogId);
+            }
+        };
+
+//        privateChatDialog.addIsTypingListener(privateChatDialogTypingListener);
+//        groupChatDialog.addIsTypingListener(groupChatDialogTypingListener);
+
+    }
+
+    private void initPrivateChatMessageListener() {
+        // Create 1-1 chat is message listener
+        //
+        privateChatDialogMessageListener = new QBChatDialogMessageListener() {
+            @Override
+            public void processMessage(String s, QBChatMessage qbChatMessage, Integer integer) {
+                Log.v(TAG, "received message: " + qbChatMessage.getId());
+
+                if (qbChatMessage.getSenderId().equals(chatService.getUser().getId())) {
+                    Log.v(TAG, "Message comes here from carbons");
+                }
+            }
+
+            @Override
+            public void processError(String s, QBChatException e, QBChatMessage qbChatMessage, Integer integer) {
+                Log.v(TAG, "processError: " + e.getLocalizedMessage());
+            }
+        };
+
+
+        groupChatDialogMessageListener = new QBChatDialogMessageListener() {
+            @Override
+            public void processMessage(String s, QBChatMessage qbChatMessage, Integer integer) {
+
+            }
+
+            @Override
+            public void processError(String s, QBChatException e, QBChatMessage qbChatMessage, Integer integer) {
+
+            }
+        };
+    }
+
+    private void onPresenceChanged() {
+
+      /*  lastSeen = DatabaseHelper.getInstance(ChatActivity.this).getLastSeenQB(QB_Friend_Id);
+        Log.v(TAG, "QB presence status Last seen :- " + lastseen);
+        status.setText(lastSeen);
+*/
+        rosterListener = new QBRosterListener() {
+            @Override
+            public void entriesDeleted(Collection<Integer> userIds) {
+
+            }
+
+            @Override
+            public void entriesAdded(Collection<Integer> userIds) {
+
+            }
+
+            @Override
+            public void entriesUpdated(Collection<Integer> userIds) {
+
+            }
+
+            @Override
+            public void presenceChanged(QBPresence presence) {
+
+                Log.v(TAG, "presence :- QB presence status presence chages smvsdopm:- " + presence.getType());
+
+                String statusOnline = presence.getType().toString();
+
+                if (statusOnline.equalsIgnoreCase("online")) {
+
+                    Log.v(TAG, "QB status online :- " + statusOnline);
+
+                    User user = new User();
+                    user.setFriend_id(QB_Friend_Id);
+                    user.setStatus("Online");
+                    DatabaseHelper.getInstance(ChatActivity.this).InsertStatus(user);
+                    lastSeen = DatabaseHelper.getInstance(ChatActivity.this).getLastSeenQB(user.getFriend_id());
+                    Log.v(TAG, "QB status online from database 111111111 :- " + DatabaseHelper.getInstance(ChatActivity.this).getLastSeenQB(user.getFriend_id()));
+                    status.setText(lastSeen);
+
+                } else if (statusOnline.equalsIgnoreCase("offline")) {
+
+                    Log.v(TAG, "QB status offline :- " + statusOnline);
+
+                    User user = new User();
+                    user.setFriend_id(QB_Friend_Id);
+
+                    Log.v(TAG, "QB status offile time 1:- " + Function.getCurrentDateTime());
+                    String currentTime = Function.getCurrentDateTime();
+                    String time = "";
+                    try {
+                        time = Function.formatToYesterdayOrToday(currentTime);
+                        Log.v(TAG, "QB status offile time 2 :- " + " last seen at " + time);
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                        Log.v(TAG, "QB Error status offile time :- " + e.getMessage());
+                    }
+                    user.setStatus("last seen at " + time);
+                    DatabaseHelper.getInstance(ChatActivity.this).InsertStatus(user);
+
+                    Log.v(TAG, "QB status online from database 2222222222222222 :- " + DatabaseHelper.getInstance(ChatActivity.this).getLastSeenQB(user.getFriend_id()));
+
+                    lastSeen = DatabaseHelper.getInstance(ChatActivity.this).getLastSeenQB(user.getFriend_id());
+                    status.setText(lastSeen);
+
+                }
+
+            }
+        };
+    }
+
+    private void subscribeUserForStatus(int userID) {
+
+        Log.v(TAG, "QB presence status Subscribing :- 1" + lastSeen);
+
+        Log.v(TAG, "QB presence Inside user subscription for Status online offline ");
+//        QBRoster chatRoster = chatService.getRoster();
+
+//        int userID = QB_Friend_Id;
+
+        QBSubscriptionListener subscriptionListener = new QBSubscriptionListener() {
+            @Override
+            public void subscriptionRequested(int userId) {
+
+            }
+        };
+        QBRoster chatRoster = null;
+        if (rosterListener != null) {
+            chatRoster = chatService.getRoster(QBRoster.SubscriptionMode.mutual, subscriptionListener);
+            chatRoster.addRosterListener(rosterListener);
+        }
+
+        try {
+            if (chatRoster.contains(userID)) {
+                chatRoster.subscribe(userID);
+                Log.v(TAG, "QB presence chatRoster.subscribe..............");
+            } else {
+                chatRoster.createEntry(userID, null);
+                Log.v(TAG, "QB presence chatRoster.createEntry................");
+            }
+            chatRoster.confirmSubscription(userID);
+            Log.v(TAG, "chatRoster.confirmSubscription................");
+        } catch (SmackException.NotConnectedException e) {
+            e.printStackTrace();
+        } catch (XMPPException e) {
+            e.printStackTrace();
+        } catch (SmackException.NotLoggedInException e) {
+            e.printStackTrace();
+        } catch (SmackException.NoResponseException e) {
+            e.printStackTrace();
+        }
+
+
+    }
+
+    private void initMessageSentListener() {
+
+        privateChatDialogMessageSentListener = new QBChatDialogMessageSentListener() {
+            @Override
+            public void processMessageSent(String dialogId, QBChatMessage qbChatMessage) {
+
+                Log.v(TAG, " QB Sent CHat Message :- " + qbChatMessage);
+                Log.v(TAG, "message " + qbChatMessage.getId() + " sent to dialog " + dialogId);
+
+                String qbMessageId = qbChatMessage.getId();
+                String qbDialogId = dialogId;
+                String qbRecipientId = qbChatMessage.getRecipientId().toString();
+
+                DatabaseHelper.getInstance(ChatActivity.this).UpdateMsgRead("1", FriendMobile);
+                DatabaseHelper.getInstance(ChatActivity.this).UpdateReadStatus("1", qbDialogId, qbMessageId, qbRecipientId);
+                chatAdapter.notifyDataSetChanged();
+
+                callAdapter();
+            }
+
+            @Override
+            public void processMessageFailed(String dialogId, QBChatMessage qbChatMessage) {
+                Log.v(TAG, "send message " + qbChatMessage.getId() + " has failed to dialog " + dialogId);
+//                DatabaseHelper.getInstance(ChatActivity.this).UpdateMsgRead("0", FriendMobile);
+
+
+                String qbMessageId = qbChatMessage.getId();
+                String qbDialogId = dialogId;
+                String qbRecipientId = qbChatMessage.getRecipientId().toString();
+
+                DatabaseHelper.getInstance(ChatActivity.this).UpdateReadStatus("0", qbDialogId, qbMessageId, qbRecipientId);
+                chatAdapter.notifyDataSetChanged();
+
+                callAdapter();
+            }
+        };
+
+        groupChatDialogMessageSentListener = new QBChatDialogMessageSentListener() {
+            @Override
+            public void processMessageSent(String dialogId, QBChatMessage qbChatMessage) {
+                Log.v(TAG, "message " + qbChatMessage.getId() + " sent to group dialog " + dialogId);
+            }
+
+            @Override
+            public void processMessageFailed(String dialogId, QBChatMessage qbChatMessage) {
+                Log.v(TAG, "send message " + qbChatMessage.getId() + " has failed to dialog " + dialogId);
+            }
+        };
+    }
+
+    private void initMessageStatusManagerAndListener() {
+       /* try {
+            QBChatService.getInstance().enableCarbons();
+        } catch (XMPPException e) {
+            e.printStackTrace();
+        } catch (SmackException e) {
+            e.printStackTrace();
+        }*/
+        messageStatusesManager = TwoTab_Activity.chatService.getMessageStatusesManager();
+
+        messageStatusListener = new QBMessageStatusListener() {
+            @Override
+            public void processMessageDelivered(String messageId, String dialogId, Integer userId) {
+
+//                DatabaseHelper.getInstance(ChatActivity.this).UpdateMsgRead("2", FriendMobile);
+
+
+                String qbMessageId = messageId;
+                String qbDialogId = dialogId;
+                String qbRecipientId = userId.toString();
+
+                DatabaseHelper.getInstance(ChatActivity.this).UpdateReadStatus("2", qbDialogId, qbMessageId, qbRecipientId);
+                chatAdapter.notifyDataSetChanged();
+
+                callAdapter();
+
+// User user = new User();
+// user.setFriend_id(QB_Friend_Id);
+// user.setMessage_status(message_status);
+                Log.v(TAG, "messageStatusesManager...............1..................messagedelivered");
+                Log.v(TAG, " ~~~~~~~~~~~~ inside message deliver messageStatusesManager ~~~~~~~~~~~~");
+                Log.v(TAG, "Message id for deliver message :- " + messageId);
+                Log.v(TAG, "dialogId id for deliver message :- " + dialogId);
+                Log.v(TAG, "User id :- " + userId);
+                Log.v(TAG, "processMessageRead1" + messageId);
+                Log.v(TAG, "processMessageRead1" + dialogId);
+                Log.v(TAG, "processMessageRead1" + userId);
+                Log.v("NorrisTestQB", "delivered messageid " + messageId + " dialogid " + dialogId + " userid " + userId);
+
+            }
+
+            @Override
+            public void processMessageRead(String messageId, String dialogId, Integer userId) {
+
+                Log.v(TAG, " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Inside Read Message Status ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+                Log.v(TAG, "messageId processMessageRead2 :- " + messageId);
+                Log.v(TAG, "dialogId processMessageRead2 :- " + dialogId);
+                Log.v(TAG, "userId processMessageRead2 :- " + userId);
+                Log.v(TAG, "read messageid " + messageId + " dialogid " + dialogId + " userid " + userId);
+
+                String qbMessageId = messageId;
+                String qbDialogId = dialogId;
+                String qbRecipientId = userId.toString();
+
+                DatabaseHelper.getInstance(ChatActivity.this).UpdateReadStatus("3", qbDialogId, qbMessageId, qbRecipientId);
+//                chatAdapter.notifyDataSetChanged();
+                callAdapter();
+            }
+        };
+
+        if (messageStatusesManager != null) {
+            messageStatusesManager.addMessageStatusListener(messageStatusListener);
+        }
+//dsvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+    }
+
+    public void blockUsersCode() {
+        Toast.makeText(getApplicationContext(), "Block clicked .  " + QB_Friend_Id, Toast.LENGTH_SHORT).show();
+        BlockUserDataBaseHelper blockUserDataBaseHelper = new BlockUserDataBaseHelper(ChatActivity.this);
+        String s = BlockUserDataBaseHelper.CREATE_TBL_BLOCK;
+        Log.d(TAG, " FriendName : " + FriendName + " FriendMobile : " + FriendMobile + " FriendOcupantId : " + QB_Friend_Id + " Query for block : " + s);
+        ArrayList<Integer> allBlockedUsers = blockUserDataBaseHelper.getAllBlockedUsers();
+        Log.d(TAG, " GetAllBlokedUsers .. " + allBlockedUsers.toString());
+        if (allBlockedUsers.contains(QB_Friend_Id)) {
+            Log.d(TAG, " user all ready blocked");
+        } else {
+            blockUserDataBaseHelper.saveBlockedUsers(FriendName, FriendMobile, QB_Friend_Id);
+
+        }
+        QBPrivacyListsManager privacyListsManager = QBChatService.getInstance().getPrivacyListsManager();
+        privacyListsManager.addPrivacyListListener(privacyListListener);
+
+//..........................................
+        List<QBPrivacyList> lists = null;
+        try {
+            lists = privacyListsManager.getPrivacyLists();
+            Log.d(TAG, " My new Log ..." + lists.toString());
+        } catch (SmackException.NotConnectedException e) {
+            e.printStackTrace();
+            Log.d(TAG, " SmackException  method " + e.getMessage());
+
+        } catch (XMPPException.XMPPErrorException e) {
+            e.printStackTrace();
+            Log.d(TAG, " XMPPException  method " + e.getMessage());
+
+        } catch (SmackException.NoResponseException e) {
+            Log.d(TAG, " NoResponseException  method " + e.getMessage());
+
+            e.printStackTrace();
+        }
+//.............................................
+        QBPrivacyList list = new QBPrivacyList();
+        list.setName("public");
+
+        ArrayList<QBPrivacyListItem> items = new ArrayList<QBPrivacyListItem>();
+
+        ArrayList<Integer> allBlockedUsersNew = blockUserDataBaseHelper.getAllBlockedUsers();
+        for (int i = 0; i < allBlockedUsersNew.size(); i++) {
+            QBPrivacyListItem item1 = new QBPrivacyListItem();
+            item1.setAllow(false);
+            item1.setType(QBPrivacyListItem.Type.USER_ID);
+            item1.setValueForType(String.valueOf(allBlockedUsersNew.get(i)));
+            Log.d(TAG, " This is the new QBFriendId    " + allBlockedUsersNew.get(i));
+            // item1.setMutualBlock(true);
+            items.add(item1);
+        }
+        list.setItems(items);
+
+        try {
+            Log.d(TAG, "  This is the privecy list " + list.toString());
+            privacyListsManager.setPrivacyList(list);
+            privacyListsManager.setPrivacyListAsDefault("public");
+        } catch (SmackException.NotConnectedException e) {
+            e.printStackTrace();
+        } catch (XMPPException.XMPPErrorException e) {
+            e.printStackTrace();
+        } catch (SmackException.NoResponseException e) {
+            e.printStackTrace();
+        }
     }
 
     private class RecyclerViewDemoOnGestureListener extends GestureDetector.SimpleOnGestureListener {
@@ -2213,10 +3752,12 @@ chatlist.remove();
 //            ChatMessage data = chatAdapter.getItem(idx);
             View innerContainer = view.findViewById(R.id.bubble_layout);
             //innerContainer.setTransitionName("innerContainer"+ "_" + data.msgid);
-            myToggleSelection( idx);
+            myToggleSelection(idx);
             super.onLongPress(e);
         }
     }
+
+    //...................................................................................//
 
     public class VerticalSpaceItemDecoration extends RecyclerView.ItemDecoration {
 
@@ -2233,9 +3774,26 @@ chatlist.remove();
         }
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
+    //.....................................................................//
 
+    public class ChatMessageListener extends QbChatDialogMessageListenerImp {
+        @Override
+        public void processMessage(String s, QBChatMessage qbChatMessage, Integer integer) {
+
+            Log.v(TAG, "Inside ChatMessageListener QBChatMessage :- " + qbChatMessage);
+            Log.v(TAG, "Inside ChatMessageListener message :- " + s);
+//            showMessage(qbChatMessage);
+        }
+
+        @Override
+        public void processError(String s, QBChatException e, QBChatMessage qbChatMessage, Integer integer) {
+            super.processError(s, e, qbChatMessage, integer);
+
+            Log.v(TAG, "Error while sending message to quick blox user :- " + e.getMessage());
+            Log.v(TAG, "String after error occured :- " + s);
+            Log.v(TAG, "Integer after error occured :- " + integer);
+            Log.v(TAG, "QB chat message :- " + qbChatMessage);
+        }
     }
+
 }

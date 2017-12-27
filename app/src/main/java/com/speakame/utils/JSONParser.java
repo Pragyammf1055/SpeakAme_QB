@@ -126,7 +126,6 @@ public class JSONParser {
 
         // return JSON String
         return jObj;
-
     }
 
     public void parseVollyJsonArray(String url, int method, final JSONArray param, final VolleyCallback h) {
@@ -134,44 +133,50 @@ public class JSONParser {
         M.log("Request", param.toString());
 
         if (method == 0 || method == 1) {
-            final JsonObjectRequest jsObjRequest = new JsonObjectRequest
-                    (method, url, param.toString(), new Response.Listener<JSONObject>() {
 
-                        @Override
-                        public void onResponse(JSONObject response) {
-                            Log.d("Response: ", response.toString());
-                            if (response != null) {
-                                h.backResponse(response.toString());
+            JsonObjectRequest jsObjRequest = null;
+            try {
+                jsObjRequest = new JsonObjectRequest
+                        (method, url, param.toString(), new Response.Listener<JSONObject>() {
 
-                            } else {
-                                M.log("", "Something went wrong.!");
-                            }
-                        }
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                Log.d("Response: ", response.toString());
+                                if (response != null) {
+                                    h.backResponse(response.toString());
 
-                    }, new Response.ErrorListener() {
-
-                        @Override
-                        public void onErrorResponse(VolleyError error) {
-                            String err = (error.getMessage() == null) ? "Parse Fail" : error.getMessage();
-                            M.log("", "Something went wrong.!" + error);
-                            JSONObject jsonObject = new JSONObject();
-                            try {
-                                jsonObject.put("status", "100");
-                                h.backResponse(jsonObject.toString());
-                            } catch (JSONException e) {
-                                e.printStackTrace();
+                                } else {
+                                    M.log("", "Something went wrong.!");
+                                }
                             }
 
+                        }, new Response.ErrorListener() {
 
-                        }
-                    }) {
-                @Override
-                public Map<String, String> getHeaders() throws AuthFailureError {
-                    HashMap<String, String> headers = new HashMap<String, String>();
-                    headers.put("Content-Type", "application/json; charset=utf-8");
-                    return headers;
-                }
-            };
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                String err = (error.getMessage() == null) ? "Parse Fail" : error.getMessage();
+                                M.log("", "Something went wrong.!" + error);
+                                JSONObject jsonObject = new JSONObject();
+                                try {
+                                    jsonObject.put("status", "100");
+                                    h.backResponse(jsonObject.toString());
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+
+
+                            }
+                        }) {
+                    @Override
+                    public Map<String, String> getHeaders() throws AuthFailureError {
+                        HashMap<String, String> headers = new HashMap<String, String>();
+                        headers.put("Content-Type", "application/json; charset=utf-8");
+                        return headers;
+                    }
+                };
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
             jsObjRequest.setShouldCache(true);
             // Adding request to request queue

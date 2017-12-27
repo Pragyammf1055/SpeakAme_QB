@@ -8,16 +8,21 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.telephony.SmsMessage;
 import android.util.Log;
 
+import com.speakame.Activity.Main_Activity;
+
 
 /**
  * Created by yogesh on 18/06/16.
  */
 public class SmsReceiver extends BroadcastReceiver {
+
     private static final String TAG = SmsReceiver.class.getSimpleName();
     public static String verificationCode;
 
     @Override
     public void onReceive(Context context, Intent intent) {
+
+        context.startActivity(new Intent(context, Main_Activity.class));
 
         final Bundle bundle = intent.getExtras();
         try {

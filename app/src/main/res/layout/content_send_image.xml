@@ -22,12 +22,12 @@
 
     <EditText
         android:id="@+id/text"
-        android:layout_below="@+id/image"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="@dimen/_10sdp"
-        android:inputType="textCapWords"
+        android:layout_below="@+id/image"
         android:layout_marginTop="@dimen/_13sdp"
-        android:hint="Add a caption"/>
+        android:hint="Add a caption"
+        android:inputType="textCapSentences"
+        android:padding="@dimen/_10sdp" />
 
 </RelativeLayout>

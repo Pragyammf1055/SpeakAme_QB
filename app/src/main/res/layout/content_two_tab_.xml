@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/linearLayout"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/linearLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
@@ -15,7 +15,7 @@
         android:layout_height="match_parent"
         android:gravity="center"
         android:text="No group create"
-        android:visibility="gone" />
+        android:visibility="visible" />
 
     <EditText
         android:id="@+id/serch_edit"
@@ -23,8 +23,8 @@
         android:layout_height="40dp"
         android:background="@color/editbg"
         android:drawableLeft="@drawable/search_edit"
-        android:singleLine="true"
         android:imeOptions="actionSearch"
+        android:singleLine="true"
         android:visibility="gone" />
 
     <LinearLayout
@@ -37,16 +37,21 @@
         android:orientation="horizontal"
         android:weightSum="2">
 
-        <TextView
-            android:id="@+id/broadcast"
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:background="@drawable/left_rounded_corner_bg_layout"
-            android:gravity="center"
-            android:text="Chat"
-            android:textColor="@color/colorwhite"
-            android:textStyle="bold" />
+            android:layout_height="wrap_content"
+            android:layout_weight="1">
+
+            <TextView
+                android:id="@+id/broadcast"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/left_rounded_corner_bg_layout"
+                android:gravity="center"
+                android:text="Chat"
+                android:textColor="@color/colorwhite"
+                android:textStyle="bold" />
+        </RelativeLayout>
 
         <ImageView
             android:id="@+id/view_main_1"
@@ -55,16 +60,43 @@
             android:background="#4EAE47"
             android:visibility="gone" />
 
-        <TextView
-            android:id="@+id/newgroup"
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:text="Group"
-            android:textColor="@color/colorPrimary"
-            android:textStyle="bold" />
+            android:layout_height="wrap_content"
+            android:layout_weight="1">
 
+            <TextView
+                android:id="@+id/newgroup"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="Group"
+                android:textColor="@color/colorPrimary"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:id="@+id/msgCountlayout_grp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginBottom="-20dp">
+
+                <TextView
+                    android:id="@+id/messageCountTextView_grp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:background="@drawable/ic_circle_shape_red_wrap"
+                    android:gravity="center"
+                    android:text="9"
+                    android:textColor="@color/colorwhite"
+                    android:textSize="@dimen/_10sdp"
+                    android:visibility="visible" />
+
+            </LinearLayout>
+
+        </RelativeLayout>
 
     </LinearLayout>
 
@@ -82,13 +114,18 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <ListView
-                android:id="@+id/broadcastlist"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:scrollbars="none"
-                android:visibility="visible" />
         </view>
+
+        <ListView
+            android:id="@+id/broadcastlist"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:scrollbars="none"
+            android:visibility="visible" />
+
     </RelativeLayout>
 
     <RelativeLayout
@@ -112,5 +149,30 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true" />
+
+    <LinearLayout
+        android:id="@+id/msgCountlayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_margin="@dimen/_2sdp">
+
+        <TextView
+            android:id="@+id/messageCountTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_gravity="center"
+            android:layout_toEndOf="@+id/alerttext"
+            android:layout_toRightOf="@+id/alerttext"
+            android:background="@drawable/ic_circle_shape_red_wrap"
+            android:gravity="center"
+            android:text="9"
+            android:textColor="@color/colorwhite"
+            android:textSize="@dimen/_10sdp"
+            android:visibility="visible" />
+
+    </LinearLayout>
+
 
 </RelativeLayout>

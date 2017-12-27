@@ -13,7 +13,6 @@
     tools:context="com.speakame.Activity.ConfirmLoginOtp"
     tools:showIn="@layout/activity_confirm_login_otp">
 
-
     <LinearLayout
         android:id="@+id/linearLayout"
         android:layout_width="match_parent"
@@ -65,8 +64,8 @@
             android:layout_marginTop="15dp"
             android:background="@color/editbg"
             android:gravity="center"
-            android:inputType="number"
             android:hint="Enter Otp"
+            android:inputType="number"
             android:textColor="@color/inputeditcolor"
             android:textSize="@dimen/title_size" />
 
@@ -83,7 +82,6 @@
                 android:gravity="center"
                 app:mrl_rippleBackground="@color/colorPrimary"
                 app:mrl_rippleColor="@color/colorwhite">
-
 
                 <Button
                     android:id="@+id/btn_submit"
@@ -103,7 +101,7 @@
                 android:text="@string/text_recetepaas"
                 android:textAppearance="?android:attr/textAppearanceMedium"
                 android:textSize="@dimen/content_text"
-                android:visibility="gone" />
+                android:visibility="visible" />
         </LinearLayout>
 
     </LinearLayout>

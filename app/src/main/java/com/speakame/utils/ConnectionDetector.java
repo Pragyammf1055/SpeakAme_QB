@@ -12,6 +12,21 @@ public class ConnectionDetector {
         this._context = context;
     }
 
+    public static boolean isConnectingToInternet(Context context) {
+        ConnectivityManager connectivity = (ConnectivityManager) context
+                .getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (connectivity != null) {
+            NetworkInfo[] info = connectivity.getAllNetworkInfo();
+            if (info != null)
+                for (int i = 0; i < info.length; i++) {
+                    if (info[i].getState() == NetworkInfo.State.CONNECTED) {
+                        return true;
+                    }
+                }
+        }
+        return false;
+    }
+
     /**
      * Checking for all possible internet providers
      **/
@@ -28,24 +43,8 @@ public class ConnectionDetector {
                     }
                 }
             }
-
         } catch (Exception e) {
 
-        }
-        return false;
-    }
-
-    public static boolean isConnectingToInternet(Context context) {
-        ConnectivityManager connectivity = (ConnectivityManager) context
-                .getSystemService(Context.CONNECTIVITY_SERVICE);
-        if (connectivity != null) {
-            NetworkInfo[] info = connectivity.getAllNetworkInfo();
-            if (info != null)
-                for (int i = 0; i < info.length; i++) {
-                    if (info[i].getState() == NetworkInfo.State.CONNECTED) {
-                        return true;
-                    }
-                }
         }
         return false;
     }

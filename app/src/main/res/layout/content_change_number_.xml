@@ -37,23 +37,20 @@
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:drawablePadding="5dp"
-                android:hint="+1"
-                android:inputType="number"
-                android:cursorVisible="false"
-                android:editable="false"
                 android:focusableInTouchMode="false"
-                android:maxLength="2" />
+                android:hint="+91"
+                android:inputType="number"
+                android:maxLength="3" />
 
             <EditText
                 android:id="@+id/oldnumberedit"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:cursorVisible="false"
                 android:drawablePadding="5dp"
+                android:focusableInTouchMode="false"
                 android:hint="123456789"
                 android:inputType="number"
-                android:cursorVisible="false"
-                android:editable="false"
-                android:focusableInTouchMode="false"
                 android:maxLength="12" />
 
 
@@ -79,9 +76,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:drawablePadding="5dp"
-                android:hint="+1"
+                android:hint="+91"
                 android:inputType="number"
-                android:maxLength="2" />
+                android:maxLength="3" />
 
             <EditText
                 android:id="@+id/newnumberedit"
@@ -91,7 +88,6 @@
                 android:hint="123456789"
                 android:inputType="number"
                 android:maxLength="12" />
-
 
         </LinearLayout>
 

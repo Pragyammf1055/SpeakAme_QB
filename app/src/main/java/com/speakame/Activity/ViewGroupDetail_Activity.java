@@ -33,7 +33,6 @@ import com.speakame.Beans.AllBeans;
 import com.speakame.Classes.AnimRootActivity;
 import com.speakame.Database.DatabaseHelper;
 import com.speakame.R;
-import com.speakame.Services.XmppConneceted;
 import com.speakame.Xmpp.ChatMessage;
 import com.speakame.Xmpp.CommonMethods;
 import com.speakame.Xmpp.MediaAdapter;
@@ -45,8 +44,6 @@ import com.speakame.utils.VolleyCallback;
 import com.squareup.picasso.Picasso;
 import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 
-import org.jivesoftware.smack.SmackException;
-import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Message;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -96,6 +93,7 @@ public class ViewGroupDetail_Activity extends AnimRootActivity implements Volley
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_arrow_back_white_24dp);
+
         initview();
 
         random = new Random();
@@ -108,6 +106,7 @@ public class ViewGroupDetail_Activity extends AnimRootActivity implements Volley
                 .sizeResId(R.dimen.dividerhight)
                 .marginResId(R.dimen.dividerhight, R.dimen.dividerhight)
                 .build());
+
         LinearLayoutManager mLayoutManager = new LinearLayoutManager(ViewGroupDetail_Activity.this);
         recyclerView.setLayoutManager(mLayoutManager);
         mLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
@@ -151,8 +150,6 @@ public class ViewGroupDetail_Activity extends AnimRootActivity implements Volley
 
             mediaAdapter = new MediaAdapter(ViewGroupDetail_Activity.this, chatlist);
             recyclerView.setAdapter(mediaAdapter);
-
-
         } else {
             editstatus.setText("Group members");
             mProgressDialog = new SpotsDialog(ViewGroupDetail_Activity.this);
@@ -183,7 +180,7 @@ public class ViewGroupDetail_Activity extends AnimRootActivity implements Volley
         deleteGroup.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                XmppConneceted activity = new XmppConneceted();
+//                XmppConneceted activity = new XmppConneceted();
                 ChatMessage chatMessage = new ChatMessage(AppPreferences.getMobileuser(ViewGroupDetail_Activity.this), AppPreferences.getFirstUsername(ViewGroupDetail_Activity.this),
                         groupJid, groupJid,
                         Groupname, "",
@@ -204,26 +201,19 @@ public class ViewGroupDetail_Activity extends AnimRootActivity implements Volley
                 String alternateJid = friendlist.get(0).getFriendmobile().replace("+", "").replace(" ", "");
                 // alternateJid = alternateJid + getString(R.string.serverandresorces);
 
-                try {
-                    activity.getmService().xmpp.deleteChatRoom(chatMessage, Groupname, alternateJid);
+//                    activity.getmService().xmpp.deleteChatRoom(chatMessage, Groupname, alternateJid);
                     Intent intent = new Intent(ViewGroupDetail_Activity.this, TwoTab_Activity.class);
                     intent.setAction("");
                     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(intent);
                     finish();
-                } catch (XMPPException.XMPPErrorException e) {
-                    e.printStackTrace();
-                } catch (SmackException.NotConnectedException e) {
-                    e.printStackTrace();
-                } catch (SmackException.NoResponseException e) {
-                    e.printStackTrace();
-                }
             }
         });
+
         exitGroup.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                XmppConneceted activity = new XmppConneceted();
+//                XmppConneceted activity = new XmppConneceted();
                 ChatMessage chatMessage = new ChatMessage(AppPreferences.getMobileuser(ViewGroupDetail_Activity.this), AppPreferences.getFirstUsername(ViewGroupDetail_Activity.this),
                         groupJid, groupJid,
                         Groupname, "",
@@ -241,13 +231,15 @@ public class ViewGroupDetail_Activity extends AnimRootActivity implements Volley
 
                 chatMessage.body = "removeFromGroup";
 
-                boolean isRemove = activity.getmService().xmpp.userSelfExit(chatMessage);
-                if (isRemove) {
-                    exitsTask(Groupid);
-                } else {
+//                boolean isRemove = activity.getmService().xmpp.userSelfExit(chatMessage);
+                /*if (isRemove) {
 
+                } else {
                     Toast.makeText(ViewGroupDetail_Activity.this, "User not exits", Toast.LENGTH_SHORT).show();
-                }
+                }*/
+
+                exitsTask(Groupid);
+
                 if (ChatActivity.instance != null) {
                     ChatActivity.instance.finish();
                 }
@@ -290,16 +282,15 @@ public class ViewGroupDetail_Activity extends AnimRootActivity implements Volley
             return true;
         } else if (id == R.id.addcontact) {
             Intent intent = new Intent(ViewGroupDetail_Activity.this, GroupMemberList_Activity.class);
-            intent.putExtra("groupname", Groupname);
-            intent.putExtra("groupid", Groupid);
-            intent.putIntegerArrayListExtra("groupmemberid", stringArrayList);
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    | Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.setAction("ViewGroupDetail_Activity");
+            intent.putExtra("groupName", Groupname);
+            intent.putExtra("groupId", Groupid);
+            intent.putIntegerArrayListExtra("group_MemberId", stringArrayList);
             startActivity(intent);
             finish();
             return true;
         }
-
 
         return super.onOptionsItemSelected(item);
     }
@@ -426,8 +417,6 @@ public class ViewGroupDetail_Activity extends AnimRootActivity implements Volley
                                 JSONObject object = new JSONObject(response);
                                 if (object.getString("status").equalsIgnoreCase("200")) {
 
-
-
                                     JSONArray array = object.getJSONArray("result");
                                     JSONObject object1 = array.getJSONObject(0);
                                     String group_image = object1.getString("group_image");
@@ -437,7 +426,7 @@ public class ViewGroupDetail_Activity extends AnimRootActivity implements Volley
                                             .into(image_group);
                                     DatabaseHelper.getInstance(ViewGroupDetail_Activity.this).UpdateGroupImage(group_image, Groupid);
 
-                                    XmppConneceted activity = new XmppConneceted();
+//                                    XmppConneceted activity = new XmppConneceted();
                                     ChatMessage chatMessage = new ChatMessage(AppPreferences.getMobileuser(ViewGroupDetail_Activity.this), AppPreferences.getFirstUsername(ViewGroupDetail_Activity.this),
                                             groupJid, groupJid,
                                             Groupname, "Group Image changed by " + AppPreferences.getFirstUsername(ViewGroupDetail_Activity.this),
@@ -452,14 +441,11 @@ public class ViewGroupDetail_Activity extends AnimRootActivity implements Volley
                                     chatMessage.reciverlanguages = reciverlanguages;
                                     chatMessage.formID = String.valueOf(AppPreferences.getLoginId(ViewGroupDetail_Activity.this));
                                     chatMessage.lastseen = new DatabaseHelper(ViewGroupDetail_Activity.this).getLastSeen(groupJid);
-
-                                    activity.getmService().xmpp.groupUpdate(chatMessage);
-
+//                                    activity.getmService().xmpp.groupUpdate(chatMessage);
 
                                     Picasso.with(ViewGroupDetail_Activity.this).load(group_image).error(R.drawable.user_icon)
                                             .resize(200, 200)
                                             .into(conversationimage);
-
 
                                 } else if (object.getString("status").equalsIgnoreCase("200")) {
                                     Toast.makeText(ViewGroupDetail_Activity.this, "Server not respond", Toast.LENGTH_LONG).show();
@@ -478,23 +464,18 @@ public class ViewGroupDetail_Activity extends AnimRootActivity implements Volley
 
                     //imagePath = decodeFile(filePath, 200, 200);
                     // imagePath = filePath;
-
                     //  imageView.setImageDrawable(Drawable.createFromPath(filePath));
                     cursor.close();
                 } catch (Exception e) {
                 }
-
-
                 //performCrop(picUri);
             } else if (requestCode == PIC_CROP) {
-
-//get the returned data
+                //get the returned data
                 Bundle extras = data.getExtras();
-//get the cropped bitmap
+                //get the cropped bitmap
                 thePic = extras.getParcelable("data");
                 Log.d("pictureimage", String.valueOf(thePic));
-
-//                mimageview.setImageBitmap(thePic);
+                //                mimageview.setImageBitmap(thePic);
 //
               /*  ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
                 thePic.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
@@ -551,7 +532,7 @@ public class ViewGroupDetail_Activity extends AnimRootActivity implements Volley
                                             .into(image_group);
                                     DatabaseHelper.getInstance(ViewGroupDetail_Activity.this).UpdateGroupImage(group_image, Groupid);
 
-                                    XmppConneceted activity = new XmppConneceted();
+//                                    XmppConneceted activity = new XmppConneceted();
                                     ChatMessage chatMessage = new ChatMessage(AppPreferences.getMobileuser(ViewGroupDetail_Activity.this), AppPreferences.getFirstUsername(ViewGroupDetail_Activity.this),
                                             groupJid, groupJid,
                                             Groupname, "Group Image changed by " + AppPreferences.getFirstUsername(ViewGroupDetail_Activity.this),
@@ -567,7 +548,7 @@ public class ViewGroupDetail_Activity extends AnimRootActivity implements Volley
                                     chatMessage.formID = String.valueOf(AppPreferences.getLoginId(ViewGroupDetail_Activity.this));
                                     chatMessage.lastseen = new DatabaseHelper(ViewGroupDetail_Activity.this).getLastSeen(groupJid);
 
-                                    activity.getmService().xmpp.groupUpdate(chatMessage);
+//                                    activity.getmService().xmpp.groupUpdate(chatMessage);
 
 
                                     Picasso.with(ViewGroupDetail_Activity.this).load(group_image).error(R.drawable.user_icon)
@@ -608,7 +589,7 @@ public class ViewGroupDetail_Activity extends AnimRootActivity implements Volley
 
                 DatabaseHelper.getInstance(ViewGroupDetail_Activity.this).UpdateGroupName(name, Groupid);
 
-                XmppConneceted activity = new XmppConneceted();
+//                XmppConneceted activity = new XmppConneceted();
                 ChatMessage chatMessage = new ChatMessage(AppPreferences.getMobileuser(ViewGroupDetail_Activity.this), AppPreferences.getFirstUsername(ViewGroupDetail_Activity.this),
                         groupJid, groupJid,
                         name, "Group name changed by " + AppPreferences.getFirstUsername(ViewGroupDetail_Activity.this),
@@ -624,15 +605,13 @@ public class ViewGroupDetail_Activity extends AnimRootActivity implements Volley
                 chatMessage.formID = String.valueOf(AppPreferences.getLoginId(ViewGroupDetail_Activity.this));
                 chatMessage.lastseen = new DatabaseHelper(ViewGroupDetail_Activity.this).getLastSeen(groupJid);
 
-                activity.getmService().xmpp.groupUpdate(chatMessage);
+//                activity.getmService().xmpp.groupUpdate(chatMessage);
 
                 toolbartext.setText(chatMessage.groupName);
                 groupName = chatMessage.groupName;
-
+                TwoTab_Activity.adapter.notifyDataSetChanged();
             }
-
         }
-
     }
 
     private void performCrop(Uri picUri) {
@@ -662,7 +641,6 @@ public class ViewGroupDetail_Activity extends AnimRootActivity implements Volley
             Toast toast = Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT);
             toast.show();
         }
-
     }
 
     private void updateAdminUi(String isAdmin) {
@@ -694,6 +672,7 @@ public class ViewGroupDetail_Activity extends AnimRootActivity implements Volley
     }
 
     public void exitsTask(String groupid) {
+
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put("method", AppConstants.GROUP_EXIT_GROUP);
@@ -711,6 +690,7 @@ public class ViewGroupDetail_Activity extends AnimRootActivity implements Volley
                 public void backResponse(String response) {
                     try {
                         JSONObject object = new JSONObject(response);
+
                         if (object.getString("status").equalsIgnoreCase("200")) {
                             JSONObject jsonObject = new JSONObject();
                             JSONArray jsonArray = new JSONArray();
@@ -740,7 +720,6 @@ public class ViewGroupDetail_Activity extends AnimRootActivity implements Volley
         } catch (JSONException e) {
             e.printStackTrace();
         }
-
     }
 
     public class SpacesItemDecoration extends RecyclerView.ItemDecoration {
@@ -780,6 +759,5 @@ public class ViewGroupDetail_Activity extends AnimRootActivity implements Volley
             outRect.bottom = mVerticalSpaceHeight;
         }
     }
-
 
 }

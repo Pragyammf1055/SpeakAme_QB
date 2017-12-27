@@ -6,7 +6,6 @@ import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
@@ -143,7 +142,7 @@ public class PaymentInfo_Activity extends AnimRootActivity implements GoogleApiC
         radioButton3 = (RadioButton) findViewById(R.id.radio3);
         radioGrp = (RadioGroup) findViewById(R.id.radioGrp);
 
-        mobileNumberEditText.setText(AppPreferences.getMobileuser(PaymentInfo_Activity.this));
+        mobileNumberEditText.setText(AppPreferences.getMobileUserWithoutCountry(PaymentInfo_Activity.this));
         txt3.setText(AppPreferences.getRegisterEndDate(PaymentInfo_Activity.this));
         setting_blue.setVisibility(View.VISIBLE);
         setting.setVisibility(View.GONE);

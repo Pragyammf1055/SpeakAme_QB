@@ -44,11 +44,9 @@ public class Addnewcontact_activity extends AnimRootActivity {
         medit_phone = (EditText) findViewById(R.id.number_edit);
         medit_email = (EditText) findViewById(R.id.edit_email);
 
-
         Intent intent = getIntent();
         MobileNumber = intent.getStringExtra("contactnumber");
         medit_phone.setText(MobileNumber);
-
 
     }
 

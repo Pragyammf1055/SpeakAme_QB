@@ -7,9 +7,11 @@ import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -30,6 +32,7 @@ import org.json.JSONObject;
 import dmax.dialog.SpotsDialog;
 
 public class ChangeNumber_Activity extends AnimRootActivity {
+    private static final String TAG = "ChangeNumberAcivity";
     TextView toolbartext, txt1, txt2;
     EditText stdedit, numberedit, newstdedit, newnumedit;
     String OldNumber, NewNumber;
@@ -51,6 +54,9 @@ public class ChangeNumber_Activity extends AnimRootActivity {
         txt2 = (TextView) findViewById(R.id.textchangenum);
 
         stdedit = (EditText) findViewById(R.id.editcode);
+        stdedit.setActivated(false);
+        stdedit.setFocusableInTouchMode(false);
+        stdedit.setFocusable(false);
         numberedit = (EditText) findViewById(R.id.oldnumberedit);
         newstdedit = (EditText) findViewById(R.id.changestd);
         newnumedit = (EditText) findViewById(R.id.newnumberedit);
@@ -62,10 +68,41 @@ public class ChangeNumber_Activity extends AnimRootActivity {
         newstdedit.setTypeface(tf2);
         newnumedit.setTypeface(tf2);
 
-        stdedit.setText(AppPreferences.getCountrycode(ChangeNumber_Activity.this));
+//        stdedit.setText(AppPreferences.getCountrycode(ChangeNumber_Activity.this));
+        TelephonyManager tm = (TelephonyManager) getSystemService(getApplicationContext().TELEPHONY_SERVICE);
+        String diallingCode = Function.getCountryCode(tm);
+        Log.v("ChangeNumberActivity", "CountryCode :- " + diallingCode);
+        stdedit.setText("+" + diallingCode);
+
+        stdedit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, " Inside click !!! ");
+                stdedit.setEnabled(true);
+                stdedit.setActivated(true);
+                stdedit.setCursorVisible(true);
+                stdedit.setFocusable(true);
+                stdedit.setFocusableInTouchMode(true);
+                stdedit.setClickable(true);
+                stdedit.requestFocus();
+                stdedit.requestFocusFromTouch();
+            }
+        });
+
+        numberedit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, "Inside clivk numberedit");
+                numberedit.setCursorVisible(true);
+                numberedit.setFocusable(true);
+                numberedit.setFocusableInTouchMode(true);
+                numberedit.setEnabled(true);
+                numberedit.setClickable(true);
+                numberedit.requestFocus();
+                numberedit.requestFocusFromTouch();
+            }
+        });
         numberedit.setText(AppPreferences.getMobileuser(ChangeNumber_Activity.this));
-
-
 
     }
 
@@ -83,6 +120,7 @@ public class ChangeNumber_Activity extends AnimRootActivity {
             finish();
             return true;
         }
+
         if (id == R.id.done) {
             OldNumber = numberedit.getText().toString();
             NewNumber = newnumedit.getText().toString();
@@ -99,10 +137,7 @@ public class ChangeNumber_Activity extends AnimRootActivity {
                 newnumedit.setError(getResources().getString(R.string.error_field_required_length));
             } else {
                 changenumberRequest();
-
-
             }
-
 
             return true;
         }

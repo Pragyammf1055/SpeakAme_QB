@@ -33,5 +33,4 @@
 
     <include layout="@layout/content_two_tab_" />
 
-
 </android.support.design.widget.CoordinatorLayout>

@@ -50,8 +50,31 @@ public class DBTable {
     public static final String BLOCKED_STATUS = "block_status";
     public static final String KEY_USERSTATUS = "user_status";
     public static final String KEY_ISOTHERMSG = "isOtherMsg";
+    public static final String KEY_QB_RECIVER_ID = "receiver_QB_Id";
+    public static final String KEY_QB_SENDER_ID = "sender_QB_Id";
+    public static final String KEY_QB_FRIEND_ID = "friend_qb_id";
+    public static final String KEY_QB_FILE_UPLOAD_ID = "qbFileUploadId";
+    public static final String KEY_QB_FILE_U_ID = "qbFileUid";
+    public static final String KEY_QB_DIALOG_ID = "qbdialogid";
+    public static final String KEY_QB_MESSAGE_ID = "qbmessageid";
+    public static final String KEY_QBCHATDIALOG = "qbchatdialog";
 
-
+    public static final String KEY_STATUS = "status";
+    public static final String KEY_READ_STATUS = "read_unread_status";
+    public static final String KEY_QBCHATDIALOG_BYTES = "qbchatdialog_bytes";
+    public static final String TBL_STATUS = "tbl_status";
+    public static final String CREATE_TBL_USER_LAST_SEEN = "create table "
+            + TBL_STATUS + " ("
+            + KEY_ID + " integer primary key autoincrement, "
+            + KEY_QB_FRIEND_ID + " integer null, "
+            + KEY_STATUS + " text null "
+            + ");";
+    public static final String CREATE_TBL_QBCHATDIALOG = "create table "
+            + TBL_STATUS + " ("
+            + KEY_ID + " integer primary key autoincrement, "
+            + KEY_QB_FRIEND_ID + " integer null, "
+            + KEY_QBCHATDIALOG + " text null "
+            + ");";
     private static final String CREATE_TBL_CHAT = "create table "
             + TBL_CHAT + " ("
             + KEY_ID + " integer primary key autoincrement, "
@@ -80,23 +103,32 @@ public class DBTable {
             + KEY_ISOTHERMSG + " integer null, "
             + KEY_RECEIPTID + " text null, "
             + KEY_USERSTATUS + " text null, "
+            + KEY_QB_MESSAGE_ID + " text null, "
+            + KEY_QB_DIALOG_ID + " text null, "
+            + KEY_QB_RECIVER_ID + " integer null, "
+            + KEY_QB_SENDER_ID + " integer null, "
+            + KEY_QB_FRIEND_ID + " integer null, "
+            + KEY_QB_FILE_UPLOAD_ID + " integer null, "
+            + KEY_QB_FILE_U_ID + " text null, "
+            + KEY_READ_STATUS + " text null, "
+            + KEY_QBCHATDIALOG_BYTES + " blob null, "
             + KEY_FRIENDIMAGE + " text null"
             + ");";
-
-
     private static final String CREATE_TBL_USER = "create table "
             + TBL_USER + " ("
             + KEY_ID + " integer primary key autoincrement, "
+            + KEY_QB_RECIVER_ID + " integer null, "
             + KEY_USERNAME + " text null, "
             + KEY_MOBILE + " text null, "
             + KEY_PASSWORD + " text null"
             + ");";
-
-
     private static final String CREATE_TBL_CONTACTIMPORT = "create table "
             + TBL_CONTACTIMPORT + " ("
             + KEY_ID + " integer primary key autoincrement, "
             + FRIENDID + " text null, "
+            + KEY_QB_RECIVER_ID + " integer null, "
+            + KEY_QB_SENDER_ID + " integer null, "
+            + KEY_QB_FRIEND_ID + " integer null, "
             + FRIENDNAME + " text null, "
             + FRIENDNUMBER + " text null, "
             + FRIENDIMAGE + " text null, "
@@ -106,11 +138,11 @@ public class DBTable {
             + FRIENDLANGUAGE + " text null"
             + ");";
 
-
     public static void onCreate(SQLiteDatabase database) {
         database.execSQL(CREATE_TBL_CHAT);
         database.execSQL(CREATE_TBL_USER);
         database.execSQL(CREATE_TBL_CONTACTIMPORT);
+        database.execSQL(CREATE_TBL_USER_LAST_SEEN);
     }
 
     public static void onUpgrade(SQLiteDatabase database, int oldVersion,
@@ -121,6 +153,7 @@ public class DBTable {
         database.execSQL("DROP TABLE IF EXISTS " + TBL_CHAT);
         database.execSQL("DROP TABLE IF EXISTS " + TBL_USER);
         database.execSQL("DROP TABLE IF EXISTS " + TBL_CONTACTIMPORT);
+        database.execSQL("DROP TABLE IF EXISTS " + TBL_STATUS);
 
         onCreate(database);
     }

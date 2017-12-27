@@ -1,14 +1,10 @@
 package com.speakame.Activity;
 
-import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.graphics.Typeface;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -18,17 +14,10 @@ import android.widget.TextView;
 
 import com.speakame.Classes.AnimRootActivity;
 import com.speakame.R;
-import com.speakame.Xmpp.MyService;
-import com.speakame.utils.AppConstants;
-import com.speakame.utils.AppPreferences;
+import com.speakame.Services.ContactImportService;
 import com.speakame.utils.Function;
-import com.speakame.utils.JSONParser;
-import com.speakame.utils.M;
-import com.speakame.utils.VolleyCallback;
 
 import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 public class MainScreenActivity extends AnimRootActivity {
     //public static ArrayList<String> alContactsname;
@@ -80,14 +69,12 @@ public class MainScreenActivity extends AnimRootActivity {
 
             @Override
             public void onClick(View v) {
-                startService(new Intent(getBaseContext(), MyService.class));
+//                startService(new Intent(getBaseContext(), MyService.class));
                 Intent intent = new Intent(MainScreenActivity.this, ContactImport_Activity.class);
                 intent.setAction("bypass");
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
                 finish();
-
-
             }
         });
 
@@ -95,18 +82,13 @@ public class MainScreenActivity extends AnimRootActivity {
 
             @Override
             public void onClick(View v) {
-                startService(new Intent(getBaseContext(), MyService.class));
+//                startService(new Intent(getBaseContext(), MyService.class));
                 Intent intent = new Intent(MainScreenActivity.this, Invitefrnd_activity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
                 finish();
-
             }
         });
-
-
-
-
     }
 
 
@@ -131,18 +113,13 @@ public class MainScreenActivity extends AnimRootActivity {
 
                 }
             }
-
         }
     }
-
-
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.mainscreen_menu, menu);
         return true;
-
     }
 
     @Override
@@ -152,8 +129,11 @@ public class MainScreenActivity extends AnimRootActivity {
             finish();
             return true;
         }
+
         if (id == R.id.action_skip) {
-            startService(new Intent(getBaseContext(), MyService.class));
+//            startService(new Intent(getBaseContext(), MyService.class));
+            startService(new Intent(getBaseContext(), ContactImportService.class));
+
             Intent intent = new Intent(MainScreenActivity.this, TwoTab_Activity.class);
             intent.setAction("bypass");
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -164,10 +144,8 @@ public class MainScreenActivity extends AnimRootActivity {
         return super.onOptionsItemSelected(item);
     }
 
-
     @Override
     public void onBackPressed() {
 
     }
-
 }

@@ -1,29 +1,21 @@
 package com.speakame.Adapter;
 
 import android.app.ProgressDialog;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.database.Cursor;
 import android.graphics.Typeface;
-import android.provider.ContactsContract;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.speakame.Activity.TwoTab_Activity;
-import com.speakame.Activity.ViewGroupDetail_Activity;
 import com.speakame.Beans.AllBeans;
 import com.speakame.Database.DatabaseHelper;
 import com.speakame.R;
-import com.speakame.Services.XmppConneceted;
 import com.speakame.Xmpp.ChatMessage;
 import com.speakame.Xmpp.CommonMethods;
 import com.speakame.utils.AppConstants;
@@ -122,35 +114,6 @@ public class GroupMemberList_Adapter extends RecyclerView.Adapter<GroupMemberLis
         return contactList.size();
     }
 
-    public class MyViewHolder extends RecyclerView.ViewHolder implements View.OnLongClickListener {
-        public TextView name, status, adminTextView;
-        ImageView imageView;
-        AllBeans allBeans;
-        public MyViewHolder(View view) {
-            super(view);
-            view.setOnLongClickListener(this);
-            adminTextView = (TextView) view.findViewById(R.id.adminTextView);
-
-            name = (TextView) view.findViewById(R.id.nametext);
-            status = (TextView) view.findViewById(R.id.statustext);
-            imageView = (ImageView) view.findViewById(R.id.meal_image_order);
-            Typeface tf1 = Typeface.createFromAsset(context.getAssets(), "OpenSans-Regular.ttf");
-            name.setTypeface(tf1);
-            status.setTypeface(tf1);
-
-
-        }
-
-        @Override
-        public boolean onLongClick(View v) {
-            if(isAdmin.equalsIgnoreCase("2")){
-                    ShowLongPressDialog(allBeans);
-                }
-
-            return false;
-        }
-    }
-
     private void ShowLongPressDialog(final AllBeans allBeans){
 
         final List<String> itemList = new ArrayList<String>();
@@ -169,7 +132,7 @@ public class GroupMemberList_Adapter extends RecyclerView.Adapter<GroupMemberLis
         dialogBuilder.setItems(items, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int item) {
                 String selectedText = itemList.get(item);
-                XmppConneceted activity = new XmppConneceted();
+//                XmppConneceted activity = new XmppConneceted();
                 ChatMessage chatMessage = new ChatMessage(AppPreferences.getMobileuser(context), AppPreferences.getFirstUsername(context),
                         groupJid, groupJid,
                         Groupname, "",
@@ -192,14 +155,14 @@ public class GroupMemberList_Adapter extends RecyclerView.Adapter<GroupMemberLis
                     chatMessage.body = allBeans.getFriendname()+" Remove by : "+AppPreferences.getFirstUsername(context);
                    // activity.getmService().xmpp.groupUpdate(chatMessage);
                 }
-
+/*
                boolean isRemove = activity.getmService().xmpp.banUser(chatMessage,allBeans.getFriendmobile());
                 if(isRemove){
                     exitsTask(Groupid, allBeans);
                 }else {
 
                     Toast.makeText(context, "User not Remove", Toast.LENGTH_SHORT).show();
-                }
+                }*/
             }
         });
         //Create alert dialog object via builder
@@ -221,6 +184,7 @@ public class GroupMemberList_Adapter extends RecyclerView.Adapter<GroupMemberLis
         }
         return name;
     }
+
     public void exitsTask(String groupid, final AllBeans allBeans){
         JSONObject jsonObject = new JSONObject();
         try {
@@ -255,6 +219,36 @@ public class GroupMemberList_Adapter extends RecyclerView.Adapter<GroupMemberLis
             e.printStackTrace();
         }
 
+    }
+
+    public class MyViewHolder extends RecyclerView.ViewHolder implements View.OnLongClickListener {
+        public TextView name, status, adminTextView;
+        ImageView imageView;
+        AllBeans allBeans;
+
+        public MyViewHolder(View view) {
+            super(view);
+            view.setOnLongClickListener(this);
+            adminTextView = (TextView) view.findViewById(R.id.adminTextView);
+
+            name = (TextView) view.findViewById(R.id.nametext);
+            status = (TextView) view.findViewById(R.id.statustext);
+            imageView = (ImageView) view.findViewById(R.id.meal_image_order);
+            Typeface tf1 = Typeface.createFromAsset(context.getAssets(), "OpenSans-Regular.ttf");
+            name.setTypeface(tf1);
+            status.setTypeface(tf1);
+
+
+        }
+
+        @Override
+        public boolean onLongClick(View v) {
+            if (isAdmin.equalsIgnoreCase("2")) {
+                ShowLongPressDialog(allBeans);
+            }
+
+            return false;
+        }
     }
 
 }

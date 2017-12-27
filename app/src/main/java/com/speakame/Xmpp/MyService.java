@@ -1,3 +1,4 @@
+/*
 package com.speakame.Xmpp;
 
 import android.app.Service;
@@ -11,15 +12,16 @@ import com.speakame.Database.DatabaseHelper;
 import com.speakame.utils.AppPreferences;
 import org.jivesoftware.smack.chat.Chat;
 
-/**
+*
  * Created by MAX on 21-Sep-16.
- */
+
+
 public class MyService extends Service {
    // public static final String DOMAIN = "104.238.72.61";
     public static final String DOMAIN = "35.165.126.230";
 
     public static ConnectivityManager cm;
-    public static MyXMPP xmpp;
+//    public static MyXMPP xmpp;
     public static boolean ServerchatCreated = false;
     public Chat chat;
     String text = "";
@@ -48,7 +50,7 @@ public class MyService extends Service {
     @Override
     public int onStartCommand(final Intent intent, final int flags,
                               final int startId) {
-        return Service.START_NOT_STICKY;
+        return Service.START_STICKY;
     }
 
     @Override
@@ -63,3 +65,4 @@ public class MyService extends Service {
     }
 
 }
+*/

@@ -1,6 +1,6 @@
 package com.speakame.Adapter;
 
-import android.content.Context;
+import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.support.v7.widget.RecyclerView;
@@ -15,24 +15,25 @@ import android.widget.TextView;
 import com.speakame.Activity.ChatActivity;
 import com.speakame.Beans.AllBeans;
 import com.speakame.R;
-import com.speakame.Services.XmppConneceted;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.Locale;
+
+import static android.app.Activity.RESULT_OK;
 
 /**
  * Created by MMFA-YOGESH on 6/28/2016.
  */
 public class Favourite_Adapter extends RecyclerView.Adapter<Favourite_Adapter.MyViewHolder> {
 
-    Context context;
+    Activity context;
     ArrayList<AllBeans> objects;
     AllBeans allBeans;
     private ArrayList<AllBeans> contactList;
 
 
-    public Favourite_Adapter(Context context, ArrayList<AllBeans> contactList) {
+    public Favourite_Adapter(Activity context, ArrayList<AllBeans> contactList) {
         this.contactList = contactList;
         this.context = context;
         this.objects = new ArrayList<AllBeans>();
@@ -68,7 +69,7 @@ public class Favourite_Adapter extends RecyclerView.Adapter<Favourite_Adapter.My
     }
 
     @Override
-    public void onBindViewHolder(MyViewHolder holder, int position) {
+    public void onBindViewHolder(MyViewHolder holder, final int position) {
 
         allBeans = contactList.get(position);
         holder.name.setText(allBeans.getFriendname());
@@ -82,10 +83,26 @@ public class Favourite_Adapter extends RecyclerView.Adapter<Favourite_Adapter.My
             Picasso.with(context).load(allBeans.getFriendimage()).error(R.drawable.user_icon)
                     .resize(200, 200)
                     .into(holder.imageView);
-
-
         }
 
+        holder.view.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                int QB_UID = contactList.get(position).getFriendQB_id();
+
+                Intent intent = new Intent(context, ChatActivity.class);
+                intent.putExtra("value", contactList.get(position));
+//                intent.putExtra("groupName", "");
+                intent.putExtra("recipient_qb_id", QB_UID);
+                /*
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);*/
+                context.setResult(RESULT_OK, intent);
+//                context.startActivity(intent);
+//                context.finish();
+            }
+        });
 
     }
 
@@ -113,9 +130,11 @@ public class Favourite_Adapter extends RecyclerView.Adapter<Favourite_Adapter.My
     public class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         public TextView name, number;
         public ImageView imageView;
+        View view;
 
         public MyViewHolder(final View view) {
             super(view);
+            this.view = view;
             name = (TextView) view.findViewById(R.id.tv_name);
             number = (TextView) view.findViewById(R.id.tv_number);
             imageView = (ImageView) view.findViewById(R.id.iv_photo);
@@ -133,12 +152,14 @@ public class Favourite_Adapter extends RecyclerView.Adapter<Favourite_Adapter.My
         @Override
         public void onClick(View v) {
             Log.d("chatvalue", getPosition() + "::" + contactList.get(getPosition()));
+       /*
             XmppConneceted activity = new XmppConneceted();
             if (activity.getmService().xmpp.checkUserBlock(contactList.get(getPosition()).getFriendmobile())){
                 activity.getmService().xmpp.unBlockedUser(contactList.get(getPosition()).getFriendmobile());
-            }
+            }*/
 
             Intent intent = new Intent(context, ChatActivity.class);
+            intent.setAction("");
             intent.putExtra("value", contactList.get(getPosition()));
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(intent);

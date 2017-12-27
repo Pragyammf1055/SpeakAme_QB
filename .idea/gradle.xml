@@ -9,6 +9,15 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
+            <option value="$PROJECT_DIR$/sample-chat" />
+            <option value="$PROJECT_DIR$/sample-content" />
+            <option value="$PROJECT_DIR$/sample-core" />
+            <option value="$PROJECT_DIR$/sample-custom-objects" />
+            <option value="$PROJECT_DIR$/sample-location" />
+            <option value="$PROJECT_DIR$/sample-pushnotifications" />
+            <option value="$PROJECT_DIR$/sample-users" />
+            <option value="$PROJECT_DIR$/sample-videochat-webrtc" />
+            <option value="$PROJECT_DIR$/snippets" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />

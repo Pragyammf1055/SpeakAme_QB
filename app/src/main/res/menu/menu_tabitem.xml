@@ -5,14 +5,14 @@
 
 
     <item
-        android:id="@+id/creategroup"
+        android:id="@+id/refresh"
         android:orderInCategory="2"
-        android:title="New Group"
+        android:title="Refresh"
         app:showAsAction="never" />
     <item
-        android:id="@+id/addcontact"
+        android:id="@+id/status"
         android:orderInCategory="3"
-        android:title="Add Contacts"
+        android:title="Status"
         app:showAsAction="never" />
 
     <item

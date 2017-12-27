@@ -12,15 +12,14 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
-
 
 import com.speakame.Classes.AnimRootActivity;
 import com.speakame.R;
@@ -31,11 +30,13 @@ import java.io.FileOutputStream;
 import dmax.dialog.SpotsDialog;
 
 public class Invitefrnd_activity extends AnimRootActivity {
+    private static final String TAG = "Invitefrnd_activity";
     TextView toolbartext;
 
     ListView listViewPhoneBook;
     SimpleCursorAdapter mAdapter;
     MatrixCursor mMatrixCursor;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -71,25 +72,25 @@ public class Invitefrnd_activity extends AnimRootActivity {
         listViewPhoneBook.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
-                sharingIntent.setType("text/plain");
-                String shareBody = "Loved\" Check out Speakame Messenger for your smartphone.Download it today from\"";
-                sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "Speakame");
-                sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, shareBody);
-                startActivity(Intent.createChooser(sharingIntent, "Share via"));
+
+                String MobileNo = ((TextView) view.findViewById(R.id.tv_number)).getText().toString();
+                Log.v(TAG, "Mobile no :- " + MobileNo);
+                Uri phoneNoUri = Uri.parse("sms:" + MobileNo);
+                String shareBody = "Download SpeakAme messenger to chat with me in all languages.\n\n https://play.google.com/store/apps/details?id=com.speakame";
+
+                Intent sharingIntent = new Intent(Intent.ACTION_SENDTO);
+                sharingIntent.putExtra("sms_body", shareBody);
+                sharingIntent.setData(phoneNoUri);
+                startActivity(sharingIntent);
             }
         });
-
         // Creating an AsyncTask object to retrieve and load listview with contacts
         ListViewContactsLoader listViewContactsLoader = new ListViewContactsLoader();
-
         // Starting the AsyncTask process to retrieve and load listview with contacts
         listViewContactsLoader.execute();
 
-
-
-
     }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
@@ -115,20 +116,18 @@ public class Invitefrnd_activity extends AnimRootActivity {
     }
 
 
-
-
     /**
      * An AsyncTask class to retrieve and load listview with contacts
      */
     private class ListViewContactsLoader extends AsyncTask<Void, Void, Cursor> {
-       // ProgressDialog mprogressdialog;
-       AlertDialog mprogressdialog;
+        // ProgressDialog mprogressdialog;
+        AlertDialog mprogressdialog;
 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-             mprogressdialog = new SpotsDialog(Invitefrnd_activity.this);
-          //  mprogressdialog=new ProgressDialog(Invitefrnd_activity.this);
+            mprogressdialog = new SpotsDialog(Invitefrnd_activity.this);
+            //  mprogressdialog=new ProgressDialog(Invitefrnd_activity.this);
             mprogressdialog.setMessage("Loading...");
             mprogressdialog.setCancelable(false);
             mprogressdialog.show();
@@ -149,128 +148,135 @@ public class Invitefrnd_activity extends AnimRootActivity {
 
 
                     Uri dataUri = ContactsContract.Data.CONTENT_URI;
-
+                    Cursor dataCursor = null;
                     // Querying the table ContactsContract.Data to retrieve individual items like
                     // home phone, mobile phone, work email etc corresponding to each contact
-                    Cursor dataCursor = getContentResolver().query(dataUri, null,
-                            ContactsContract.Data.CONTACT_ID + "=" + contactId,
-                            null, null);
+                    try {
+                        dataCursor = getContentResolver().query(dataUri, null,
+                                ContactsContract.Data.CONTACT_ID + "=" + contactId,
+                                null, null);
 
 
-                    String displayName = "";
-                    String nickName = "";
-                    String homePhone = "";
-                    String mobilePhone = "";
-                    String workPhone = "";
-                    String photoPath = "" + R.drawable.user_icon;
-                    byte[] photoByte = null;
-                    String homeEmail = "";
-                    String workEmail = "";
-                    String companyName = "";
-                    String title = "";
+                        String displayName = "";
+                        String nickName = "";
+                        String homePhone = "";
+                        String mobilePhone = "";
+                        String workPhone = "";
+                        String photoPath = "" + R.drawable.user_icon;
+                        byte[] photoByte = null;
+                        String homeEmail = "";
+                        String workEmail = "";
+                        String companyName = "";
+                        String title = "";
 
 
-                    if (dataCursor.moveToFirst()) {
-                        // Getting Display Name
-                        displayName = dataCursor.getString(dataCursor.getColumnIndex(ContactsContract.Data.DISPLAY_NAME));
-                        do {
+                        if (dataCursor.moveToFirst()) {
+                            // Getting Display Name
+                            displayName = dataCursor.getString(dataCursor.getColumnIndex(ContactsContract.Data.DISPLAY_NAME));
+                            do {
 
-                            // Getting NickName
-                            if (dataCursor.getString(dataCursor.getColumnIndex("mimetype")).equals(ContactsContract.CommonDataKinds.Nickname.CONTENT_ITEM_TYPE))
-                                nickName = dataCursor.getString(dataCursor.getColumnIndex("data1"));
+                                // Getting NickName
+                                if (dataCursor.getString(dataCursor.getColumnIndex("mimetype")).equals(ContactsContract.CommonDataKinds.Nickname.CONTENT_ITEM_TYPE))
+                                    nickName = dataCursor.getString(dataCursor.getColumnIndex("data1"));
 
-                            // Getting Phone numbers
-                            if (dataCursor.getString(dataCursor.getColumnIndex("mimetype")).equals(ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE)) {
-                                switch (dataCursor.getInt(dataCursor.getColumnIndex("data2"))) {
-                                    case ContactsContract.CommonDataKinds.Phone.TYPE_HOME:
-                                        homePhone = dataCursor.getString(dataCursor.getColumnIndex("data1"));
-                                        break;
-                                    case ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE:
-                                        mobilePhone = dataCursor.getString(dataCursor.getColumnIndex("data1"));
-                                        break;
-                                    case ContactsContract.CommonDataKinds.Phone.TYPE_WORK:
-                                        workPhone = dataCursor.getString(dataCursor.getColumnIndex("data1"));
-                                        break;
+                                // Getting Phone numbers
+                                if (dataCursor.getString(dataCursor.getColumnIndex("mimetype")).equals(ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE)) {
+                                    switch (dataCursor.getInt(dataCursor.getColumnIndex("data2"))) {
+                                        case ContactsContract.CommonDataKinds.Phone.TYPE_HOME:
+                                            homePhone = dataCursor.getString(dataCursor.getColumnIndex("data1"));
+                                            break;
+                                        case ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE:
+                                            mobilePhone = dataCursor.getString(dataCursor.getColumnIndex("data1"));
+                                            break;
+                                        case ContactsContract.CommonDataKinds.Phone.TYPE_WORK:
+                                            workPhone = dataCursor.getString(dataCursor.getColumnIndex("data1"));
+                                            break;
+                                    }
                                 }
-                            }
 
-                            // Getting EMails
-                            if (dataCursor.getString(dataCursor.getColumnIndex("mimetype")).equals(ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE)) {
-                                switch (dataCursor.getInt(dataCursor.getColumnIndex("data2"))) {
-                                    case ContactsContract.CommonDataKinds.Email.TYPE_HOME:
-                                        homeEmail = dataCursor.getString(dataCursor.getColumnIndex("data1"));
-                                        break;
-                                    case ContactsContract.CommonDataKinds.Email.TYPE_WORK:
-                                        workEmail = dataCursor.getString(dataCursor.getColumnIndex("data1"));
-                                        break;
+                                // Getting EMails
+                                if (dataCursor.getString(dataCursor.getColumnIndex("mimetype")).equals(ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE)) {
+                                    switch (dataCursor.getInt(dataCursor.getColumnIndex("data2"))) {
+                                        case ContactsContract.CommonDataKinds.Email.TYPE_HOME:
+                                            homeEmail = dataCursor.getString(dataCursor.getColumnIndex("data1"));
+                                            break;
+                                        case ContactsContract.CommonDataKinds.Email.TYPE_WORK:
+                                            workEmail = dataCursor.getString(dataCursor.getColumnIndex("data1"));
+                                            break;
+                                    }
                                 }
-                            }
 
-                            // Getting Organization details
-                            if (dataCursor.getString(dataCursor.getColumnIndex("mimetype")).equals(ContactsContract.CommonDataKinds.Organization.CONTENT_ITEM_TYPE)) {
-                                companyName = dataCursor.getString(dataCursor.getColumnIndex("data1"));
-                                title = dataCursor.getString(dataCursor.getColumnIndex("data4"));
-                            }
+                                // Getting Organization details
+                                if (dataCursor.getString(dataCursor.getColumnIndex("mimetype")).equals(ContactsContract.CommonDataKinds.Organization.CONTENT_ITEM_TYPE)) {
+                                    companyName = dataCursor.getString(dataCursor.getColumnIndex("data1"));
+                                    title = dataCursor.getString(dataCursor.getColumnIndex("data4"));
+                                }
 
-                            // Getting Photo
-                            if (dataCursor.getString(dataCursor.getColumnIndex("mimetype")).equals(ContactsContract.CommonDataKinds.Photo.CONTENT_ITEM_TYPE)) {
-                                photoByte = dataCursor.getBlob(dataCursor.getColumnIndex("data15"));
+                                // Getting Photo
+                                if (dataCursor.getString(dataCursor.getColumnIndex("mimetype")).equals(ContactsContract.CommonDataKinds.Photo.CONTENT_ITEM_TYPE)) {
+                                    photoByte = dataCursor.getBlob(dataCursor.getColumnIndex("data15"));
 
-                                if (photoByte != null) {
-                                    Bitmap bitmap = BitmapFactory.decodeByteArray(photoByte, 0, photoByte.length);
+                                    if (photoByte != null) {
+                                        Bitmap bitmap = BitmapFactory.decodeByteArray(photoByte, 0, photoByte.length);
 
-                                    // Getting Caching directory
-                                    File cacheDirectory = getBaseContext().getCacheDir();
+                                        // Getting Caching directory
+                                        File cacheDirectory = getBaseContext().getCacheDir();
 
-                                    // Temporary file to store the contact files
-                                    File tmpFile = new File(cacheDirectory.getPath() + "/wpta_" + contactId + ".png");
+                                        // Temporary file to store the contact files
+                                        File tmpFile = new File(cacheDirectory.getPath() + "/wpta_" + contactId + ".png");
 
-                                    // The FileOutputStream to the temporary file
-                                    try {
-                                        FileOutputStream fOutStream = new FileOutputStream(tmpFile);
+                                        // The FileOutputStream to the temporary file
+                                        try {
+                                            FileOutputStream fOutStream = new FileOutputStream(tmpFile);
 
-                                        // Writing the bitmap to the temporary file as png file
-                                        bitmap.compress(Bitmap.CompressFormat.PNG, 100, fOutStream);
+                                            // Writing the bitmap to the temporary file as png file
+                                            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fOutStream);
 
-                                        // Flush the FileOutputStream
-                                        fOutStream.flush();
+                                            // Flush the FileOutputStream
+                                            fOutStream.flush();
 
-                                        //Close the FileOutputStream
-                                        fOutStream.close();
+                                            //Close the FileOutputStream
+                                            fOutStream.close();
 
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                        }
+
+                                        photoPath = tmpFile.getPath();
                                     }
 
-                                    photoPath = tmpFile.getPath();
                                 }
 
-                            }
+                            } while (dataCursor.moveToNext());
 
-                        } while (dataCursor.moveToNext());
+                            String details = "";
 
-                        String details = "";
+                            // Concatenating various information to single string
+                            //                        if (homePhone != null && !homePhone.equals(""))
+                            //                            details = "HomePhone : " + homePhone + "\n";
+                            if (mobilePhone != null && !mobilePhone.equals(""))
+                                details += "" + mobilePhone + "\n";
+                            //                        if (workPhone != null && !workPhone.equals(""))
+                            //                            details += "WorkPhone : " + workPhone + "\n";
+                            //                        if (nickName != null && !nickName.equals(""))
+                            //                            details += "NickName : " + nickName + "\n";
+                            //                        if (homeEmail != null && !homeEmail.equals(""))
+                            //                            details += "HomeEmail : " + homeEmail + "\n";
+                            //                        if (workEmail != null && !workEmail.equals(""))
+                            //                            details += "WorkEmail : " + workEmail + "\n";
+                            //                        if (companyName != null && !companyName.equals(""))
+                            //                            details += "CompanyName : " + companyName + "\n";
+                            //                        if (title != null && !title.equals(""))
+                            //                            details += "Title : " + title + "\n";
 
-                        // Concatenating various information to single string
-//                        if (homePhone != null && !homePhone.equals(""))
-//                            details = "HomePhone : " + homePhone + "\n";
-                        if (mobilePhone != null && !mobilePhone.equals(""))
-                            details += "" + mobilePhone + "\n";
-//                        if (workPhone != null && !workPhone.equals(""))
-//                            details += "WorkPhone : " + workPhone + "\n";
-//                        if (nickName != null && !nickName.equals(""))
-//                            details += "NickName : " + nickName + "\n";
-//                        if (homeEmail != null && !homeEmail.equals(""))
-//                            details += "HomeEmail : " + homeEmail + "\n";
-//                        if (workEmail != null && !workEmail.equals(""))
-//                            details += "WorkEmail : " + workEmail + "\n";
-//                        if (companyName != null && !companyName.equals(""))
-//                            details += "CompanyName : " + companyName + "\n";
-//                        if (title != null && !title.equals(""))
-//                            details += "Title : " + title + "\n";
-
-                        // Adding id, display name, path to photo and other details to cursor
-                        mMatrixCursor.addRow(new Object[]{Long.toString(contactId), displayName, photoPath, details});
+                            // Adding id, display name, path to photo and other details to cursor
+                            mMatrixCursor.addRow(new Object[]{Long.toString(contactId), displayName, photoPath, details});
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    } finally {
+                        if (dataCursor != null)
+                            dataCursor.close();
                     }
 
                 } while (contactsCursor.moveToNext());

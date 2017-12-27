@@ -4,10 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
+    android:layout_margin="@dimen/_16sdp"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context=".Activity.SignUp_Activity"
     tools:showIn="@layout/activity_sign_up_">
@@ -34,7 +31,7 @@
             android:focusable="true"
             android:gravity="center"
             android:hint="Username"
-            android:inputType="textCapWords"
+            android:inputType="textCapSentences"
             android:singleLine="true"
             android:textColor="@color/inputeditcolor" />
 
@@ -56,13 +53,13 @@
             android:layout_height="45dp"
             android:layout_marginTop="15dp"
             android:background="@color/editbg"
-            android:gravity="center"
-            android:hint="Country"
-            android:singleLine="true"
-            android:inputType="text"
             android:cursorVisible="false"
             android:editable="false"
             android:focusableInTouchMode="false"
+            android:gravity="center"
+            android:hint="Country"
+            android:inputType="text"
+            android:singleLine="true"
             android:textColor="@color/inputeditcolor" />
 
 
@@ -78,12 +75,12 @@
                 android:layout_marginTop="15dp"
                 android:layout_weight="0.5"
                 android:background="@color/editbg"
+                android:cursorVisible="false"
                 android:editable="false"
+                android:enabled="false"
+                android:focusableInTouchMode="false"
                 android:gravity="center"
                 android:hint="+"
-                android:enabled="false"
-                android:cursorVisible="false"
-                android:focusableInTouchMode="false"
                 android:inputType="number"
                 android:maxLength="6"
                 android:singleLine="true"
@@ -135,13 +132,13 @@
             android:layout_marginTop="15dp"
             android:layout_weight="1"
             android:background="@color/editbg"
-            android:gravity="center"
-            android:hint="Language"
-            android:singleLine="true"
-            android:inputType="text"
             android:cursorVisible="false"
             android:editable="false"
             android:focusableInTouchMode="false"
+            android:gravity="center"
+            android:hint="Language"
+            android:inputType="text"
+            android:singleLine="true"
             android:textColor="@color/inputeditcolor"/>
 
       <!--  <fr.ganfra.materialspinner.MaterialSpinner
@@ -167,6 +164,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="15dp"
             android:orientation="horizontal"
+            android:visibility="gone"
             android:weightSum="3">
 
             <TextView
@@ -230,9 +228,9 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/_10sdp"
             android:text="OR"
+            android:textColor="#000000"
             android:textSize="@dimen/_15sdp"
             android:textStyle="bold"
-            android:textColor="#000000"
             android:visibility="gone"/>
 
 
@@ -241,9 +239,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:layout_marginTop="@dimen/_10sdp"
             android:layout_marginLeft="20dp"
             android:layout_marginRight="20dp"
+            android:layout_marginTop="@dimen/_10sdp"
             android:drawable="@drawable/facebook"
             android:visibility="gone"/>
 

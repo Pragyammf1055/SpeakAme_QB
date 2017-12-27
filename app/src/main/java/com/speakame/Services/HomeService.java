@@ -8,7 +8,6 @@ import android.util.Log;
 import com.speakame.Activity.Main_Activity;
 import com.speakame.Beans.User;
 import com.speakame.Database.DatabaseHelper;
-import com.speakame.Xmpp.MyService;
 import com.speakame.utils.AppConstants;
 import com.speakame.utils.AppPreferences;
 import com.speakame.utils.Function;
@@ -44,9 +43,7 @@ public class HomeService extends IntentService {
         //Function.importcontact(HomeService.this);
         if(!AppPreferences.getMobileuser(HomeService.this).equalsIgnoreCase(""))
          checklogin();
-
     }
-
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -55,7 +52,6 @@ public class HomeService extends IntentService {
         if(!AppPreferences.getMobileuser(HomeService.this).equalsIgnoreCase(""))
          checklogin();
         return super.onStartCommand(intent, flags, startId);
-
     }
 
     @Override
@@ -72,7 +68,6 @@ public class HomeService extends IntentService {
         System.out.println("***********service******************");
         if(!AppPreferences.getMobileuser(HomeService.this).equalsIgnoreCase(""))
          checklogin();
-
     }
 
     @Override
@@ -80,7 +75,6 @@ public class HomeService extends IntentService {
 
         int delay = 50000;
         int period = 50000;
-
 
         timer = new Timer();
 

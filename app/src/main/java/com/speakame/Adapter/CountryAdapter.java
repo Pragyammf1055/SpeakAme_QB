@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.speakame.Beans.AllBeans;
@@ -95,12 +96,14 @@ public class CountryAdapter extends RecyclerView.Adapter<CountryAdapter.MyViewHo
 
     public class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         public TextView countrynametext, countrycodetext;
+        public LinearLayout linearLayout;
 
 
         public MyViewHolder(final View view) {
             super(view);
             countrynametext = (TextView) view.findViewById(R.id.conuntryname);
             countrycodetext = (TextView) view.findViewById(R.id.conuntrycode);
+            linearLayout = (LinearLayout) view.findViewById(R.id.linearLayout);
             Typeface tf1 = Typeface.createFromAsset(context.getAssets(), "OpenSans-Regular.ttf");
 
             countrynametext.setTypeface(tf1);

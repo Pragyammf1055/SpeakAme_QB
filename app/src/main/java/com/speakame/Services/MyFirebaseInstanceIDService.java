@@ -32,7 +32,6 @@ public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
         Log.d(TAG, "Refreshed token:" + refreshedToken);
 
         sendRegistrationToServer(refreshedToken);
-
     }
 
     private void sendRegistrationToServer(String token) {
@@ -56,7 +55,6 @@ public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
         jsonParser.parseVollyJsonArray(AppConstants.DEMOCOMMONURL, 1, jsonArray, new VolleyCallback() {
             @Override
             public void backResponse(String response) {
-
 
                 Log.d("response>>>>>", response);
                 //  mProgressDialog.dismiss();
@@ -91,6 +89,5 @@ public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
         System.out.println("AppConstants.COMMONURL---------" + AppConstants.DEMOCOMMONURL);
         System.out.println("jsonObject" + jsonObject);
     }
-
 
 }

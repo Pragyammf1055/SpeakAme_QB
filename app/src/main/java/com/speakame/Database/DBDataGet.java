@@ -5,6 +5,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 import android.webkit.MimeTypeMap;
 
+import com.quickblox.core.helper.StringifyArrayList;
 import com.speakame.Beans.AllBeans;
 import com.speakame.Beans.User;
 import com.speakame.Xmpp.ChatMessage;
@@ -19,6 +20,8 @@ import java.util.List;
  */
 public class DBDataGet {
 
+
+    private static final String TAG = "DBDataGet";
 
     public static ArrayList<ChatMessage> getChat(SQLiteDatabase db, String which, String keyname) {
 
@@ -41,7 +44,7 @@ public class DBDataGet {
             if (cursor.moveToFirst()) {
 
                 do {
-                    Log.d("CHATLISTSS count",cursor.getCount()+"\n"+cursor.getString(cursor.getColumnIndex(DBTable.KEY_SENDER)));
+                    Log.d("CHATLISTSS count 1", cursor.getCount() + "\n" + cursor.getString(cursor.getColumnIndex(DBTable.KEY_SENDER)));
                     String Sender = cursor.getString(cursor.getColumnIndex(DBTable.KEY_SENDER));
                     String Receiver = cursor.getString(cursor.getColumnIndex(DBTable.KEY_RECEIVER));
                     String SenderName = cursor.getString(cursor.getColumnIndex(DBTable.KEY_SENDERNAME));
@@ -63,7 +66,16 @@ public class DBDataGet {
 
                     boolean isMINE = cursor.getInt(cursor.getColumnIndex(DBTable.KEY_ISMINE)) > 0;
 
-                    ChatMessage chatMessage = new ChatMessage(Sender, SenderName, Receiver, ReciverName, GroupName, messageString, MID, file, isMINE);
+                    String readStatus = cursor.getString(cursor.getColumnIndex(DBTable.KEY_READ_STATUS));
+                    int receiver_qb_id = cursor.getInt(cursor.getColumnIndex(DBTable.KEY_QB_RECIVER_ID));
+                    int sender_qb_id = cursor.getInt(cursor.getColumnIndex(DBTable.KEY_QB_SENDER_ID));
+                    int friend_qb_id = cursor.getInt(cursor.getColumnIndex(DBTable.KEY_QB_FRIEND_ID));
+
+                    byte[] qbChatDialogBytes = cursor.getBlob(cursor.getColumnIndex(DBTable.KEY_QBCHATDIALOG_BYTES));
+                    String KEY_QB_MESSAGE_ID = cursor.getString(cursor.getColumnIndex(DBTable.KEY_QB_MESSAGE_ID));
+
+                    ChatMessage chatMessage = new ChatMessage(Sender, SenderName, Receiver, ReciverName, GroupName, messageString, MID, file, isMINE, sender_qb_id);
+
                     chatMessage.Time = DateTime;
                     chatMessage.type = MSGTYPE;
                     chatMessage.fileName = filename;
@@ -74,8 +86,25 @@ public class DBDataGet {
                     chatMessage.fileData = fileData;
                     chatMessage.userStatus = userStatus;
                     chatMessage.isOtherMsg = isOtherMsg;
+                    chatMessage.receiver_QB_Id = receiver_qb_id;
+                    chatMessage.friend_QB_Id = friend_qb_id;
+                    chatMessage.readStatus = readStatus;
+
+                    if (qbChatDialogBytes != null) {
+
+                        chatMessage.qbChatDialogBytes = qbChatDialogBytes;
+                    }
+
                     chatMessageList.add(chatMessage);
-                    Log.d("CHATLISTSS count",chatMessage.toString()+"\n>>>>>>>>>>>>>>>>");
+
+                    Log.d(TAG, "Get Sender Details :- " + sender_qb_id);
+                    Log.d(TAG, "Get Receiver Details :- " + receiver_qb_id);
+                    Log.d(TAG, "Get Friend Details :- " + friend_qb_id);
+                    Log.d(TAG, "Get read status getChat :- " + readStatus);
+                    Log.d(TAG, "Get qbChatDialogBytes 1 :- " + qbChatDialogBytes);
+//                    Log.d(TAG, "Get full QBChatDialog 1 :- " + SerializationUtils.deserialize(qbChatDialogBytes));
+
+                    Log.d("CHATLISTSS count 2", chatMessage.toString() + "\n>>>>>>>>>>>>>>>>");
 
                 } while (cursor.moveToNext());
             }
@@ -85,16 +114,115 @@ public class DBDataGet {
             db.close();
         } catch (Exception e) {
             e.printStackTrace();
-            Log.d("CHATLISTSS Exception",e.getMessage());
+            Log.d("CHATLISTSS Exception", e.getMessage());
         }
 
         //closeConnecion();
         return chatMessageList;
     }
 
+    public static List<ChatMessage> getReciever(SQLiteDatabase db) {
+
+//dscccccccccccccccccccccc
+
+        Log.v(TAG, "Inside Get Receiver details .... ");
+
+        List<ChatMessage> arrayList = new ArrayList<ChatMessage>();
+        try {
+            String query = "select * from " + DBTable.TBL_CHAT + " WHERE 1 AND " + DBTable.KEY_GROUPNAME + " IS NULL OR " + DBTable.KEY_GROUPNAME + " = '' GROUP BY " + DBTable.KEY_RECEIVER + " ORDER BY " + DBTable.KEY_ID + " DESC";
+            System.out.println("query : " + query);
+            Cursor cursor = db.rawQuery(query, null);
+            if (cursor == null) {
+                return arrayList;
+            } else if (cursor.getCount() == 0) {
+                return arrayList;
+            }
+
+            if (cursor.moveToFirst()) {
+                do {
+                    String Sender = cursor.getString(cursor.getColumnIndex(DBTable.KEY_SENDER));
+                    String Receiver = cursor.getString(cursor.getColumnIndex(DBTable.KEY_RECEIVER));
+                    String SenderName = cursor.getString(cursor.getColumnIndex(DBTable.KEY_SENDERNAME));
+                    String ReciverName = cursor.getString(cursor.getColumnIndex(DBTable.KEY_RECIVERNAME));
+                    String RecLanguage = cursor.getString(cursor.getColumnIndex(DBTable.KEY_RECLANGUAGE));
+                    String SendLanguage = cursor.getString(cursor.getColumnIndex(DBTable.KEY_SENDLANGUAGE));
+                    String messageString = cursor.getString(cursor.getColumnIndex(DBTable.KEY_BODY));
+                    String MID = cursor.getString(cursor.getColumnIndex(DBTable.KEY_MSGID));
+                    String time = cursor.getString(cursor.getColumnIndex(DBTable.KEY_TIME));
+                    String date = cursor.getString(cursor.getColumnIndex(DBTable.KEY_DATE));
+                    String MSGTYPE = cursor.getString(cursor.getColumnIndex(DBTable.KEY_MSGTYPE));
+                    String GroupName = cursor.getString(cursor.getColumnIndex(DBTable.KEY_GROUPNAME));
+                    String FriendImg = cursor.getString(cursor.getColumnIndex(DBTable.KEY_FRIENDIMAGE));
+                    String msgStatus = cursor.getString(cursor.getColumnIndex(DBTable.KEY_MSGSTATUS));
+                    String receiptId = cursor.getString(cursor.getColumnIndex(DBTable.KEY_RECEIPTID));
+                    String userStatus = cursor.getString(cursor.getColumnIndex(DBTable.KEY_USERSTATUS));
+
+                    boolean isMINE = cursor.getInt(cursor.getColumnIndex(DBTable.KEY_ISMINE)) > 0;
+
+                    int receiver_qb_id = cursor.getInt(cursor.getColumnIndex(DBTable.KEY_QB_RECIVER_ID));
+                    int sender_qb_id = cursor.getInt(cursor.getColumnIndex(DBTable.KEY_QB_SENDER_ID));
+//                    int friend_qb_id = cursor.getInt(cursor.getColumnIndex(DBTable.KEY_QB_SENDER_ID));
+                    int friend_qb_id = cursor.getInt(cursor.getColumnIndex(DBTable.KEY_QB_FRIEND_ID));
+                    String dialog_id = cursor.getString(cursor.getColumnIndex(DBTable.KEY_QB_DIALOG_ID));
+
+                    String readStatus = cursor.getString(cursor.getColumnIndex(DBTable.KEY_READ_STATUS));
+
+                    byte[] qbChatDialogBytes = cursor.getBlob(cursor.getColumnIndex(DBTable.KEY_QBCHATDIALOG_BYTES));
+
+                    Log.d(TAG, "Get Sender Details :- " + sender_qb_id);
+                    Log.d(TAG, "Get Receiver Details :- " + receiver_qb_id);
+                    Log.d(TAG, "Get Friend Details :- " + friend_qb_id);
+                    Log.d(TAG, "Get dialog Details :- " + dialog_id);
+                    Log.d(TAG, "Get read status getReciever :- " + readStatus);
+                    Log.d(TAG, "Get qbChatDialogBytes 1 :- " + qbChatDialogBytes);
+//                    Log.d(TAG, "Get full QBChatDialog 1 :- " + SerializationUtils.deserialize(qbChatDialogBytes));
+
+                    ChatMessage chatMessage = new ChatMessage(Sender, SenderName, Receiver, ReciverName, GroupName, messageString, MID, "", isMINE, sender_qb_id);
+                    chatMessage.Time = time;
+                    chatMessage.Date = date;
+                    chatMessage.type = MSGTYPE;
+                    chatMessage.senderlanguages = SendLanguage;
+                    chatMessage.reciverlanguages = RecLanguage;
+                    chatMessage.ReciverFriendImage = FriendImg;
+                    chatMessage.msgStatus = msgStatus;
+                    chatMessage.receiptId = receiptId;
+                    chatMessage.userStatus = userStatus;
+                    chatMessage.receiver_QB_Id = receiver_qb_id;
+                    chatMessage.friend_QB_Id = friend_qb_id;
+                    chatMessage.dialog_id = dialog_id;
+                    chatMessage.readStatus = readStatus;
+
+                    if (qbChatDialogBytes != null) {
+
+                        chatMessage.qbChatDialogBytes = qbChatDialogBytes;
+                    }
+
+
+                    arrayList.add(chatMessage);
+
+                    Log.v(TAG, "get Receiver Details :- " + chatMessage.toString());
+
+                    System.out.println("query : recivername" + Receiver + " Gropname" + GroupName);
+
+                } while (cursor.moveToNext());
+            }
+            if (cursor != null && !cursor.isClosed()) {
+                cursor.close();
+            }
+            db.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("query : recivername" + e.getMessage());
+        }
+
+        //  closeConnecion();
+        return arrayList;
+    }
+
+
     public static String getLastSeen(SQLiteDatabase db, String keyname) {
 
-        String LastSeen = "";
+        String LastSeen = "offline";
         try {
             String query;
             query = "select * from " + DBTable.TBL_CHAT + " where " + DBTable.KEY_RECEIVER + " = '" + keyname + "'";
@@ -174,7 +302,7 @@ public class DBDataGet {
                     /*>>>>>>>>>>*/
 
                     if (!filename.equalsIgnoreCase("") && msg.contains(AppConstants.KEY_CONTACT)) {
-                    }else if (filename.equalsIgnoreCase("")) {
+                    } else if (filename.equalsIgnoreCase("")) {
                     } else {
 
                         Sender = cursor.getString(cursor.getColumnIndex(DBTable.KEY_SENDER));
@@ -212,13 +340,20 @@ public class DBDataGet {
                     }*/
 
 
-                    ChatMessage chatMessage = new ChatMessage(Sender, SenderName, Receiver, ReciverName, GroupName, messageString, MID, file, isMINE);
+                    int receiver_qb_id = cursor.getInt(cursor.getColumnIndex(DBTable.KEY_QB_RECIVER_ID));
+                    int sender_qb_id = cursor.getInt(cursor.getColumnIndex(DBTable.KEY_QB_SENDER_ID));
+                    int friend_qb_id = cursor.getInt(cursor.getColumnIndex(DBTable.KEY_QB_FRIEND_ID));
+
+                    ChatMessage chatMessage = new ChatMessage(Sender, SenderName, Receiver, ReciverName, GroupName, messageString, MID, "", isMINE, sender_qb_id);
+
                     chatMessage.Time = DateTime;
                     chatMessage.type = MSGTYPE;
                     chatMessage.fileName = filename;
                     chatMessage.senderlanguages = SendLanguage;
                     chatMessage.reciverlanguages = RecLanguage;
                     chatMessage.fileData = fileData;
+                    chatMessage.receiver_QB_Id = receiver_qb_id;
+                    chatMessage.friend_QB_Id = friend_qb_id;
                     chatMessageList.add(chatMessage);
 
 
@@ -237,6 +372,7 @@ public class DBDataGet {
     }
 
     public static ArrayList<ChatMessage> getDateWiseChat(SQLiteDatabase db, String which, String keyname, String date) {
+//fvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvd
 
         ArrayList<ChatMessage> chatMessageList = new ArrayList<ChatMessage>();
         try {
@@ -276,7 +412,12 @@ public class DBDataGet {
 
                     boolean isMINE = cursor.getInt(cursor.getColumnIndex(DBTable.KEY_ISMINE)) > 0;
 
-                    ChatMessage chatMessage = new ChatMessage(Sender, SenderName, Receiver, ReciverName, GroupName, messageString, MID, file, isMINE);
+                    int receiver_qb_id = cursor.getInt(cursor.getColumnIndex(DBTable.KEY_QB_RECIVER_ID));
+                    int sender_qb_id = cursor.getInt(cursor.getColumnIndex(DBTable.KEY_QB_SENDER_ID));
+                    int friend_qb_id = cursor.getInt(cursor.getColumnIndex(DBTable.KEY_QB_FRIEND_ID));
+
+                    ChatMessage chatMessage = new ChatMessage(Sender, SenderName, Receiver, ReciverName, GroupName, messageString, MID, "", isMINE, sender_qb_id);
+
                     chatMessage.Time = DateTime;
                     chatMessage.type = MSGTYPE;
                     chatMessage.Date = Date;
@@ -284,8 +425,9 @@ public class DBDataGet {
                     chatMessage.senderlanguages = SendLanguage;
                     chatMessage.reciverlanguages = RecLanguage;
                     chatMessage.fileData = fileData;
+                    chatMessage.receiver_QB_Id = receiver_qb_id;
+                    chatMessage.friend_QB_Id = friend_qb_id;
                     chatMessageList.add(chatMessage);
-
 
                 } while (cursor.moveToNext());
             }
@@ -345,7 +487,7 @@ public class DBDataGet {
 
         String status = "";
         try {
-            String query = "select "+ DBTable.KEY_USERSTATUS +" from " + DBTable.TBL_CHAT + " where " + DBTable.KEY_RECEIVER + " = '" + reciver + "'";
+            String query = "select " + DBTable.KEY_USERSTATUS + " from " + DBTable.TBL_CHAT + " where " + DBTable.KEY_RECEIVER + " = '" + reciver + "'";
             System.out.println("query : " + query);
             Cursor cursor = db.rawQuery(query, null);
             if (cursor == null) {
@@ -360,9 +502,6 @@ public class DBDataGet {
                 do {
 
                     status = cursor.getString(cursor.getColumnIndex(DBTable.KEY_USERSTATUS));
-
-
-
                     System.out.println("query : " + status);
 
                 } while (cursor.moveToNext());
@@ -376,7 +515,6 @@ public class DBDataGet {
         } finally {
             db.close();
         }
-
         // closeConnecion();
         return status;
     }
@@ -385,7 +523,7 @@ public class DBDataGet {
 
         boolean IsBlock = false;
         try {
-            String query = "select * from " + DBTable.TBL_CHAT + " where " + DBTable.KEY_READ + " = '400' AND "+DBTable.KEY_RECEIVER+" ='" + reciver +"'";
+            String query = "select * from " + DBTable.TBL_CHAT + " where " + DBTable.KEY_READ + " = '400' AND " + DBTable.KEY_RECEIVER + " ='" + reciver + "'";
             System.out.println("query : " + query);
             Cursor cursor = db.rawQuery(query, null);
             if (cursor == null) {
@@ -421,10 +559,10 @@ public class DBDataGet {
         try {
             String query;
             if (which.equalsIgnoreCase("chat")) {
-                query = "select * from " + DBTable.TBL_CHAT + " where " + DBTable.KEY_RECEIVER + " = '" + keyname + "' and "+DBTable.KEY_READ+" ='" + "0" +"'";
+                query = "select * from " + DBTable.TBL_CHAT + " where " + DBTable.KEY_RECEIVER + " = '" + keyname + "' and " + DBTable.KEY_READ + " ='" + "0" + "'";
                 //query = "select "+DBTable.KEY_MSGSTATUS+" from " + DBTable.TBL_CHAT + " where " + DBTable.KEY_RECEIVER + " = '" + keyname + "' ORDER BY " + DBTable.KEY_ID + " ASC ";
             } else {
-                query = "select * from " + DBTable.TBL_CHAT + " where " + DBTable.KEY_RECEIVER + " = '" + keyname + "' and "+DBTable.KEY_READ+" ='" + "0" +"'";
+                query = "select * from " + DBTable.TBL_CHAT + " where " + DBTable.KEY_RECEIVER + " = '" + keyname + "' and " + DBTable.KEY_READ + " ='" + "0" + "'";
                 //query = "select "+DBTable.KEY_MSGSTATUS+" from " + DBTable.TBL_CHAT + " where " + DBTable.KEY_GROUPNAME + " = '" + keyname + "' ORDER BY " + DBTable.KEY_ID + " ASC ";
             }
 
@@ -442,8 +580,8 @@ public class DBDataGet {
                 do {
                     //correctAnswer=cursor.getInt(3);
                     String MID = cursor.getString(cursor.getColumnIndex(DBTable.KEY_READ));
-                    if(MID.equalsIgnoreCase("0")){
-                        num = num+1;
+                    if (MID.equalsIgnoreCase("0")) {
+                        num = num + 1;
                     }
 
                     System.out.println("query : count >" + MID);
@@ -542,7 +680,7 @@ public class DBDataGet {
 
 
     public static String getFriendMobile(SQLiteDatabase db, String mob) {
-
+//dsccccccccccccccccccccccccccccccccccccccccccccc
         String mobNo = "";
         try {
             String query = "select * from " + DBTable.TBL_CONTACTIMPORT + " where " + DBTable.FRIENDNUMBER + " = '" + mob + "'";
@@ -581,7 +719,7 @@ public class DBDataGet {
 /////////////////importcontact//////////////////////////////
 
     public static ArrayList<AllBeans> getContactList(SQLiteDatabase db) {
-
+//dsvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
         ArrayList<AllBeans> allbeansList = new ArrayList<AllBeans>();
         try {
             String query;
@@ -641,81 +779,13 @@ public class DBDataGet {
 
     ///////////////////>>>>>>>>>>>>>>>>///////////////////////////////////
 
-    public static List<ChatMessage> getReciever(SQLiteDatabase db) {
-
-        List<ChatMessage> arrayList = new ArrayList<ChatMessage>();
-        try {
-            String query = "select * from " + DBTable.TBL_CHAT + " WHERE 1 AND " + DBTable.KEY_GROUPNAME + " IS NULL OR " + DBTable.KEY_GROUPNAME + " = '' GROUP BY " + DBTable.KEY_RECEIVER + " ORDER BY " + DBTable.KEY_ID + " DESC";
-            System.out.println("query : " + query);
-            Cursor cursor = db.rawQuery(query, null);
-            if (cursor == null) {
-                return arrayList;
-            } else if (cursor.getCount() == 0) {
-                return arrayList;
-            }
-
-            if (cursor.moveToFirst()) {
-
-                do {
-
-                    String Sender = cursor.getString(cursor.getColumnIndex(DBTable.KEY_SENDER));
-                    String Receiver = cursor.getString(cursor.getColumnIndex(DBTable.KEY_RECEIVER));
-                    String SenderName = cursor.getString(cursor.getColumnIndex(DBTable.KEY_SENDERNAME));
-                    String ReciverName = cursor.getString(cursor.getColumnIndex(DBTable.KEY_RECIVERNAME));
-                    String RecLanguage = cursor.getString(cursor.getColumnIndex(DBTable.KEY_RECLANGUAGE));
-                    String SendLanguage = cursor.getString(cursor.getColumnIndex(DBTable.KEY_SENDLANGUAGE));
-                    String messageString = cursor.getString(cursor.getColumnIndex(DBTable.KEY_BODY));
-                    String MID = cursor.getString(cursor.getColumnIndex(DBTable.KEY_MSGID));
-                    String time = cursor.getString(cursor.getColumnIndex(DBTable.KEY_TIME));
-                    String date = cursor.getString(cursor.getColumnIndex(DBTable.KEY_DATE));
-                    String MSGTYPE = cursor.getString(cursor.getColumnIndex(DBTable.KEY_MSGTYPE));
-                    String GroupName = cursor.getString(cursor.getColumnIndex(DBTable.KEY_GROUPNAME));
-                    String FriendImg = cursor.getString(cursor.getColumnIndex(DBTable.KEY_FRIENDIMAGE));
-                    String msgStatus = cursor.getString(cursor.getColumnIndex(DBTable.KEY_MSGSTATUS));
-                    String receiptId = cursor.getString(cursor.getColumnIndex(DBTable.KEY_RECEIPTID));
-                    String userStatus = cursor.getString(cursor.getColumnIndex(DBTable.KEY_USERSTATUS));
-
-                    boolean isMINE = cursor.getInt(cursor.getColumnIndex(DBTable.KEY_ISMINE)) > 0;
-
-
-                    ChatMessage chatMessage = new ChatMessage(Sender, SenderName, Receiver, ReciverName, GroupName, messageString, MID, "", isMINE);
-                    chatMessage.Time = time;
-                    chatMessage.Date = date;
-                    chatMessage.type = MSGTYPE;
-                    chatMessage.senderlanguages = SendLanguage;
-                    chatMessage.reciverlanguages = RecLanguage;
-                    chatMessage.ReciverFriendImage = FriendImg;
-                    chatMessage.msgStatus = msgStatus;
-                    chatMessage.receiptId = receiptId;
-                    chatMessage.userStatus = userStatus;
-
-
-                    arrayList.add(chatMessage);
-
-
-                    System.out.println("query : recivername" + Receiver + " Gropname" + GroupName);
-
-                } while (cursor.moveToNext());
-            }
-            if (cursor != null && !cursor.isClosed()) {
-                cursor.close();
-            }
-            db.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("query : recivername" + e.getMessage());
-        }
-
-        //  closeConnecion();
-        return arrayList;
-    }
 
     public static List<ChatMessage> getGroup(SQLiteDatabase db) {
 
         List<ChatMessage> arrayList = new ArrayList<ChatMessage>();
         try {
-           // String query = "select * from " + DBTable.TBL_CHAT + " WHERE 1 AND " +DBTable.KEY_GROUPID +" != 'null'"+" AND " + DBTable.KEY_GROUPNAME + " IS NOT NULL AND " + DBTable.KEY_GROUPNAME + " != '' GROUP BY " + DBTable.KEY_GROUPNAME + " ORDER BY " + DBTable.KEY_ID + " DESC";
-            String query = "select * from " + DBTable.TBL_CHAT + " WHERE 1 AND " +DBTable.KEY_GROUPID +" != 'null'"+" AND " + DBTable.KEY_GROUPNAME + " IS NOT NULL AND " + DBTable.KEY_GROUPNAME + " != '' GROUP BY " + DBTable.KEY_GROUPID + " ORDER BY " + DBTable.KEY_ID + " DESC";
+            // String query = "select * from " + DBTable.TBL_CHAT + " WHERE 1 AND " +DBTable.KEY_GROUPID +" != 'null'"+" AND " + DBTable.KEY_GROUPNAME + " IS NOT NULL AND " + DBTable.KEY_GROUPNAME + " != '' GROUP BY " + DBTable.KEY_GROUPNAME + " ORDER BY " + DBTable.KEY_ID + " DESC";
+            String query = "select * from " + DBTable.TBL_CHAT + " WHERE 1 AND " + DBTable.KEY_GROUPID + " != 'null'" + " AND " + DBTable.KEY_GROUPNAME + " IS NOT NULL AND " + DBTable.KEY_GROUPNAME + " != '' GROUP BY " + DBTable.KEY_GROUPID + " ORDER BY " + DBTable.KEY_ID + " DESC";
             System.out.println("query : " + query);
             Cursor cursor = db.rawQuery(query, null);
             if (cursor == null) {
@@ -746,9 +816,17 @@ public class DBDataGet {
                     String userStatus = cursor.getString(cursor.getColumnIndex(DBTable.KEY_USERSTATUS));
                     boolean isMINE = cursor.getInt(cursor.getColumnIndex(DBTable.KEY_ISMINE)) > 0;
 
-                    System.out.println("imageeeey2keeeeeeeee" + GroupDpImage);
+                    System.out.println("imageeee y2k eeeeeeeee" + GroupDpImage);
 
-                    ChatMessage chatMessage = new ChatMessage(Sender, SenderName, Receiver, ReciverName, GroupName, messageString, MID, "", isMINE);
+
+                    int receiver_qb_id = cursor.getInt(cursor.getColumnIndex(DBTable.KEY_QB_RECIVER_ID));
+                    int sender_qb_id = cursor.getInt(cursor.getColumnIndex(DBTable.KEY_QB_SENDER_ID));
+                    int friend_qb_id = cursor.getInt(cursor.getColumnIndex(DBTable.KEY_QB_FRIEND_ID));
+                    String dialog_id = cursor.getString(cursor.getColumnIndex(DBTable.KEY_QB_DIALOG_ID));
+
+                    byte[] qbChatDialogBytes = cursor.getBlob(cursor.getColumnIndex(DBTable.KEY_QBCHATDIALOG_BYTES));
+
+                    ChatMessage chatMessage = new ChatMessage(Sender, SenderName, Receiver, ReciverName, GroupName, messageString, MID, "", isMINE, sender_qb_id);
                     chatMessage.Time = time;
                     chatMessage.Date = date;
                     chatMessage.type = MSGTYPE;
@@ -758,7 +836,13 @@ public class DBDataGet {
                     chatMessage.ReciverFriendImage = FriendImg;
                     chatMessage.Groupimage = GroupDpImage;
                     chatMessage.userStatus = userStatus;
+                    chatMessage.receiver_QB_Id = receiver_qb_id;
+                    chatMessage.friend_QB_Id = friend_qb_id;
+                    chatMessage.dialog_id = dialog_id;
 
+                    if (qbChatDialogBytes != null) {
+                        chatMessage.qbChatDialogBytes = qbChatDialogBytes;
+                    }
 
                     arrayList.add(chatMessage);
 
@@ -779,4 +863,99 @@ public class DBDataGet {
         return arrayList;
     }
 
+    public static String getQBLastSeen(SQLiteDatabase db, int friend_id) {
+
+        String LastSeen = "offline";
+        try {
+            String query;
+            query = "select * from " + DBTable.TBL_STATUS + " where " + DBTable.KEY_QB_FRIEND_ID + " = '" + friend_id + "'";
+
+            System.out.println("query : " + query);
+            Cursor cursor = db.rawQuery(query, null);
+
+            if (cursor == null) {
+                return LastSeen;
+            } else if (cursor.getCount() == 0) {
+                return LastSeen;
+            }
+
+            if (cursor.moveToLast()) {
+                LastSeen = cursor.getString(cursor.getColumnIndex(DBTable.KEY_STATUS));
+                int id = cursor.getInt(cursor.getColumnIndex(DBTable.KEY_QB_FRIEND_ID));
+                System.out.println("dummyDateDB" + LastSeen);
+//                Log.v(TAG, "lAST SEEN OF USER " + id + " :-" + LastSeen);
+
+            }
+            if (cursor != null && !cursor.isClosed()) {
+                cursor.close();
+            }
+            db.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.e(TAG, "error while getting data from :-" + e.getMessage());
+        }
+
+//closeConnecion();
+        return LastSeen;
+    }
+
+    public static StringifyArrayList<String> getUpdateMessageStatus(SQLiteDatabase db, String dialogid, String read_status) {
+
+        Log.v(TAG, "DIALOG ID :- 12:40" + dialogid);
+
+        StringifyArrayList<String> messageIds = new StringifyArrayList<>();
+
+        String qbMessage_id = "";
+        try {
+
+            String query;
+            query = "select " + DBTable.KEY_QB_MESSAGE_ID + " from " + DBTable.TBL_CHAT + " where " + DBTable.KEY_QB_DIALOG_ID + " = '" + dialogid + "' AND " + DBTable.KEY_READ_STATUS + " = '" + read_status + "'";
+            Log.v(TAG, "Get message status of messages 1 :- " + query);
+            Log.v(TAG, "Get message status of messages 2 :- " + query);
+
+            Cursor cursor = db.rawQuery(query, null);
+            Log.v(TAG, "Cursor data getting message id :- " + cursor);
+
+            if (cursor == null) {
+                return messageIds;
+            } else if (cursor.getCount() == 0) {
+                return messageIds;
+            }
+
+            if (cursor.moveToLast()) {
+
+                qbMessage_id = cursor.getString(cursor.getColumnIndex(DBTable.KEY_QB_MESSAGE_ID));
+//dffffffffffffffffffffffffffffffffffffffffffffffffv
+                Log.v(TAG, "qbMessage_id ID :- 12:40 -- " + qbMessage_id);
+                System.out.println("DBDataGet 12:40 :-" + qbMessage_id);
+
+            }
+
+            if (cursor.moveToFirst()) {
+                Log.v(TAG, "entering dowhile loop qbMessage_id ID :- 22 dec -- " + qbMessage_id);
+                do {
+
+                    qbMessage_id = cursor.getString(cursor.getColumnIndex(DBTable.KEY_QB_MESSAGE_ID));
+
+                    Log.v(TAG, " qbMessage_id ID :- 22 dec 8:40 am -- " + qbMessage_id);
+                    String key_body = cursor.getString(cursor.getColumnIndex(DBTable.KEY_BODY));
+                    Log.v(TAG, " message text -- key_body ID :- 22 dec 8:40 am -- " + key_body);
+
+                    messageIds.add(qbMessage_id);
+
+                } while (cursor.moveToLast());
+
+            }
+
+
+            if (cursor != null && !cursor.isClosed()) {
+                cursor.close();
+            }
+            db.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+//closeConnecion();
+        return messageIds;
+    }
 }

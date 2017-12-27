@@ -7,7 +7,6 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.media.MediaPlayer;
 import android.net.Uri;
-import android.provider.ContactsContract;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Gravity;
@@ -20,21 +19,13 @@ import android.view.WindowManager;
 import android.webkit.MimeTypeMap;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.MediaController;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
 import android.widget.VideoView;
 
 import com.speakame.R;
 import com.speakame.utils.AppConstants;
 
-import org.jivesoftware.smack.packet.Message;
-
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 
 /**
@@ -183,21 +174,6 @@ public class MediaAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         }
     }
 
-    public class MyViewHolder extends RecyclerView.ViewHolder {
-        public VideoView videoView;
-        public ImageView imageView;
-        public ImageButton videoBtn;
-
-        public MyViewHolder(View view) {
-            super(view);
-            videoView = (VideoView) view.findViewById(R.id.video);;
-            imageView = (ImageView) view.findViewById(R.id.image);
-            videoBtn = (ImageButton) view.findViewById(R.id.video_btn);
-        }
-    }
-
-
-
     private void imageDialog(Uri uri) {
         final Dialog dialog = new Dialog(context, R.style.PauseDialog);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -248,5 +224,19 @@ public class MediaAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
             }
         });
         dialog.show();
+    }
+
+    public class MyViewHolder extends RecyclerView.ViewHolder {
+        public VideoView videoView;
+        public ImageView imageView;
+        public ImageButton videoBtn;
+
+        public MyViewHolder(View view) {
+            super(view);
+            videoView = (VideoView) view.findViewById(R.id.video);
+            ;
+            imageView = (ImageView) view.findViewById(R.id.image);
+            videoBtn = (ImageButton) view.findViewById(R.id.video_btn);
+        }
     }
 }

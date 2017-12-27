@@ -10,12 +10,23 @@
         <item name="windowActionModeOverlay">true</item>
         <item name="actionButtonStyle">@style/MyActionButtonStyle</item>
         <item name="android:actionButtonStyle">@style/MyActionButtonStyle</item>
+
+
     </style>
 
     <style name="AppTheme.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="AppTheme.Splash">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowDisablePreview">true</item>
+
     </style>
 
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />

@@ -55,7 +55,7 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:hint="Enter name here"
-                android:inputType="textCapWords"
+                android:inputType="textCapSentences|textPersonName"
                 android:padding="@dimen/content_text"
                 android:textSize="@dimen/textsize" />
 

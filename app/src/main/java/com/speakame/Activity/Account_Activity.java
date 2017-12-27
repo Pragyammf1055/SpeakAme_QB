@@ -4,11 +4,11 @@ import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.speakame.Classes.AnimRootActivity;
@@ -17,9 +17,10 @@ import com.speakame.utils.AppPreferences;
 
 public class Account_Activity extends AnimRootActivity {
     public static ImageView language, language_blue, chat, chat_blue, setting, setting_blue, star,
-            star_blue, user, user_blue, user_profile;
+            star_blue, user, user_blue, user_profile, arrowPImageView;
     TextView toolbartext;
     TextView txt_privacy, txt_payment, txt_changenumber, txt_deleteac;
+    LinearLayout paymentLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +41,8 @@ public class Account_Activity extends AnimRootActivity {
         txt_changenumber = (TextView) findViewById(R.id.changenumber);
         txt_deleteac = (TextView) findViewById(R.id.deleteaccount);
 
+        paymentLayout = (LinearLayout) findViewById(R.id.paymentLayout);
+        arrowPImageView = (ImageView) findViewById(R.id.arrowPImageView);
 
         language = (ImageView) findViewById(R.id.iv_language);
         language_blue = (ImageView) findViewById(R.id.iv_bluelanguage);
@@ -55,6 +58,11 @@ public class Account_Activity extends AnimRootActivity {
         setting_blue.setVisibility(View.VISIBLE);
         setting.setVisibility(View.GONE);
 
+
+        if (AppPreferences.getFreeStatus(Account_Activity.this).equalsIgnoreCase("0")) {
+            paymentLayout.setVisibility(View.GONE);
+            arrowPImageView.setVisibility(View.GONE);
+        }
 
         if (AppPreferences.getTotf(Account_Activity.this).equalsIgnoreCase("1")) {
             user.setVisibility(View.VISIBLE);
@@ -191,7 +199,6 @@ public class Account_Activity extends AnimRootActivity {
 
 
     }
-
 
 
     @Override

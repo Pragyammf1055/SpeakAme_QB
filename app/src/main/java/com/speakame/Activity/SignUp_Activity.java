@@ -4,7 +4,6 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
@@ -16,16 +15,15 @@ import android.location.Location;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.Toolbar;
+import android.telephony.TelephonyManager;
 import android.util.Base64;
 import android.util.Log;
 import android.util.Patterns;
 import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
@@ -45,13 +43,19 @@ import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 import com.google.firebase.iid.FirebaseInstanceId;
+import com.quickblox.chat.QBChatService;
+import com.quickblox.core.QBEntityCallback;
+import com.quickblox.core.exception.QBResponseException;
+import com.quickblox.users.QBUsers;
+import com.quickblox.users.model.QBUser;
+import com.speakame.AppController;
 import com.speakame.Beans.AllBeans;
 import com.speakame.Beans.User;
 import com.speakame.Classes.AnimRootActivity;
 import com.speakame.Database.DatabaseHelper;
+import com.speakame.QuickBlox.QBResRequestExecutor;
 import com.speakame.R;
 import com.speakame.Services.HomeService;
-import com.speakame.Xmpp.MyService;
 import com.speakame.utils.AppConstants;
 import com.speakame.utils.AppPreferences;
 import com.speakame.utils.Function;
@@ -91,17 +95,17 @@ import java.util.Date;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import cn.pedant.SweetAlert.SweetAlertDialog;
 import dmax.dialog.SpotsDialog;
-import fr.ganfra.materialspinner.MaterialSpinner;
 
 public class SignUp_Activity extends AnimRootActivity implements VolleyCallback, View.OnClickListener {
 
+    private static final String TAG = "SignUp_Activity";
     public static Location loc;
     //keep track of camera capture intent
     final int CAMERA_CAPTURE = 2;
     //keep track of cropping intent
     final int PIC_CROP = 3;
+    protected QBResRequestExecutor requestExecutor;
     Bitmap thePic;
     TextView headtext;
     AutoCompleteTextView editlanguage;
@@ -109,16 +113,19 @@ public class SignUp_Activity extends AnimRootActivity implements VolleyCallback,
     ImageView fbimage, twitterimage, user_image, malecheck, maleuncheck, femalecheck, femaleuncheck;
     Button btn_signup;
     Typeface typeface, tf1;
-    String Name, Email, City, CountCode, Mobile, Password, currentDateTimeString, Language, Gender, Encoded_userimage;
-
+    String Name, Email, City, CountCode, Mobile, Password, currentDateTimeString, Language, Gender, Encoded_userimage = "";
     ArrayList<String> languageListString = new ArrayList<String>();
     Spinner spn;
     Double lat, lon;
+    LoginButton loginbutton;
+    CallbackManager callbackManager;
+    ProgressDialog dialog;
+    QBChatService chatService;
+    QBUser qbUserForDelete;
+    ProgressDialog pDialog;
     //captured picture uri
     private Uri picUri;
     private AlertDialog mProgressDialog;
-    LoginButton loginbutton;
-    CallbackManager callbackManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -128,47 +135,32 @@ public class SignUp_Activity extends AnimRootActivity implements VolleyCallback,
         callbackManager = CallbackManager.Factory.create();
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        user_image = (ImageView) findViewById(R.id.userimage);
-        editname = (EditText) findViewById(R.id.username);
-        editemail = (EditText) findViewById(R.id.emailid);
-        editcity = (EditText) findViewById(R.id.city);
-        editmobile = (EditText) findViewById(R.id.mobileno);
-        mcontry_code = (EditText) findViewById(R.id.cntrycode);
-        editpassword = (EditText) findViewById(R.id.paasword);
 
-        loginbutton = (LoginButton) findViewById(R.id.login_button);
-        selectLanguage = (EditText) findViewById(R.id.selectLanguage);
-        // editlanguage = (AutoCompleteTextView) findViewById(R.id.selectlanguage);
-        fbimage = (ImageView) findViewById(R.id.facebookbtn);
-        twitterimage = (ImageView) findViewById(R.id.twitterbrn);
-        btn_signup = (Button) findViewById(R.id.btnsignup);
-        headtext = (TextView) findViewById(R.id.headtext);
-        malecheck = (ImageView) findViewById(R.id.malec);
-        maleuncheck = (ImageView) findViewById(R.id.male);
-        femalecheck = (ImageView) findViewById(R.id.femalec);
-        femaleuncheck = (ImageView) findViewById(R.id.female);
-        headtext.setText("Register");
+        initViews();
 
         editcity.setOnClickListener(new View.OnClickListener() {
+
             @Override
             public void onClick(View v) {
+
                 Intent intent = new Intent(SignUp_Activity.this, CountryListActivity.class);
                 startActivityForResult(intent, 0);
+
             }
         });
 
         selectLanguage.setOnClickListener(new View.OnClickListener() {
+
             @Override
             public void onClick(View v) {
+
                 Intent intent = new Intent(SignUp_Activity.this, SelectLanguageActivity.class);
                 startActivityForResult(intent, 1);
             }
         });
 
-
         InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.showSoftInput(editname, InputMethodManager.SHOW_IMPLICIT);
-
 
 //        JSONObject obj = null;
 //        final ArrayList<String> CountryName = new ArrayList<String>();
@@ -252,7 +244,6 @@ public class SignUp_Activity extends AnimRootActivity implements VolleyCallback,
             public void onClick(View v) {
                 try {
                     //use standard intent to capture an files
-
                     Intent galleryIntent = new Intent(
                             Intent.ACTION_PICK,
                             android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
@@ -278,17 +269,15 @@ public class SignUp_Activity extends AnimRootActivity implements VolleyCallback,
                 Email = editemail.getText().toString();
                 City = editcity.getText().toString();
                 Language = selectLanguage.getText().toString();
-                    CountCode = mcontry_code.getText().toString();
+                CountCode = mcontry_code.getText().toString();
                 Mobile = editmobile.getText().toString();
                 Password = editpassword.getText().toString();
 
                 if (malecheck.getVisibility() == View.VISIBLE) {
                     Gender = "Male";
-
                 }
                 if (femalecheck.getVisibility() == View.VISIBLE) {
                     Gender = "Female";
-
                 }
                 if (Name.length() == 0) {
                     editname.setError(getResources().getString(R.string.error_field_required));
@@ -307,45 +296,8 @@ public class SignUp_Activity extends AnimRootActivity implements VolleyCallback,
                 } else if (Password.length() < 6) {
                     editpassword.setError(getResources().getString(R.string.error_field_password_lenght));
                 } else {
-
-                    mProgressDialog = new SpotsDialog(SignUp_Activity.this);
-                    mProgressDialog.setMessage("Please wait...");
-                    mProgressDialog.setCancelable(false);
-                    mProgressDialog.show();
-                    JSONObject jsonObj = new JSONObject();
-                    JSONArray jsonArray = new JSONArray();
-
-                    try {
-                        jsonObj.put("method", AppConstants.USER_SIGNUP);
-                        jsonObj.put("userImage", Encoded_userimage);
-                        jsonObj.put("username", Name);
-                        jsonObj.put("email", Email);
-                        jsonObj.put("country", City);
-                        jsonObj.put("countrycode", CountCode);
-                        jsonObj.put("mobile", Mobile);
-                        jsonObj.put("password", Password);
-                        jsonObj.put("language", Language);
-                        jsonObj.put("gender", Gender);
-                        jsonObj.put("dateTime", currentDateTimeString);
-                        jsonObj.put("mobile_uniquekey", Function.getAndroidID(SignUp_Activity.this));
-                        jsonObj.put("fcm_mobile_id", FirebaseInstanceId.getInstance().getToken());
-                        jsonArray.put(jsonObj);
-
-                        System.out.println("SEndSignup>" + jsonArray);
-
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                    JSONParser jsonParser = new JSONParser(getApplicationContext());
-                    jsonParser.parseVollyJsonArray(AppConstants.REGISTER_LOG, 1, jsonArray, SignUp_Activity.this);
-                    System.out.println("AppConstants.URL.REGISTER_LOG" + AppConstants.REGISTER_LOG);
-                    System.out.println("jsonObject" + jsonObj);
-
-
-                    // new RegisterAsynch().execute();
+                    registerUserToQuickBlox(Name, CountCode.replace("+", "") + Mobile, "12345678", Email);
                 }
-
-
             }
         });
 
@@ -356,9 +308,9 @@ public class SignUp_Activity extends AnimRootActivity implements VolleyCallback,
                 maleuncheck.setVisibility(View.VISIBLE);
                 femalecheck.setVisibility(View.VISIBLE);
                 femaleuncheck.setVisibility(View.GONE);
-
             }
         });
+
         maleuncheck.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -366,7 +318,6 @@ public class SignUp_Activity extends AnimRootActivity implements VolleyCallback,
                 malecheck.setVisibility(View.VISIBLE);
                 femalecheck.setVisibility(View.GONE);
                 femaleuncheck.setVisibility(View.VISIBLE);
-
             }
         });
 
@@ -405,7 +356,7 @@ public class SignUp_Activity extends AnimRootActivity implements VolleyCallback,
                             @Override
                             public void onCompleted(JSONObject object, GraphResponse response) {
                                 // Application code
-                                Log.v("LoginActivity", response.toString());
+                                Log.v(TAG, "Json response USER_SIGNUP :- " + response.toString());
                                 System.out.println("Check: " + response.toString());
                                 try {
                                     String socialid = object.getString("id");
@@ -424,7 +375,6 @@ public class SignUp_Activity extends AnimRootActivity implements VolleyCallback,
                                 } catch (JSONException e) {
                                     e.printStackTrace();
                                 }
-
                             }
                         });
                 Bundle parameters = new Bundle();
@@ -438,18 +388,227 @@ public class SignUp_Activity extends AnimRootActivity implements VolleyCallback,
 
             }
 
-
             @Override
             public void onError(FacebookException error) {
                 System.out.println("onError");
+                Log.v(TAG, "On error : " + AppConstants.REGISTER_LOG);
                 Snackbar.make(findViewById(android.R.id.content), "Please try again later", Snackbar.LENGTH_LONG).setAction("Alert!", null).show();
             }
 
-
         });
+
+        /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  Get Country Name and its dialling Counry code ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+        TelephonyManager tm = (TelephonyManager) getSystemService(getApplicationContext().TELEPHONY_SERVICE);
+
+        String diallingCode = Function.getCountryCode(tm);
+        Log.v(TAG, "CountryCode :- " + diallingCode);
+        mcontry_code.setText("+" + diallingCode);
+
+        String countryName = Function.getCountryFullName(tm);
+        Log.v(TAG, "Country Name full :- " + countryName);
+        editcity.setText(countryName);
+        /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  Get Country Name and its dialling Counry code ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+    }
+
+    private void registerUserToQuickBlox(String name, String mobile_no, String pwd, String email) {
+        Log.v(TAG, "Inside  registerUserToQuickBlox :- ");
+        chatService = QBChatService.getInstance();
+        if (android.os.Build.VERSION.SDK_INT > 9) {
+            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+            StrictMode.setThreadPolicy(policy);
+        }
+
+        final QBUser user = new QBUser();
+
+        user.setFullName(name);
+        user.setPhone(mobile_no);
+        user.setPassword(pwd);
+        user.setEmail(email);
+        user.setLogin(mobile_no);
+
+//        registerSync(user); // Synchronous way:
+        registerAsync(user); // Asynchronous way:
+//        registerBefore_sdk(user);
+    }
+
+    private void registerAsync(final QBUser user) {
+
+        pDialog = new ProgressDialog(SignUp_Activity.this);
+        pDialog.setTitle("Please wait...");
+        pDialog.show();
+
+
+        /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Asynchronus ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+        Log.v(TAG, "Inside  registerUserToQuickBlox :- ");
+
+        QBUsers.signUp(user).performAsync(new QBEntityCallback<QBUser>() {
+            @Override
+            public void onSuccess(QBUser qbUser, Bundle bundle) {
+                pDialog.dismiss();
+                String login = qbUser.getLogin();
+                String pwd = qbUser.getPassword();
+
+                Log.v(TAG, "Login QuickBlox:-  " + login);
+                Log.v(TAG, "Pwd QuickBlox:-  " + pwd);
+                Log.v(TAG, "User id after signup QuickBlox:-  " + qbUser.getId());
+                Log.v(TAG, "User created to QuickBlox");
+
+                AppPreferences.setQBUserId(SignUp_Activity.this, qbUser.getId());
+                AppPreferences.setQB_LoginId(SignUp_Activity.this, login);
+                Snackbar.make(findViewById(android.R.id.content), "User sign up done QuickBlox", Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
+
+                sendRequestToServer();
+                qbUserForDelete = qbUser;
+//                textViewlogin.setVisibility(View.VISIBLE);
+//                loginLinearLayout.setVisibility(View.VISIBLE);
+//                registerLinearLayout.setVisibility(View.GONE);
+                loginUserToQuickBlox(login, "12345678", pDialog, "");
+            }
+
+            @Override
+            public void onError(QBResponseException e) {
+
+                Log.v(TAG, "Sign up failed QuickBlox :- " + e.getMessage());
+                pDialog.dismiss();
+                String message = e.getMessage();
+                Snackbar.make(findViewById(android.R.id.content), "User sign up failed QuickBlox" + message, Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
+
+                loginUserToQuickBlox(user.getLogin(), "12345678", pDialog, message);
+
+
+            }
+        });
+
+        /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Asynchronus ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+    }
+
+    private void loginUserToQuickBlox(String mobile_no, String pwd, ProgressDialog pDialog, String message) {
+
+//        QBSettings.getInstance().fastConfigInit(MyApplication.APP_ID, MyApplication.AUTH_KEY, MyApplication.AUTH_SECRET);
+
+        Log.v(TAG, " ~~~~~~~~~~~~ Inside Login Button QuickBlox ~~~~~~~~~~~~ ");
+        Log.v(TAG, "Login with QuickBlox:-  " + mobile_no);
+        Log.v(TAG, "Pwd :-  " + pwd);
+
+        final QBUser user = new QBUser();
+        user.setLogin(mobile_no);
+        user.setPassword("12345678");
+
+        loginAsync(user, pDialog, message); // Asynchronous way:
+//        loginSync(user, dialog);  // Synchronous way
+
+    }
+
+    private void loginAsync(QBUser user, final ProgressDialog dialog, final String message) {
+
+        QBUsers.signIn(user).performAsync(new QBEntityCallback<QBUser>() {
+            @Override
+            public void onSuccess(QBUser qbUser, Bundle bundle) {
+                dialog.dismiss();
+                Log.v(TAG, "Login Sucessfully QuickBlox");
+                Log.v(TAG, "Bundle data :- " + bundle.toString());
+
+//                Snackbar.make(findViewById(android.R.id.content), "User Login Sucessfully to QuickBlox", Snackbar.LENGTH_SHORT).show();
+
+                if (message.equalsIgnoreCase("email has already been taken.")) {
+
+                    AppPreferences.getQBUserId(SignUp_Activity.this);
+                    Log.v(TAG, "QuickBlox id :- " + AppPreferences.getQBUserId(SignUp_Activity.this));
+                    removeAllUserData(AppPreferences.getQBUserId(SignUp_Activity.this));
+
+                } else if (message.equalsIgnoreCase("login has already been taken.")) {
+
+                    removeAllUserData(AppPreferences.getQBUserId(SignUp_Activity.this));
+
+                }
+
+            }
+
+            @Override
+            public void onError(QBResponseException e) {
+
+                Log.v(TAG, "Login failed QuickBlox .." + e.getMessage());
+                dialog.dismiss();
+                String message = e.getMessage();
+                Snackbar.make(findViewById(android.R.id.content), "QuickBlox Login failed due to " + message, Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
+            }
+        });
+
+    }
+
+
+    private void sendRequestToServer() {
+
+        mProgressDialog = new SpotsDialog(SignUp_Activity.this);
+        mProgressDialog.setMessage("Please wait...");
+        mProgressDialog.setCancelable(false);
+        mProgressDialog.show();
+        JSONObject jsonObj = new JSONObject();
+        JSONArray jsonArray = new JSONArray();
+
+        try {
+            jsonObj.put("method", AppConstants.USER_SIGNUP);
+            jsonObj.put("mobile_type", "AN");
+            jsonObj.put("username", Name);
+            jsonObj.put("email", Email);
+            jsonObj.put("country", City);
+            jsonObj.put("countrycode", CountCode);
+            jsonObj.put("mobile", Mobile);
+            jsonObj.put("password", Password);
+            jsonObj.put("language", Language);
+            jsonObj.put("gender", Gender);
+            jsonObj.put("dateTime", currentDateTimeString);
+            jsonObj.put("mobile_uniquekey", Function.getAndroidID(SignUp_Activity.this));
+            jsonObj.put("fcm_mobile_id", FirebaseInstanceId.getInstance().getToken());
+            jsonObj.put("userImage", Encoded_userimage);
+            jsonObj.put("qb_id", AppPreferences.getQBUserId(SignUp_Activity.this));
+            jsonArray.put(jsonObj);
+
+            System.out.println("SEndSignup>" + jsonArray);
+            Log.v(TAG, "Json request USER_SIGNUP :- " + jsonArray);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        JSONParser jsonParser = new JSONParser(getApplicationContext());
+        jsonParser.parseVollyJsonArray(AppConstants.REGISTER_LOG, 1, jsonArray, SignUp_Activity.this);
+        Log.v(TAG, "USER_SIGNUP URL :- " + AppConstants.REGISTER_LOG);
+        System.out.println("AppConstants.URL.REGISTER_LOG" + AppConstants.REGISTER_LOG);
+        System.out.println("jsonObject" + jsonObj);
+    }
+
+    private void initViews() {
+
+        requestExecutor = AppController.getAppInstance().getQbResRequestExecutor();
+
+        user_image = (ImageView) findViewById(R.id.userimage);
+        editname = (EditText) findViewById(R.id.username);
+        editname.requestFocus();
+        editemail = (EditText) findViewById(R.id.emailid);
+        editcity = (EditText) findViewById(R.id.city);
+        editmobile = (EditText) findViewById(R.id.mobileno);
+        mcontry_code = (EditText) findViewById(R.id.cntrycode);
+        editpassword = (EditText) findViewById(R.id.paasword);
+        loginbutton = (LoginButton) findViewById(R.id.login_button);
+        selectLanguage = (EditText) findViewById(R.id.selectLanguage);
+//        editlanguage = (AutoCompleteTextView) findViewById(R.id.selectlanguage);
+        fbimage = (ImageView) findViewById(R.id.facebookbtn);
+        twitterimage = (ImageView) findViewById(R.id.twitterbrn);
+        btn_signup = (Button) findViewById(R.id.btnsignup);
+        headtext = (TextView) findViewById(R.id.headtext);
+        malecheck = (ImageView) findViewById(R.id.malec);
+        maleuncheck = (ImageView) findViewById(R.id.male);
+        femalecheck = (ImageView) findViewById(R.id.femalec);
+        femaleuncheck = (ImageView) findViewById(R.id.female);
+        headtext.setText("Register");
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
         if (resultCode == RESULT_OK) {
             if (requestCode == 0) {
 
@@ -488,6 +647,7 @@ public class SignUp_Activity extends AnimRootActivity implements VolleyCallback,
         super.onStop();
         LoginManager.getInstance().logOut();
     }
+
     private void performCrop() {
 
         try {
@@ -545,8 +705,11 @@ public class SignUp_Activity extends AnimRootActivity implements VolleyCallback,
 
     @Override
     public void backResponse(String response) {
-        Log.d("response", response);
+        Log.d("Signup response", response);
+        Log.v(TAG, "Json response USER_SIGNUP :- " + response.toString());
+
         String user_id = "";
+
         if (response != null) {
             try {
                 JSONObject mainObject = new JSONObject(response);
@@ -559,12 +722,14 @@ public class SignUp_Activity extends AnimRootActivity implements VolleyCallback,
                         JSONObject jsonObject2 = topArray.getJSONObject(i);
                         user_id = jsonObject2.getString("userId");
 //                        System.out.println("user_id" + user_id);
-
                         //String mobileNo = jsonObject2.getString("mobile").replace("");
 
                         AppPreferences.setLoginId(SignUp_Activity.this, Integer.parseInt(jsonObject2.getString("userId")));
-                        AppPreferences.setMobileuser(SignUp_Activity.this, jsonObject2.getString("mobile"));
-                       /* AppPreferences.setPassword(SignUp_Activity.this, jsonObject2.getString("password"));
+
+                        AppPreferences.setMobileuser(SignUp_Activity.this, jsonObject2.getString("country_with_mobile"));
+                        AppPreferences.setFreeStatus(SignUp_Activity.this, jsonObject2.getString("free_status"));
+
+                        /* AppPreferences.setPassword(SignUp_Activity.this, jsonObject2.getString("password"));
                         AppPreferences.setFirstUsername(SignUp_Activity.this, jsonObject2.getString("username"));
                         AppPreferences.setUserprofile(SignUp_Activity.this, jsonObject2.getString("userImage"));
                         AppPreferences.setEmail(SignUp_Activity.this, jsonObject2.getString("email"));
@@ -583,29 +748,76 @@ public class SignUp_Activity extends AnimRootActivity implements VolleyCallback,
                         Intent intent = new Intent(getApplicationContext(), Verify_numberActivity.class);
                         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK
                                 | Intent.FLAG_ACTIVITY_NEW_TASK);
+                        intent.setAction("SignUp");
+                        intent.putExtra("full_name", Name);
+                        intent.putExtra("email", Email);
+                        intent.putExtra("mobile", CountCode.replace("+", "") + Mobile);
                         startActivity(intent);
-
-                       /* new AddmemberAsynch().execute(jsonObject2.getString("country_with_mobile"), jsonObject2.getString("password"),
-                                jsonObject2.getString("username"), jsonObject2.getString("email"));*/
-
                     }
 
                 } else if (mainObject.getString("status").equalsIgnoreCase("300")) {
-                    Snackbar.make(findViewById(android.R.id.content), "Mobile Number Already Exists. Please use another Mobile Number.", Snackbar.LENGTH_LONG).show();
-                } else if (mainObject.getString("status").equalsIgnoreCase("400")) {
-                    Snackbar.make(findViewById(android.R.id.content), "Email Id Already Exists. Please use another Email Id.", Snackbar.LENGTH_LONG).show();
-                } else {
-                    Snackbar.make(findViewById(android.R.id.content), "Some Error Occured.", Snackbar.LENGTH_LONG).show();
-                }
 
+                    removeAllUserData(AppPreferences.getQBUserId(SignUp_Activity.this));
+                    Snackbar.make(findViewById(android.R.id.content), "Mobile Number Already Exists. Please use another Mobile Number !!!", Snackbar.LENGTH_LONG).show();
+
+                } else if (mainObject.getString("status").equalsIgnoreCase("400")) {
+
+                    removeAllUserData(AppPreferences.getQBUserId(SignUp_Activity.this));
+                    Snackbar.make(findViewById(android.R.id.content), "Some Error Occured !!!", Snackbar.LENGTH_LONG).show();
+
+                } else if (mainObject.getString("status").equalsIgnoreCase("500")) {
+
+                    removeAllUserData(AppPreferences.getQBUserId(SignUp_Activity.this));
+                    Snackbar.make(findViewById(android.R.id.content), "Email Id Already Exists. Please use another Email Id !!!", Snackbar.LENGTH_LONG).show();
+
+                } else if (mainObject.getString("status").equalsIgnoreCase("100")) {
+
+                    removeAllUserData(AppPreferences.getQBUserId(SignUp_Activity.this));
+                    Snackbar.make(findViewById(android.R.id.content), "Internet not Connected.", Snackbar.LENGTH_LONG).show();
+
+                }
 
             } catch (JSONException e) {
                 e.printStackTrace();
             }
+
             mProgressDialog.dismiss();
-
-
         }
+    }
+
+    private void removeAllUserData(int QBUserId) {
+
+        Log.v(TAG, "QuickBlox id :- " + AppPreferences.getQBUserId(SignUp_Activity.this));
+      /*  requestExecutor.deleteCurrentUser(QBUserId, new QBEntityCallback<Void>() {
+            @Override
+            public void onSuccess(Void aVoid, Bundle bundle) {
+
+                Log.v(TAG, "User deleted succesfully");
+
+            }
+
+            @Override
+            public void onError(QBResponseException e) {
+
+                Log.v(TAG, "Error deleted succesfully");
+                Log.v(TAG, "Error message :- " + e.getMessage());
+
+            }
+        });
+*/
+
+        QBUsers.deleteUser(QBUserId).performAsync(new QBEntityCallback<Void>() {
+            @Override
+            public void onSuccess(Void aVoid, Bundle bundle) {
+                Log.v(TAG, "User deleted succesfully");
+            }
+
+            @Override
+            public void onError(QBResponseException e) {
+                Log.v(TAG, "Error deleted succesfully");
+                Log.v(TAG, "Error message :- " + e.getMessage());
+            }
+        });
     }
 
     public void dismissKeyboard(Activity activity) {
@@ -620,9 +832,8 @@ public class SignUp_Activity extends AnimRootActivity implements VolleyCallback,
 
     }
 
-//////////getlanguage//////////////
 
-
+    //////////getlanguage//////////////
 
     ////////////////////////////////
 
@@ -640,7 +851,6 @@ public class SignUp_Activity extends AnimRootActivity implements VolleyCallback,
             super.onPreExecute();
 
         }
-
 
         @Override
         protected String doInBackground(Void... params) {
@@ -698,6 +908,7 @@ public class SignUp_Activity extends AnimRootActivity implements VolleyCallback,
                     e.printStackTrace();
                 }
                 System.out.println("JSONString response is : " + jsonString);
+                Log.v(TAG, "Json response :- " + jsonString);
                 if (jsonString != null) {
                     if (jsonString.contains("result")) {
                         JSONObject jsonObj = new JSONObject(jsonString);
@@ -761,13 +972,10 @@ public class SignUp_Activity extends AnimRootActivity implements VolleyCallback,
         }
     }
 
-
-
     class LoginTask extends AsyncTask<String, Void, String> {
         String status = "", result = "", loginId = "";
         String pass = "";
         Context context;
-
 
         public LoginTask(Context context) {
             this.context = context;
@@ -802,12 +1010,12 @@ public class SignUp_Activity extends AnimRootActivity implements VolleyCallback,
                 values.add(new BasicNameValuePair("fcm_mobile_id", FirebaseInstanceId.getInstance().getToken()));*/
                 pass = params[2];
             } else if (params[0].equals("facebook")) {
+                values.add(new BasicNameValuePair("method", AppConstants.LOGIN));
                 values.add(new BasicNameValuePair("user_social_id", params[1]));
                 values.add(new BasicNameValuePair("user_name", params[2]));
                 values.add(new BasicNameValuePair("password", ""));
                 values.add(new BasicNameValuePair("email", params[3]));
                 values.add(new BasicNameValuePair("profpic", params[4]));
-                values.add(new BasicNameValuePair("method", AppConstants.LOGIN));
                 values.add(new BasicNameValuePair("fcm_mobile_id", FirebaseInstanceId.getInstance().getToken()));
                 values.add(new BasicNameValuePair("mobile_uniquekey", Function.getAndroidID(SignUp_Activity.this)));
 //                values.add(new BasicNameValuePair("device_id", getDeviceId()));
@@ -831,6 +1039,9 @@ public class SignUp_Activity extends AnimRootActivity implements VolleyCallback,
                     for (int i = 0; i < jsonArray.length(); i++) {
                         JSONObject jsonObject2 = jsonArray.getJSONObject(i);
                         loginId = jsonObject2.getString("userId");
+                        String Qb_id = jsonObject2.getString("receiver_QB_Id");
+                        Log.v(TAG, "QB User Id :- " + Qb_id);
+
                         AppPreferences.setLoginId(SignUp_Activity.this, Integer.parseInt(jsonObject2.getString("userId")));
                         AppPreferences.setSocialId(SignUp_Activity.this, jsonObject2.getString("social_id"));
                         // AppPreferences.setMobileuser(SignIn_Activity.this, jsonObject2.getString("country_with_mobile").replace(" ","-"));
@@ -839,10 +1050,10 @@ public class SignUp_Activity extends AnimRootActivity implements VolleyCallback,
                         AppPreferences.setUserprofile(SignUp_Activity.this, jsonObject2.getString("userImage"));
 
                         System.out.println("userpic" + jsonObject2.getString("userImage"));
-                        System.out.println("usermobile" + jsonObject2.getString("country_with_mobile").replace(" ","").replace("+",""));
+                        System.out.println("usermobile" + jsonObject2.getString("country_with_mobile").replace(" ", "").replace("+", ""));
                         System.out.println("userPassword" + jsonObject2.getString("password"));
                         AppPreferences.setEmail(SignUp_Activity.this, jsonObject2.getString("email"));
-                        AppPreferences.setMobileuser(SignUp_Activity.this, jsonObject2.getString("country_with_mobile").replace(" ","").replace("+",""));
+                        AppPreferences.setMobileuser(SignUp_Activity.this, jsonObject2.getString("country_with_mobile").replace(" ", "").replace("+", ""));
                         AppPreferences.setUsercity(SignUp_Activity.this, jsonObject2.getString("country"));
                         AppPreferences.setCountrycode(SignUp_Activity.this, jsonObject2.getString("countrycode"));
                         AppPreferences.setUSERLANGUAGE(SignUp_Activity.this, jsonObject2.getString("language"));
@@ -859,7 +1070,7 @@ public class SignUp_Activity extends AnimRootActivity implements VolleyCallback,
                         //   System.out.println("userenddate" + jsonObject2.getString("end_date"));
                         User user = new User();
                         user.setName(jsonObject2.getString("username"));
-                        user.setMobile(jsonObject2.getString("country_with_mobile").replace(" ","").replace("+",""));
+                        user.setMobile(jsonObject2.getString("country_with_mobile").replace(" ", "").replace("+", ""));
                         user.setPassword(jsonObject2.getString("password"));
                         DatabaseHelper.getInstance(SignUp_Activity.this).insertUser(user);
                     }
@@ -887,7 +1098,7 @@ public class SignUp_Activity extends AnimRootActivity implements VolleyCallback,
             if (status.equals("200") && !loginId.equals("")) {
 
                 System.out.println("loginid1" + AppPreferences.getLoginId(context));
-                startService(new Intent(getBaseContext(), MyService.class));
+//                startService(new Intent(getBaseContext(), MyService.class));
 
                 Intent mintent_home = new Intent(SignUp_Activity.this, TwoTab_Activity.class);
                 mintent_home.setAction("");
@@ -903,15 +1114,15 @@ public class SignUp_Activity extends AnimRootActivity implements VolleyCallback,
                 Snackbar.make(findViewById(android.R.id.content), "Not valid user !", Snackbar.LENGTH_LONG).setAction("Action", null).show();
             } else if (status.equals("600")) {
                 System.out.println("loginid1" + AppPreferences.getLoginId(context));
-                startService(new Intent(getBaseContext(), MyService.class));
+//                startService(new Intent(getBaseContext(), MyService.class));
 
-                Intent mintent_home = new Intent(SignUp_Activity.this, AlertSpeakameActivity.class);
+                Intent mintent_home = new Intent(SignUp_Activity.this, AlertDaysSpeakameActivity.class);
                 mintent_home.setAction("");
                 startActivity(mintent_home);
                 finish();
             } else if (status.equals("700")) {
                 System.out.println("loginid1" + AppPreferences.getLoginId(context));
-                startService(new Intent(getBaseContext(), MyService.class));
+//                startService(new Intent(getBaseContext(), MyService.class));
 
                 Intent mintent_home = new Intent(SignUp_Activity.this, AlertDaysSpeakameActivity.class);
                 mintent_home.setAction("");
@@ -922,8 +1133,6 @@ public class SignUp_Activity extends AnimRootActivity implements VolleyCallback,
             } else {
                 Snackbar.make(findViewById(android.R.id.content), "Check your network connection", Snackbar.LENGTH_LONG).setAction("Action", null).show();
             }
-
         }
     }
-
 }

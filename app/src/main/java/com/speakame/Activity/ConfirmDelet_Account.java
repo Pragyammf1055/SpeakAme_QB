@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -19,7 +18,6 @@ import android.widget.Toast;
 import com.speakame.Database.DatabaseHelper;
 import com.speakame.R;
 import com.speakame.Services.HomeService;
-import com.speakame.Xmpp.MyXMPP;
 import com.speakame.utils.AppConstants;
 import com.speakame.utils.AppPreferences;
 import com.speakame.utils.JSONParser;
@@ -151,7 +149,6 @@ public class ConfirmDelet_Account extends AppCompatActivity {
                             AppPreferences.setAckwnoledge(ConfirmDelet_Account.this, "");
                             DatabaseHelper.getInstance(ConfirmDelet_Account.this).deleteDB();
 
-                            MyXMPP.deleteUserr();
 
                             stopService(new Intent(ConfirmDelet_Account.this, HomeService.class));
                             Intent intent = new Intent(ConfirmDelet_Account.this, Main_Activity.class);

@@ -12,7 +12,6 @@ import android.os.Handler;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Gravity;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
@@ -45,9 +44,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
-import fr.ganfra.materialspinner.MaterialSpinner;
-
 public class Setting_Activity extends AnimRootActivity {
+    private static final String TAG = "Setting Activity";
     public static ImageView language, language_blue, chat, chat_blue, setting, setting_blue, star,
             on_image, off_image, star_blue, user, user_blue, user_profile;
     TextView toolbartext, username;
@@ -113,8 +111,14 @@ public class Setting_Activity extends AnimRootActivity {
         txtlanguage.setTypeface(tf2);
         toolbartext.setTypeface(tf1);
 
-
         username.setText(AppPreferences.getFirstUsername(Setting_Activity.this));
+        Picasso.with(getApplicationContext()).load(AppPreferences.getUserprofile(Setting_Activity.this))
+                .placeholder(R.drawable.user_icon)
+                .centerCrop()
+                .noFade()
+                .resize(200, 200)
+                .error(R.drawable.user_icon)
+                .into(user_profile);
 
         final Bitmap bitmap;
         try {
@@ -153,11 +157,9 @@ public class Setting_Activity extends AnimRootActivity {
             };
             handler.postDelayed(runnable, 800);
 
-
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-
 
         setting_blue.setVisibility(View.VISIBLE);
         setting.setVisibility(View.GONE);
@@ -188,9 +190,7 @@ public class Setting_Activity extends AnimRootActivity {
         if (AppPreferences.getTotf(Setting_Activity.this).equalsIgnoreCase("0")) {
             user_blue.setVisibility(View.VISIBLE);
             user.setVisibility(View.GONE);
-
         }
-
 
         if (user.getVisibility() == View.VISIBLE) {
 
@@ -300,25 +300,27 @@ public class Setting_Activity extends AnimRootActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(Setting_Activity.this, Account_Activity.class);
                 startActivity(intent);
-                finish();
+//                finish();
 
             }
         });
+
         l2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(Setting_Activity.this, ChatSetting.class);
                 startActivity(intent);
-                finish();
+//                finish();
 
             }
         });
+
         l3.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(Setting_Activity.this, Notification_Activity.class);
                 startActivity(intent);
-                finish();
+//                finish();
 
             }
         });
@@ -334,23 +336,35 @@ public class Setting_Activity extends AnimRootActivity {
         layoutRefer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                /*
                 Intent intent = new Intent(Setting_Activity.this, ReferFreindActivity.class);
                 startActivity(intent);
                 finish();
+                */
+
+                String text = "Download SpeakAme messenger to chat with me in all languages.\n\n https://play.google.com/store/apps/details?id=com.speakame";
+                // Uri uri = Uri.parse("android.resource://com.speakame/mipmap/ic_launcher.png");
+                //Uri pictureUri = Uri.parse("file://my_picture");
+                Intent shareIntent = new Intent();
+                shareIntent.setAction(Intent.ACTION_SEND);
+                shareIntent.putExtra(Intent.EXTRA_TEXT, text);
+                // shareIntent.putExtra(Intent.EXTRA_STREAM, uri);
+                shareIntent.setType("text/*");
+                shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                startActivity(Intent.createChooser(shareIntent, "Invite Friend"));
+
             }
         });
-
 
         user_profile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(Setting_Activity.this, EditProfile_Activity.class);
                 startActivity(intent);
-                finish();
+//                finish();
             }
         });
-
-
     }
 
     @Override
@@ -360,15 +374,12 @@ public class Setting_Activity extends AnimRootActivity {
             finish();
             return true;
         }
-
-
-
         return super.onOptionsItemSelected(item);
     }
 
     public void changelanguageDialog() {
 
-        System.out.println("language" + AppPreferences.getUSERLANGUAGE(Setting_Activity.this));
+        System.out.println("language :- " + AppPreferences.getUSERLANGUAGE(Setting_Activity.this));
 
         final Dialog markerDialog = new Dialog(this);
         markerDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -397,12 +408,16 @@ public class Setting_Activity extends AnimRootActivity {
         final SearchableSpinner spinner = (SearchableSpinner) markerDialog.findViewById(R.id.spinner);
         spinner.setAdapter(adapter);
         String text = "Select Language";
-        spinner.setTitle(text);
+
+        if (!AppPreferences.getUSERLANGUAGE(Setting_Activity.this).equalsIgnoreCase("")) {
+            spinner.setTitle(AppPreferences.getUSERLANGUAGE(Setting_Activity.this));
+        } else {
+            spinner.setTitle(text);
+        }
 
         btn_done.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
 //                btn_cancel.setBackgroundResource(R.drawable.buttonshape);
 //                btn_done.setBackgroundResource(R.drawable.buttonshape_two);
                 JSONObject object = new JSONObject();
@@ -430,7 +445,6 @@ public class Setting_Activity extends AnimRootActivity {
                         markerDialog.dismiss();
                     }
                 });
-
             }
         });
 
@@ -484,9 +498,7 @@ public class Setting_Activity extends AnimRootActivity {
                     .resize(200, 200)
                     .into(user_profile);
         }
-
     }
-
 
     private void senduseriD() {
 
@@ -504,13 +516,13 @@ public class Setting_Activity extends AnimRootActivity {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+
         JSONParser jsonParser = new JSONParser(Setting_Activity.this);
         jsonParser.parseVollyJsonArray(AppConstants.DEMOCOMMONURL, 1, jsonArray, new VolleyCallback() {
             @Override
             public void backResponse(String response) {
 
-
-                Log.d("response>>>>>", response);
+                Log.d(TAG, "Response :- " + response);
                 //  mProgressDialog.dismiss();
                 if (response != null) {
                     try {
@@ -521,12 +533,9 @@ public class Setting_Activity extends AnimRootActivity {
 
                             for (int i = 0; orderArray.length() > i; i++) {
                                 JSONObject topObject = orderArray.getJSONObject(i);
-
-
                             }
 
                             Toast.makeText(getApplicationContext(), "successfully", Toast.LENGTH_LONG).show();
-
 
                         } else if (mainObject.getString("status").equalsIgnoreCase("400")) {
 

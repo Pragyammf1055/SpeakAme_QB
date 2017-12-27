@@ -7,9 +7,9 @@
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true">
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true">
 
         <LinearLayout
             android:id="@+id/bubble_layout"
@@ -27,6 +27,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerInParent="true">
+
                     <ImageView
                         android:id="@+id/image"
                         android:layout_width="@dimen/_100sdp"
@@ -34,7 +35,7 @@
                         android:layout_centerInParent="true"
                         android:scaleType="fitXY"
                         android:src="@drawable/user_profile"
-                        android:visibility="gone"/>
+                        android:visibility="gone" />
 
                     <VideoView
                         android:id="@+id/video"
@@ -49,7 +50,7 @@
                     android:layout_width="@dimen/_40sdp"
                     android:layout_height="@dimen/_40sdp"
                     android:layout_centerInParent="true"
-                    android:visibility="gone"/>
+                    android:visibility="visible" />
 
                 <RelativeLayout
                     android:layout_width="wrap_content"
@@ -60,37 +61,35 @@
                         android:id="@+id/cancel"
                         android:layout_width="@dimen/_40sdp"
                         android:layout_height="@dimen/_40sdp"
-                        android:src="@drawable/cross"
-                        android:visibility="gone"/>
+                        android:src="@drawable/ic_close_white_24dp"
+                        android:visibility="gone" />
+
                     <ProgressBar
                         android:id="@+id/progressBar"
-                        android:layout_alignTop="@id/cancel"
-                        android:layout_alignBottom="@id/cancel"
-                        android:layout_alignRight="@id/cancel"
+                        style="?android:attr/progressBarStyleHorizontal"
                         android:layout_width="@dimen/_50sdp"
                         android:layout_height="@dimen/_50sdp"
+                        android:layout_alignBottom="@id/cancel"
+                        android:layout_alignRight="@id/cancel"
+                        android:layout_alignTop="@id/cancel"
                         android:layout_centerInParent="true"
-                        style="?android:attr/progressBarStyleHorizontal"
-                        android:progressDrawable="@drawable/progressbarbg"
                         android:indeterminate="false"
                         android:max="100"
                         android:progress="0"
+                        android:progressDrawable="@drawable/progressbarbg"
                         android:secondaryProgress="100"
                         android:visibility="gone" />
-
                 </RelativeLayout>
 
-
             </RelativeLayout>
-
 
             <RelativeLayout
                 android:id="@+id/textMsgBg"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:background="@drawable/transparentbg"
                 android:paddingLeft="@dimen/_5sdp"
-                android:paddingRight="@dimen/_5sdp"
-                android:background="@drawable/transparentbg">
+                android:paddingRight="@dimen/_5sdp">
 
 
                 <ImageView
@@ -98,16 +97,16 @@
                     android:layout_width="@dimen/_40sdp"
                     android:layout_height="@dimen/_40sdp"
                     android:src="@drawable/pdf_icon"
-                    android:visibility="gone"/>
+                    android:visibility="gone" />
 
                 <com.rockerhieu.emojicon.EmojiconTextView
                     android:id="@+id/message_text"
-                    android:layout_toRightOf="@+id/docImage"
-                    android:layout_centerVertical="true"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
                     android:layout_marginLeft="@dimen/_5sdp"
                     android:layout_marginTop="@dimen/_5sdp"
+                    android:layout_toRightOf="@+id/docImage"
                     android:maxWidth="@dimen/_200sdp"
                     android:text="Hi "
                     android:textColor="@android:color/primary_text_light" />

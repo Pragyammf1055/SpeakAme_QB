@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/color_textmsg"
+    android:baselineAligned="false"
+    android:orientation="vertical"
+    android:visibility="visible">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/_4sdp"
+        android:orientation="horizontal"
+        android:weightSum="1">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/backgroud_send_message"
+            android:orientation="horizontal"
+            android:paddingBottom="@dimen/_3sdp"
+            android:paddingTop="@dimen/_3sdp">
+
+            <ImageView
+                android:id="@+id/iv_smily"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginLeft="@dimen/_4sdp"
+                android:padding="@dimen/_2sdp"
+                android:paddingLeft="@dimen/_2sdp"
+                android:paddingRight="@dimen/_2sdp"
+                android:src="@drawable/ic_tag_faces_grey_500_24dp" />
+
+            <com.rockerhieu.emojicon.EmojiconEditText
+                android:id="@+id/messageEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="1"
+                android:background="@android:color/transparent"
+                android:hint="Type a message"
+                android:inputType="textCapSentences"
+                android:maxLines="3"
+                android:scrollbars="vertical"
+                android:singleLine="false" />
+
+            <ImageView
+                android:id="@+id/iv_chat_eye"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginLeft="@dimen/_4sdp"
+                android:layout_marginRight="@dimen/_4sdp"
+                android:src="@drawable/eye" />
+
+            <ImageButton
+                android:id="@+id/sendMessageButton1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="5dp"
+                android:layout_marginTop="5dp"
+                android:background="@color/md_divider_white"
+                android:src="@drawable/send"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/fab_sendMessageButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:layout_marginLeft="@dimen/_2sdp"
+            android:cropToPadding="true"
+            android:visibility="gone"
+            app:backgroundTint="@color/colorAccent"
+            app:elevation="0dp"
+            app:fabSize="mini"
+            app:srcCompat="@drawable/ic_send_white_18dp" />
+    </LinearLayout>
+
+</LinearLayout>

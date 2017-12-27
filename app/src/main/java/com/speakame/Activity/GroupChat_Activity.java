@@ -23,13 +23,11 @@ import com.speakame.Beans.AllBeans;
 import com.speakame.Classes.AnimRootActivity;
 import com.speakame.R;
 import com.speakame.Xmpp.ChatMessage;
-import com.speakame.Xmpp.MyXMPP;
-import com.speakame.utils.AppPreferences;
+
 import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smackx.muc.MultiUserChat;
-import org.jivesoftware.smackx.muc.MultiUserChatManager;
+
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
 public class GroupChat_Activity extends AnimRootActivity implements View.OnClickListener {
@@ -84,8 +82,8 @@ public class GroupChat_Activity extends AnimRootActivity implements View.OnClick
 
         toolbartitle.setText(Groupname);
 
-        MultiUserChatManager mucm = MultiUserChatManager.getInstanceFor(MyXMPP.connection);
-        List<String> services = null;
+//        MultiUserChatManager mucm = MultiUserChatManager.getInstanceFor(MyXMPP.connection);
+       /* List<String> services = null;
         try {
             services = mucm.getServiceNames();
 
@@ -103,7 +101,7 @@ public class GroupChat_Activity extends AnimRootActivity implements View.OnClick
         } catch (Exception e) {
             e.printStackTrace();
         }
-
+*/
 
     }
 

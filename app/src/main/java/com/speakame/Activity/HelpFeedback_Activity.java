@@ -44,7 +44,8 @@ public class HelpFeedback_Activity extends AnimRootActivity {
         text_about.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String url = "http://www.speakame.com/aboutus";
+//                String url = "http://www.speakame.com/aboutus";
+                String url = "http://www.speakame.com/about-us/";
                 Intent i = new Intent(Intent.ACTION_VIEW);
                 i.setData(Uri.parse(url));
                 startActivity(i);
@@ -76,6 +77,7 @@ public class HelpFeedback_Activity extends AnimRootActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(HelpFeedback_Activity.this, Contactus_Activity.class);
                 startActivity(intent);
+                finish();
             }
         });
         text_refer.setOnClickListener(new View.OnClickListener() {
@@ -85,7 +87,7 @@ public class HelpFeedback_Activity extends AnimRootActivity {
                 startActivity(intent);
                 finish();*/
 
-                String text = "Download SpeakAme messenger to chat with me in all languages.";
+                String text = "Download SpeakAme messenger to chat with me in all languages.\n\n https://play.google.com/store/apps/details?id=com.speakame";
                // Uri uri = Uri.parse("android.resource://com.speakame/mipmap/ic_launcher.png");
                 //Uri pictureUri = Uri.parse("file://my_picture");
                 Intent shareIntent = new Intent();
@@ -97,8 +99,6 @@ public class HelpFeedback_Activity extends AnimRootActivity {
                 startActivity(Intent.createChooser(shareIntent, "Invite Friend"));
             }
         });
-
-
 
     }
 

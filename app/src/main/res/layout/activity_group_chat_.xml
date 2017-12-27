@@ -34,5 +34,4 @@
     <include layout="@layout/content_group_chat_" />
 
 
-
 </android.support.design.widget.CoordinatorLayout>

@@ -5,6 +5,8 @@ package com.speakame.Beans;
  */
 public class User {
     String id, name,email, mobile, password;
+    int friend_id;
+    String status;
 
     public String getId() {
         return id;
@@ -44,5 +46,21 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public int getFriend_id() {
+        return friend_id;
+    }
+
+    public void setFriend_id(int friend_id) {
+        this.friend_id = friend_id;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

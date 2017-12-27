@@ -31,13 +31,13 @@ import fr.ganfra.materialspinner.MaterialSpinner;
 public class Languagelearn_activity extends AnimRootActivity {
     public static ImageView language, language_blue, chat, chat_blue, setting, setting_blue, star,
             on_image, off_image, star_blue, user, user_blue, user_profile;
+    public static AlertDialog mProgressDialog;
     TextView toolbartext;
     MaterialSpinner spinner1, spinner2;
     EditText typeEdit;
     TextView changelanguageedit;
     Button btn1, btn2;
     String SourceLanguage, Destinationlanguage, SourceContent, DestinationContent;
-    public static AlertDialog mProgressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -246,6 +246,7 @@ public class Languagelearn_activity extends AnimRootActivity {
         mProgressDialog.setTitle("Please wait while translating language...");
         mProgressDialog.setCancelable(false);
         mProgressDialog.show();
+
         TextTranslater.getInstance().translate(Languagelearn_activity.this,sorcountrycode, descountrycode, message, new VolleyCallback() {
             @Override
             public void backResponse(final String response) {
@@ -262,6 +263,7 @@ public class Languagelearn_activity extends AnimRootActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
+
                             changelanguageedit.setText(response);
                         }
                     });

@@ -26,6 +26,7 @@ public class NewGroupMember_Adapter extends RecyclerView.Adapter<NewGroupMember_
 
     public static List<Integer> stringArrayList;
     public static List<AllBeans> contactArrayList;
+    public static ArrayList<Integer> friendQB_IdArrayList;
     // public static String stringArrayList;
     Context context;
     boolean isCheckeds = false;
@@ -37,6 +38,7 @@ public class NewGroupMember_Adapter extends RecyclerView.Adapter<NewGroupMember_
         this.context = context;
         stringArrayList = new ArrayList<Integer>();
         contactArrayList = new ArrayList<AllBeans>();
+        friendQB_IdArrayList = new ArrayList<>();
     }
 
     @Override
@@ -110,11 +112,13 @@ public class NewGroupMember_Adapter extends RecyclerView.Adapter<NewGroupMember_
                     System.out.println("contactPass Im" + Integer.valueOf(contactList.get(position).getFriendid()));
                     stringArrayList.add(Integer.valueOf(contactList.get(position).getFriendid()));
                     contactArrayList.add(contactList.get(position));
+                    friendQB_IdArrayList.add(contactList.get(position).getFriendQB_id());
                     System.out.println("contactPass" + "::" + contactList.size() + "::" + stringArrayList.toString());
                 } else {
                     System.out.println("contactPass Rm" + contactList.get(position).getFriendid());
                     stringArrayList.remove(Integer.valueOf(contactList.get(position).getFriendid()));
                     contactArrayList.remove(contactList.get(position));
+                    friendQB_IdArrayList.remove(contactList.get(position).getFriendQB_id());
                     System.out.println("contactPass" + stringArrayList.toString());
                 }
 
@@ -122,8 +126,11 @@ public class NewGroupMember_Adapter extends RecyclerView.Adapter<NewGroupMember_
 
             }
         });
+    }
 
+    public ArrayList<Integer> getFriendQbIdList() {
 
+        return friendQB_IdArrayList;
     }
 
     @Override

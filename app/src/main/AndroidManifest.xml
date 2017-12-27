@@ -3,6 +3,8 @@
     xmlns:tool="http://schemas.android.com/tools"
     package="com.speakame">
 
+    <uses-sdk android:minSdkVersion="8" />
+
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.CALL_PHONE" />
@@ -11,6 +13,7 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_CONTACTS" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.Manifest.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.READ_PROFILE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
@@ -22,17 +25,25 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.MANAGE_USERS" />
 
+    <!--
+        <permission
+            android:name="com.quickblox.sample.pushnotifications.permission.C2D_MESSAGE"
+            android:protectionLevel="signature" />
+    -->
     <application
         android:name=".AppController"
         android:allowBackup="true"
         android:hardwareAccelerated="false"
         android:icon="@mipmap/app_icon"
+        android:installLocation="auto"
         android:label="@string/app_name"
         android:largeHeap="true"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tool:replace="android:icon">
-        <activity android:name=".Activity.Splash_Activity">
+        <activity
+            android:name=".Activity.Splash_Activity"
+            android:theme="@style/AppTheme.Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -161,18 +172,27 @@
             android:theme="@style/AppTheme.NoActionBar" />
 
         <service
+            android:name=".Services.QBService"
+            android:enabled="true" />
+        <service
+            android:name=".Services.LastSeenService"
+            android:enabled="true" />
+        <service
             android:name=".Xmpp.MyService"
             android:enabled="true" />
         <service
             android:name=".Services.HomeService"
             android:enabled="true" />
-        <service
-            android:name=".Xmpp.MyXMPP"
-            android:enabled="true"
-            android:exported="true" />
-        <service
-            android:name=".Services.XmppConneceted"
-            android:enabled="true" />
+
+        <!--
+         <service
+             android:name=".Xmpp.MyXMPP"
+             android:enabled="true"
+             android:exported="true" />
+         <service
+             android:name=".Services.XmppConneceted"
+             android:enabled="true" />
+        -->
 
         <activity
             android:name=".Activity.SendImageActivity"
@@ -220,30 +240,13 @@
             android:name=".Activity.ConfirmLoginOtp"
             android:label="LOGIN"
             android:theme="@style/AppTheme.NoActionBar" />
-
-        <service
-            android:name=".Services.MyFirebaseMessagingService"
-            android:enabled="true"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT" />
-            </intent-filter>
-        </service>
-        <service
-            android:name=".Services.MyFirebaseInstanceIDService"
-            android:enabled="true"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
-            </intent-filter>
-        </service>
-
         <activity
             android:name=".Activity.ForwardActivity"
             android:label="@string/title_activity_forward"
             android:theme="@style/AppTheme.NoActionBar" />
 
         <service android:name=".Services.VibrateService" />
+        <service android:name=".Services.ContactImportService" />
 
         <activity
             android:name=".Activity.ConfirmChangeNumberActivity"
@@ -266,6 +269,14 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+                <action android:name="android.net.wifi.WIFI_STATE_CHANGED" />
+            </intent-filter>
+        </receiver>
+        <receiver
+            android:name=".Recivers.SmsReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.example.UPDATE_STATUS" />
             </intent-filter>
         </receiver>
 
@@ -293,8 +304,47 @@
         </provider>
 
         <activity android:name=".Activity.ReferFreindActivity" />
-        <activity android:name=".Activity.HelpFullActivity"
+        <activity
+            android:name=".Activity.HelpFullActivity"
             android:label="Helpful Hints"></activity>
+
+        <meta-data
+            android:name="com.quickblox.messages.TYPE"
+            android:value="FCM" />
+        <meta-data
+            android:name="com.quickblox.messages.SENDER_ID"
+            android:value="467759138007" />
+        <meta-data
+            android:name="com.quickblox.messages.QB_ENVIRONMENT"
+            android:value="DEVELOPMENT" />
+
+        <service
+            android:name=".Services.MyFirebaseMessagingService"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+        <service
+            android:name=".Services.MyFirebaseInstanceIDService"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
+            </intent-filter>
+        </service>
+        <service android:name="com.quickblox.messages.services.fcm.QBFcmPushListenerService">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+        <service android:name="com.quickblox.messages.services.fcm.QBFcmPushInstanceIDService">
+            <intent-filter>
+                <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
+            </intent-filter>
+        </service>
+
     </application>
 
 </manifest>

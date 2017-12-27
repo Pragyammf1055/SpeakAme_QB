@@ -65,6 +65,8 @@
 
     <string name="msg_notify">Yo have received a new notification</string>
     <string name="title_activity_send_image">Send photo</string>
+
+    <string name="connection_error">Connection has been dropped</string>
     <!--<string-array name="country">
         <item>Afrikaans</item>
         <item>Albanian</item>
@@ -275,4 +277,10 @@
         completions."
     </string>
     <string name="label_error_incorrect_phone">Incorrect phone</string>
+
+
+    <string name="string_free_user">As a thank you for being one of the early adaptors SpeakAme would like to make you a Free for life user! All you would need to do is to keep the same phone number and you are Free for the LIFE of the account!" If you choose to delete your account you may forfeit your free for life status...</string>
+    <string name="title_activity_chat1">" "</string>
+
+
 </resources>

@@ -24,8 +24,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_horizontal"
-                android:textColor="@color/colorwhite"
                 android:text="title"
+                android:textColor="@color/colorwhite"
                 android:textSize="@dimen/title_size"/>
 
         </android.support.v7.widget.Toolbar>
@@ -33,7 +33,5 @@
     </android.support.design.widget.AppBarLayout>
 
     <include layout="@layout/content_contact_list_" />
-
-
 
 </android.support.design.widget.CoordinatorLayout>

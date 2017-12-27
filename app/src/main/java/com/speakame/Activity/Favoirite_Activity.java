@@ -18,6 +18,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -44,6 +45,7 @@ import java.util.Locale;
 import dmax.dialog.SpotsDialog;
 
 public class Favoirite_Activity extends AnimRootActivity implements VolleyCallback {
+    private static final String TAG = "Favourite_Activity";
     TextView toolbartext, nocontenttext;
     Favourite_Adapter favourite_adapter;
     ImageView language, language_blue, chat, chat_blue, setting, setting_blue, star, star_blue, user, user_blue;
@@ -66,12 +68,11 @@ public class Favoirite_Activity extends AnimRootActivity implements VolleyCallba
         getSupportActionBar().setHomeAsUpIndicator(R.drawable.search);
         toolbartext = (TextView) findViewById(R.id.toolbar_title);
         srch_edit = (EditText) findViewById(R.id.serch_edit);
-        toolbartext.setText("Favourites");
+        toolbartext.setText("Favorites");
         Typeface tf1 = Typeface.createFromAsset(getAssets(), "Raleway-Regular.ttf");
         toolbartext.setTypeface(tf1);
         recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         recyclerView.addItemDecoration(new HorizontalDividerItemDecoration.Builder(this).build());
-
 
         friendlist = new ArrayList<AllBeans>();
 
@@ -102,7 +103,6 @@ public class Favoirite_Activity extends AnimRootActivity implements VolleyCallba
             user.setVisibility(View.GONE);
 
         }
-
 
         if (user.getVisibility() == View.VISIBLE) {
 
@@ -149,18 +149,18 @@ public class Favoirite_Activity extends AnimRootActivity implements VolleyCallba
 
 
                 String value = srch_edit.getText().toString().toLowerCase(Locale.getDefault());
-                favourite_adapter.filter(value.toLowerCase());
+                Log.v(TAG, "Search txt :- " + value);
+                if (favourite_adapter != null) {
+                    favourite_adapter.filter(value.toLowerCase());
+                }
 //                if (value.length() != 0) {
 //                    checkBox.setVisibility(View.GONE);
 //
 //                } else {
 //                    checkBox.setVisibility(View.VISIBLE);
 //                }
-
             }
         });
-
-
 
 
         language.setOnClickListener(new View.OnClickListener() {
@@ -186,10 +186,9 @@ public class Favoirite_Activity extends AnimRootActivity implements VolleyCallba
                 intent.setAction("");
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
-               // finish();
+                // finish();
             }
         });
-
 
 //        user.setOnClickListener(new View.OnClickListener() {
 //            @Override
@@ -215,7 +214,6 @@ public class Favoirite_Activity extends AnimRootActivity implements VolleyCallba
             }
         });
 
-
         mProgressDialog = new SpotsDialog(Favoirite_Activity.this);
         mProgressDialog.setMessage("Please wait...");
         mProgressDialog.setCancelable(false);
@@ -234,15 +232,12 @@ public class Favoirite_Activity extends AnimRootActivity implements VolleyCallba
         JSONParser jsonParser = new JSONParser(getApplicationContext());
         jsonParser.parseVollyJsonArray(AppConstants.DEMOCOMMONURL, 1, jsonArray, Favoirite_Activity.this);
         System.out.println("jsonArray" + jsonArray);
-
-
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.favorite_menu, menu);
         return true;
-
     }
 
     @Override
@@ -251,7 +246,7 @@ public class Favoirite_Activity extends AnimRootActivity implements VolleyCallba
         if (id == android.R.id.home) {
             if (isSerch) {
                 isSerch = false;
-                getSupportActionBar().setHomeAsUpIndicator(R.drawable.cross);
+                getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_close_white_24dp);
                 srch_edit.setVisibility(View.VISIBLE);
             } else {
                 isSerch = true;
@@ -270,7 +265,6 @@ public class Favoirite_Activity extends AnimRootActivity implements VolleyCallba
             finish();
             return true;
         }
-
 
         return super.onOptionsItemSelected(item);
     }
@@ -320,8 +314,8 @@ public class Favoirite_Activity extends AnimRootActivity implements VolleyCallba
                         allBeans.setFriendmobile(topObject.getString("speaka_number"));
                         allBeans.setFriendimage(topObject.getString("user_image"));
                         allBeans.setFriendStatus(topObject.getString("userProfileStatus"));
+                        allBeans.setFriendQB_id(Integer.parseInt(topObject.getString("qb_id")));
                         allBeans.setGroupName("");
-
 
                         friendlist.add(allBeans);
 
@@ -335,7 +329,7 @@ public class Favoirite_Activity extends AnimRootActivity implements VolleyCallba
                         //////Sorting name////////
                     }
                     if (friendlist != null) {
-                        favourite_adapter = new Favourite_Adapter(getApplicationContext(), friendlist);
+                        favourite_adapter = new Favourite_Adapter(Favoirite_Activity.this, friendlist);
                         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(Favoirite_Activity.this);
                         recyclerView.setLayoutManager(mLayoutManager);
                         recyclerView.setHasFixedSize(true);
@@ -356,14 +350,33 @@ public class Favoirite_Activity extends AnimRootActivity implements VolleyCallba
                     recyclerView.setVisibility(View.GONE);
                 }
 
-
             } catch (JSONException e) {
                 e.printStackTrace();
             }
             mProgressDialog.dismiss();
         }
+    }
 
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent event) {
+        View view = getCurrentFocus();
+        boolean ret = super.dispatchTouchEvent(event);
 
+        if (view instanceof EditText) {
+            View w = getCurrentFocus();
+            int scrcoords[] = new int[2];
+            w.getLocationOnScreen(scrcoords);
+            float x = event.getRawX() + w.getLeft() - scrcoords[0];
+            float y = event.getRawY() + w.getTop() - scrcoords[1];
+
+            if (event.getAction() == MotionEvent.ACTION_UP
+                    && (x < w.getLeft() || x >= w.getRight()
+                    || y < w.getTop() || y > w.getBottom())) {
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(getWindow().getCurrentFocus().getWindowToken(), 0);
+            }
+        }
+        return ret;
     }
 
     public static class RecyclerTouchListener implements RecyclerView.OnItemTouchListener {

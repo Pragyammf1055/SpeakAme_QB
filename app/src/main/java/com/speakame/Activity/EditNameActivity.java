@@ -3,8 +3,6 @@ package com.speakame.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
@@ -14,13 +12,11 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.rockerhieu.emojicon.EmojiconEditText;
-import com.speakame.Database.DatabaseHelper;
 import com.speakame.R;
 import com.speakame.utils.AppConstants;
 import com.speakame.utils.AppPreferences;
 import com.speakame.utils.JSONParser;
 import com.speakame.utils.VolleyCallback;
-import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -91,7 +87,7 @@ public class EditNameActivity extends AppCompatActivity implements View.OnClickL
         JSONArray jsonArray = new JSONArray();
         jsonArray.put(jsonObject);
 
-        final ProgressDialog progressDialog  = ProgressDialog.show(EditNameActivity.this, "", "Group Image updating.....", false);
+        final ProgressDialog progressDialog = ProgressDialog.show(EditNameActivity.this, "", "Group Name updating.....", false);
 
         JSONParser jsonParser = new JSONParser(EditNameActivity.this);
         jsonParser.parseVollyJsonArray(AppConstants.USERGROUPURL, 1, jsonArray, new VolleyCallback() {

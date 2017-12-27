@@ -34,7 +34,4 @@
 
     <include layout="@layout/content_setting" />
 
-
-
-
 </android.support.design.widget.CoordinatorLayout>

@@ -11,8 +11,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.speakame.Beans.AllBeans;
 import com.speakame.Activity.GroupChat_Activity;
+import com.speakame.Beans.AllBeans;
 import com.speakame.R;
 import com.squareup.picasso.Picasso;
 
@@ -73,8 +73,6 @@ public class GroupListAdapter extends RecyclerView.Adapter<GroupListAdapter.MyVi
                     .resize(200, 200)
                     .into(holder.imageView);
         }
-
-
     }
 
     @Override
@@ -85,7 +83,6 @@ public class GroupListAdapter extends RecyclerView.Adapter<GroupListAdapter.MyVi
     public class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         public TextView name, date;
         public ImageView imageView;
-
 
         public MyViewHolder(View view) {
             super(view);
@@ -109,5 +106,6 @@ public class GroupListAdapter extends RecyclerView.Adapter<GroupListAdapter.MyVi
             context.startActivity(intent);
         }
     }
+
 }
 

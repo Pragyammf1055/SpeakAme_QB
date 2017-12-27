@@ -1,20 +1,7 @@
 package com.speakame.utils;
 
-import android.app.ActivityManager;
-import android.content.ComponentName;
-import android.content.Context;
-import android.os.CountDownTimer;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-
-import com.speakame.Services.XmppConneceted;
-import com.speakame.Xmpp.MyXMPP;
-
-import org.jivesoftware.smack.SmackException;
-import org.jivesoftware.smack.XMPPException;
-
-import java.io.IOException;
-import java.util.List;
 
 /**
  * Created by MAX on 21-Jan-17.
@@ -26,16 +13,17 @@ abstract public class ABaseActivity extends AppCompatActivity {
     {
         super.onResume();
         Log.d("isAppForground","onResume");
-        XmppConneceted activity = new XmppConneceted();
+
+       /* XmppConneceted activity = new XmppConneceted();
         try {
-            activity.getmService().xmpp.setStatus(true, "online");
+//            activity.getmService().xmpp.setStatus(true, "online");
 
 
         } catch (XMPPException e) {
             e.printStackTrace();
         }catch (NullPointerException e) {
             e.printStackTrace();
-        }
+        }*/
       // setStatus();
     }
 
@@ -45,7 +33,8 @@ abstract public class ABaseActivity extends AppCompatActivity {
     {
         super.onPause();
         Log.d("isAppForground","onPause");
-        XmppConneceted activity = new XmppConneceted();
+
+      /*  XmppConneceted activity = new XmppConneceted();
         try {
             activity.getmService().xmpp.setStatus(true, "offline");
             new Thread(new Runnable() {
@@ -83,7 +72,7 @@ abstract public class ABaseActivity extends AppCompatActivity {
             e.printStackTrace();
         }catch (NullPointerException e) {
             e.printStackTrace();
-        }
+        }*/
        // setStatus();
     }
 

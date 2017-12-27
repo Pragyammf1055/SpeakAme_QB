@@ -9,6 +9,17 @@ import android.os.Parcelable;
 public class AllBeans implements Parcelable {
 
 
+    public static final Creator<AllBeans> CREATOR = new Creator<AllBeans>() {
+        @Override
+        public AllBeans createFromParcel(Parcel in) {
+            return new AllBeans(in);
+        }
+
+        @Override
+        public AllBeans[] newArray(int size) {
+            return new AllBeans[size];
+        }
+    };
     String Friendimage;
     String Friendname;
     String Friendmobile;
@@ -28,7 +39,7 @@ public class AllBeans implements Parcelable {
     String BlockedStatus;
     String CountryName;
     String Countrycode;
-
+    Integer FriendQB_id;
 
     public AllBeans() {
 
@@ -53,20 +64,9 @@ public class AllBeans implements Parcelable {
         BlockedStatus = in.readString();
         CountryName = in.readString();
         Countrycode = in.readString();
+        FriendQB_id = in.readInt();
         isSelected = in.readByte() != 0;
     }
-
-    public static final Creator<AllBeans> CREATOR = new Creator<AllBeans>() {
-        @Override
-        public AllBeans createFromParcel(Parcel in) {
-            return new AllBeans(in);
-        }
-
-        @Override
-        public AllBeans[] newArray(int size) {
-            return new AllBeans[size];
-        }
-    };
 
     public String getFriendimage() {
         return Friendimage;
@@ -219,6 +219,15 @@ public class AllBeans implements Parcelable {
         GroupAdminStatus = groupAdminStatus;
     }
 
+    public Integer getFriendQB_id() {
+        return FriendQB_id;
+    }
+
+    public void setFriendQB_id(Integer friendQB_id) {
+        this.FriendQB_id = friendQB_id;
+    }
+
+
 
     @Override
     public int describeContents() {
@@ -245,6 +254,7 @@ public class AllBeans implements Parcelable {
         dest.writeString(BlockedStatus);
         dest.writeString(CountryName);
         dest.writeString(Countrycode);
+        dest.writeInt(FriendQB_id);
         dest.writeByte((byte) (isSelected ? 1 : 0));
     }
 }

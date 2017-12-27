@@ -1,7 +1,6 @@
 package com.speakame.Activity;
 
 import android.app.AlertDialog;
-import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -14,7 +13,6 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.Toolbar;
-import android.util.Base64;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -44,7 +42,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -176,6 +173,7 @@ public class Contactus_Activity extends AnimRootActivity {
 //                Uri packageURI = Uri.parse("package:"+"com.whatsapp");
 //                Intent uninstallIntent = new Intent(Intent.ACTION_DELETE, packageURI);
 //                startActivity(uninstallIntent);
+                finish();
                 break;
 
 
@@ -246,8 +244,6 @@ public class Contactus_Activity extends AnimRootActivity {
                     }
                 }
             }
-
-
         }
     }
 

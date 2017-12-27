@@ -2,6 +2,7 @@ package com.speakame.Activity;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Typeface;
@@ -17,11 +18,15 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.quickblox.core.QBEntityCallback;
+import com.quickblox.core.exception.QBResponseException;
+import com.quickblox.users.QBUsers;
+import com.quickblox.users.model.QBUser;
 import com.speakame.Beans.User;
 import com.speakame.Classes.AnimRootActivity;
 import com.speakame.Database.DatabaseHelper;
 import com.speakame.R;
-import com.speakame.Xmpp.MyService;
 import com.speakame.utils.AppConstants;
 import com.speakame.utils.AppPreferences;
 import com.speakame.utils.Function;
@@ -49,11 +54,14 @@ import java.nio.charset.UnsupportedCharsetException;
 import dmax.dialog.SpotsDialog;
 
 public class ConfirmLoginOtp extends AnimRootActivity {
+    private static final String TAG = "ConfirmLoginOtp";
     TextView headtext, mtxt1, mtxt2, mtxt3, resendtext;
     EditText medit_password;
     Button mbtn_submit;
     Typeface typeface, typeface1;
     String OTPNUMBER;
+    ProgressDialog dialog;
+    String mobileNo_countryCode;
     private AlertDialog mProgressDialog;
 
     @Override
@@ -62,6 +70,20 @@ public class ConfirmLoginOtp extends AnimRootActivity {
         setContentView(R.layout.activity_confirm_login_otp);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        if (getIntent().getAction().equalsIgnoreCase("SignIn_Activity")) {
+            mobileNo_countryCode = getIntent().getExtras().getString("mobileNo");
+
+            Log.v(TAG, "Login :-  " + mobileNo_countryCode);
+        }
+
+        initViews();
+        setListener();
+
+    }
+
+    private void initViews() {
+
         headtext = (TextView) findViewById(R.id.headtext);
         headtext = (TextView) findViewById(R.id.headtext);
         mtxt1 = (TextView) findViewById(R.id.textView1);
@@ -81,6 +103,10 @@ public class ConfirmLoginOtp extends AnimRootActivity {
         resendtext.setTypeface(typeface1);
         medit_password.setTypeface(typeface1);
         mbtn_submit.setTypeface(typeface1);
+    }
+
+    private void setListener() {
+
         mbtn_submit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -93,8 +119,6 @@ public class ConfirmLoginOtp extends AnimRootActivity {
                 } else {
                     new ConfirmOTpTask().execute();
                 }
-
-
             }
         });
 
@@ -102,18 +126,69 @@ public class ConfirmLoginOtp extends AnimRootActivity {
             @Override
             public void onClick(View v) {
                 new ResendOtpTask().execute();
-
             }
         });
 
-
     }
+
 
     public void dismissKeyboard(Activity activity) {
         InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
         if (null != activity.getCurrentFocus())
             imm.hideSoftInputFromWindow(activity.getCurrentFocus()
                     .getApplicationWindowToken(), 0);
+    }
+
+    private void loginUserToQuickBlox(String mobile_no, String pwd) {
+
+//        QBSettings.getInstance().fastConfigInit(MyApplication.APP_ID, MyApplication.AUTH_KEY, MyApplication.AUTH_SECRET);
+
+        Log.v(TAG, " ~~~~~~~~~~~~ Inside Login Button QuickBlox ~~~~~~~~~~~~ ");
+        Log.v(TAG, "Login :-  " + mobile_no);
+        Log.v(TAG, "Pwd :-  " + pwd);
+
+        final QBUser user = new QBUser();
+        user.setLogin(mobile_no);
+        user.setPassword("12345678");
+
+        dialog = new ProgressDialog(ConfirmLoginOtp.this);
+        dialog.setMessage("Please wait...");
+        dialog.show();
+
+        loginAsync(user, dialog); // Asynchronous way:
+//        loginSync(user, dialog);  // Synchronous way
+
+    }
+
+    private void loginAsync(QBUser user, final ProgressDialog dialog) {
+
+        QBUsers.signIn(user).performAsync(new QBEntityCallback<QBUser>() {
+            @Override
+            public void onSuccess(QBUser qbUser, Bundle bundle) {
+                dialog.dismiss();
+                Log.v(TAG, "Login Sucessfully QuickBlox");
+                Log.v(TAG, "Bundle data :- " + bundle.toString());
+
+                Snackbar.make(findViewById(android.R.id.content), "User Login Sucessfully to QuickBlox", Snackbar.LENGTH_SHORT).show();
+
+                Intent mintent_home = new Intent(ConfirmLoginOtp.this, AlertDaysSpeakameActivity.class);
+                mintent_home.setAction("");
+                startActivity(mintent_home);
+                finish();
+
+            }
+
+            @Override
+            public void onError(QBResponseException e) {
+
+                Log.v(TAG, "Login failed QuickBlox .." + e.getMessage());
+                dialog.dismiss();
+                String message = e.getMessage();
+                Snackbar.make(findViewById(android.R.id.content), "QuickBlox Login failed due to " + message, Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
+            }
+        });
+
     }
 
     private class ResendOtpTask extends AsyncTask<Void, Void, String> {
@@ -238,8 +313,6 @@ public class ConfirmLoginOtp extends AnimRootActivity {
 
             } else {
                 Snackbar.make(findViewById(android.R.id.content), "Cheack network connection", Snackbar.LENGTH_LONG).setAction("Action", null).show();
-
-
             }
         }
 
@@ -284,9 +357,10 @@ public class ConfirmLoginOtp extends AnimRootActivity {
 
                 jsonObj.put("method", "checkNewDeviceOtp");
                 jsonObj.put("otp", OTPNUMBER);
+                jsonObj.put("mobile_type", "AN");
                 jsonObj.put("user_mobile", AppPreferences.getMobileuser(ConfirmLoginOtp.this));
                 jsonObj.put("mobile_uniquekey", Function.getAndroidID(ConfirmLoginOtp.this));
-
+                jsonObj.put("fcm_mobile_id", FirebaseInstanceId.getInstance().getToken());
 
                 JSONArray jsonArray = new JSONArray();
                 jsonArray.put(jsonObj);
@@ -329,6 +403,7 @@ public class ConfirmLoginOtp extends AnimRootActivity {
                     status = jsonObj.getString("status");
                     System.out.println("jsonstring------" + jsonString);
                     if (jsonObj.getString("status").equalsIgnoreCase("200")) {
+
                         JSONArray resultArray = jsonObj.getJSONArray("result");
                         for (int i = 0; i < resultArray.length(); i++) {
                             JSONObject jsonObject2 = resultArray.getJSONObject(i);
@@ -336,8 +411,8 @@ public class ConfirmLoginOtp extends AnimRootActivity {
                             AppPreferences.setLoginId(ConfirmLoginOtp.this, Integer.parseInt(jsonObject2.getString("userId")));
                             AppPreferences.setSocialId(ConfirmLoginOtp.this, jsonObject2.getString("social_id"));
                             String a = jsonObject2.getString("countrycode");
-                            String b = a.replace("+","").replace(" ","");
-                            String mob = b+jsonObject2.getString("mobile");
+                            String b = a.replace("+", "").replace(" ", "");
+                            String mob = b + jsonObject2.getString("mobile");
                             AppPreferences.setMobileuser(ConfirmLoginOtp.this, mob);
                             AppPreferences.setPassword(ConfirmLoginOtp.this, jsonObject2.getString("password"));
                             AppPreferences.setFirstUsername(ConfirmLoginOtp.this, jsonObject2.getString("username"));
@@ -373,7 +448,6 @@ public class ConfirmLoginOtp extends AnimRootActivity {
                     } else if (jsonObj.getString("status").equalsIgnoreCase("500")) {
                         status = "500";
                     } else if (jsonObj.getString("status").equalsIgnoreCase("600")) {
-
                         status = "600";
                     }
                 }
@@ -391,22 +465,19 @@ public class ConfirmLoginOtp extends AnimRootActivity {
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
             mProgressDialog.dismiss();
-            Log.d("status", status + "");
-            if (status.equals("200") && !loginId.equals("")) {
+            Log.d(TAG, "status 1 :- " + status + "ppp");
+            Log.d(TAG, "loginId :- " + loginId + "ppp");
+            if (status.equalsIgnoreCase("200") && !loginId.equals("")) {
 
                 System.out.println("loginid1" + AppPreferences.getLoginId(ConfirmLoginOtp.this));
-                startService(new Intent(getBaseContext(), MyService.class));
+//                startService(new Intent(getBaseContext(), MyService.class));
+                loginUserToQuickBlox(mobileNo_countryCode, "12345678");
 
-                Intent mintent_home = new Intent(ConfirmLoginOtp.this, AlertDaysSpeakameActivity.class);
-                mintent_home.setAction("");
-                startActivity(mintent_home);
-                finish();
             } else if (status.equals("400")) {
                 status = "400";
                 Snackbar.make(findViewById(android.R.id.content), "Wrong otp", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
             }
         }
-
     }
 }

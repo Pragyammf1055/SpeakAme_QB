@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
@@ -22,7 +21,6 @@ import com.speakame.Beans.User;
 import com.speakame.Classes.AnimRootActivity;
 import com.speakame.Database.DatabaseHelper;
 import com.speakame.R;
-import com.speakame.Xmpp.MyXMPP;
 import com.speakame.utils.AppConstants;
 import com.speakame.utils.AppPreferences;
 import com.speakame.utils.Function;
@@ -180,7 +178,7 @@ public class ConfirmChangeNumberActivity extends AnimRootActivity {
                                 DatabaseHelper.getInstance(ConfirmChangeNumberActivity.this).insertUser(user);
 
 
-                                MyXMPP.deleteUserr();
+//                                MyXMPP.deleteUserr();
                                 new AddmemberAsynch().execute(jsonObject2.getString("mobile"), jsonObject2.getString("password"),
                                         jsonObject2.getString("username"), jsonObject2.getString("email"));
 
@@ -205,6 +203,12 @@ public class ConfirmChangeNumberActivity extends AnimRootActivity {
         System.out.println("jsonObject" + jsonObject);
     }
 
+    public void dismissKeyboard(Activity activity) {
+        InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (null != activity.getCurrentFocus())
+            imm.hideSoftInputFromWindow(activity.getCurrentFocus()
+                    .getApplicationWindowToken(), 0);
+    }
 
     private class AddmemberAsynch extends AsyncTask<String, Void, String> {
         ArrayList<Integer> catogariesid;
@@ -315,12 +319,6 @@ public class ConfirmChangeNumberActivity extends AnimRootActivity {
 
         }
 
-    }
-    public void dismissKeyboard(Activity activity) {
-        InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-        if (null != activity.getCurrentFocus())
-            imm.hideSoftInputFromWindow(activity.getCurrentFocus()
-                    .getApplicationWindowToken(), 0);
     }
 
 }

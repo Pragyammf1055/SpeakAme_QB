@@ -8,6 +8,7 @@ import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.Toolbar;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -19,6 +20,7 @@ import android.widget.Toast;
 import com.speakame.Classes.AnimRootActivity;
 import com.speakame.R;
 import com.speakame.utils.AppConstants;
+import com.speakame.utils.Function;
 import com.speakame.utils.JSONParser;
 import com.speakame.utils.VolleyCallback;
 
@@ -29,6 +31,7 @@ import org.json.JSONObject;
 import dmax.dialog.SpotsDialog;
 
 public class Forgot_paasword extends AnimRootActivity {
+    private static final String TAG = "Forgot_Password";
     TextView toolbartext;
     EditText mMobile_edittext, mnewpasword_edittext, mchangepass_edit, mconfirmedit_paas;
     TextView mcontry_code;
@@ -69,6 +72,15 @@ public class Forgot_paasword extends AnimRootActivity {
         mbtn_submit.setTypeface(typeface);
         mbtn_confirm.setTypeface(typeface);
 
+
+        /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  Get Country Name and its dialling Counry code ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+        TelephonyManager tm = (TelephonyManager) getSystemService(getApplicationContext().TELEPHONY_SERVICE);
+
+        String diallingCode = Function.getCountryCode(tm);
+        Log.v(TAG, "CountryCode :- " + diallingCode);
+
+        /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  Get Country Name and its dialling Counry code ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+        mcontry_code.setText("+" + diallingCode);
 
         mcontry_code.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -164,6 +176,7 @@ public class Forgot_paasword extends AnimRootActivity {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+
         JSONParser jsonParser = new JSONParser(Forgot_paasword.this);
         jsonParser.parseVollyJsonArray(AppConstants.COMMONURL, 1, jsonArray, new VolleyCallback() {
             @Override
@@ -203,7 +216,6 @@ public class Forgot_paasword extends AnimRootActivity {
                     }
                     mProgressDialog.dismiss();
                 }
-
             }
         });
         System.out.println("AppConstants.COMMONURL---------" + AppConstants.COMMONURL);

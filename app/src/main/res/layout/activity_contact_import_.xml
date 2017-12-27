@@ -34,5 +34,4 @@
 
     <include layout="@layout/content_contact_import_" />
 
-
 </android.support.design.widget.CoordinatorLayout>

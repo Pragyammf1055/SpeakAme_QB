@@ -1,28 +1,27 @@
 package com.speakame.Activity;
 
 import android.graphics.Bitmap;
-import android.graphics.Color;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.webkit.WebChromeClient;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.speakame.R;
-
-import cn.pedant.SweetAlert.SweetAlertDialog;
 
 public class ReferFreindActivity extends AppCompatActivity {
 
     private static final String TAG = "ReferFreindActivity";
     private WebView mWebView;
-    private SweetAlertDialog pDialog;
+    private ProgressBar pDialog;
     private String description = "Cannot laod Url...!!!";
 
     @Override
@@ -42,11 +41,8 @@ public class ReferFreindActivity extends AppCompatActivity {
         webSettings.setLoadsImagesAutomatically(true);
         mWebView.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
 
-        pDialog = new SweetAlertDialog(getApplicationContext(), SweetAlertDialog.PROGRESS_TYPE);
-        pDialog.getProgressHelper().setBarColor(Color.parseColor("#A5DC86"));
-        pDialog.setTitleText("Loading");
-        pDialog.setCancelable(false);
-//        pDialog.show();
+        pDialog = (ProgressBar) findViewById(R.id.progressBar);
+        pDialog.setMax(100);
 //         Force links and redirects to open in the WebView instead of in a browser
         mWebView.setWebViewClient(new WebViewClient() {
 
@@ -54,6 +50,7 @@ public class ReferFreindActivity extends AppCompatActivity {
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
                 Log.i(TAG, "Processing webview url click...");
                 view.loadUrl("http://www.speakame.com/");
+                ReferFreindActivity.this.pDialog.setProgress(0);
 //                view.loadUrl("http://www.google.com");
                 return true;
             }
@@ -75,9 +72,7 @@ public class ReferFreindActivity extends AppCompatActivity {
                 super.onPageFinished(view, url);
 
                 Log.i(TAG, "Finished loading URL: " + url);
-                if (pDialog.isShowing()) {
-                    pDialog.dismiss();
-                }
+
             }
 
             @Override
@@ -85,16 +80,7 @@ public class ReferFreindActivity extends AppCompatActivity {
                 super.onReceivedError(view, request, error);
                 Log.e(TAG, "Error: " + description);
                 Toast.makeText(getApplicationContext(), "Oh no! " + description, Toast.LENGTH_SHORT).show();
-                pDialog.setTitle("Error");
-                pDialog.setContentText(description);
-                pDialog.setConfirmText("Ok")
-                        .setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
-                            @Override
-                            public void onClick(SweetAlertDialog sDialog) {
-                                sDialog.dismissWithAnimation();
-                            }
-                        });
-                pDialog.show();
+
             }
         });
 
@@ -111,6 +97,23 @@ public class ReferFreindActivity extends AppCompatActivity {
                 }
                 return false;
             }
+        });
+
+        mWebView.setWebChromeClient(new WebChromeClient() {
+
+            public void onProgressChanged(WebView view, int progress) {
+                if (progress < 100 && pDialog.getVisibility() == ProgressBar.GONE) {
+                    pDialog.setVisibility(ProgressBar.VISIBLE);
+//                    txtview.setVisibility(View.VISIBLE);
+                }
+
+                pDialog.setProgress(progress);
+                if (progress == 100) {
+                    pDialog.setVisibility(ProgressBar.GONE);
+//                    txtview.setVisibility(View.GONE);
+                }
+            }
+
         });
     }
 }

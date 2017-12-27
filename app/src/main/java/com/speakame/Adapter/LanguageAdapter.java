@@ -7,9 +7,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.speakame.Beans.AllBeans;
 import com.speakame.R;
 
 import java.util.ArrayList;
@@ -58,9 +58,24 @@ public class LanguageAdapter extends RecyclerView.Adapter<LanguageAdapter.MyView
         return listSize;
     }
 
+    public void filter(String charText) {
+        charText = charText.toLowerCase(Locale.getDefault());
+        languageArrayList.clear();
+        if (charText.length() == 0) {
+            languageArrayList.addAll(objects);
+        } else {
+            for (String wp : objects) {
+                if (wp.toLowerCase(Locale.getDefault()).contains(charText)) {
+                    languageArrayList.add(wp);
+                }
+            }
+        }
+        notifyDataSetChanged();
+    }
 
     public class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
+        public LinearLayout languageLinear;
         public TextView languageNameTextView;
 
         public MyViewHolder(View view) {
@@ -68,6 +83,7 @@ public class LanguageAdapter extends RecyclerView.Adapter<LanguageAdapter.MyView
             super(view);
 
             languageNameTextView = (TextView) view.findViewById(R.id.languageNameTextView);
+            languageLinear = (LinearLayout) view.findViewById(R.id.languageLinear);
             view.setOnClickListener(this);
         }
 
@@ -82,19 +98,5 @@ public class LanguageAdapter extends RecyclerView.Adapter<LanguageAdapter.MyView
             context.setResult(-1, intent);
             context.finish();
         }
-    }
-    public void filter(String charText) {
-        charText = charText.toLowerCase(Locale.getDefault());
-        languageArrayList.clear();
-        if (charText.length() == 0) {
-            languageArrayList.addAll(objects);
-        } else {
-            for (String wp : objects) {
-                if (wp.toLowerCase(Locale.getDefault()).contains(charText)) {
-                    languageArrayList.add(wp);
-                }
-            }
-        }
-        notifyDataSetChanged();
     }
 }

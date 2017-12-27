@@ -9,15 +9,9 @@ import android.webkit.URLUtil;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.ByteArrayBuffer;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -27,8 +21,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Date;
-
-import okhttp3.HttpUrl;
 
 /**
  * Created by MAX on 15-Mar-17.
@@ -121,16 +113,19 @@ public class DownloadFile extends AsyncTask<String, Integer, String> {
             String fileExte = Function.getFileExtention(filename);
 
             if (fileExte.equalsIgnoreCase("png") || fileExte.equalsIgnoreCase("jpg") || fileExte.equalsIgnoreCase("jpeg")) {
-                folderType = "SpeakaMeImage";
-            } else if (fileExte.equalsIgnoreCase("mp4") || fileExte.equalsIgnoreCase("3gp")) {
-                folderType = "SpeakaMeVideo";
+                folderType = "SpeakAme Image";
+            } else if (fileExte.equalsIgnoreCase("mp4") || fileExte.equalsIgnoreCase("3gp") || fileExte.equalsIgnoreCase("MOV")) {
+                folderType = "SpeakAme Video";
             } else if (fileExte.equalsIgnoreCase("pdf")) {
-                folderType = "SpeakaMeDocument";
+                folderType = "SpeakAme Document";
             } else {
-                folderType = "SpeakaMeTest";
+                folderType = "SpeakAme Test";
             }
-            File SpeakaMeDir = Function.createFolder(folderType);
-            filePath = SpeakaMeDir +"/"+ filenema;
+
+
+            File SpeakAmeDir = Function.createFolder(folderType);
+            filePath = SpeakAmeDir + "/" + filenema;
+
 
             ByteArrayOutputStream dataStream = new ByteArrayOutputStream();
 
@@ -185,16 +180,16 @@ public class DownloadFile extends AsyncTask<String, Integer, String> {
             String fileExte = Function.getFileExtention(filename);
 
             if (fileExte.equalsIgnoreCase("png") || fileExte.equalsIgnoreCase("jpg") || fileExte.equalsIgnoreCase("jpeg")) {
-                folderType = "SpeakaMeImage";
+                folderType = "SpeakAme Image";
             } else if (fileExte.equalsIgnoreCase("mp4") || fileExte.equalsIgnoreCase("3gp")) {
-                folderType = "SpeakaMeVideo";
+                folderType = "SpeakAme Video";
             } else if (fileExte.equalsIgnoreCase("pdf")) {
-                folderType = "SpeakaMeDocument";
+                folderType = "SpeakAme Document";
             } else {
-                folderType = "SpeakaMeTest";
+                folderType = "SpeakAme Test";
             }
-            File SpeakaMeDir = Function.createFolder(folderType);
-            filePath = SpeakaMeDir +"/"+ filenema;
+            File SpeakAmeDir = Function.createFolder(folderType);
+            filePath = SpeakAmeDir + "/" + filenema;
 
             BufferedInputStream bis = new BufferedInputStream(input);
 

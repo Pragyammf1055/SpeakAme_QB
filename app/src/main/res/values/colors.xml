@@ -9,7 +9,8 @@
     <color name="inputeditcolor">#393939</color>
     <color name="editbg">#e6e6e6</color>
     <color name="tab_text">#4e2e28</color>
-    <color name="red_btn">#ef5350</color>
+    <color name="red_btn">#f40500</color>
+    <color name="pink_btn">#ac6968</color>
     <color name="fadelistitem">#d1d0d0</color>
     <color name="transparents">#00f9e8e8</color>
     <color name="bgchatone">#474747</color>
@@ -19,4 +20,12 @@
     <color name="textcolor">#7c7c7c</color>
     <color name="cardViewcolor">#fdfdfd</color>
     <color name="cardbckcolor">#ededed</color>
+    <color name="colorbck">#ffffff</color>
+    <color name="color_textmsg">#f5f5f5</color>
+
+    <color name="color_chatbackground_old">#fce9e2</color>
+    <color name="color_chatbackground_new">#f7ffff</color>
+    <color name="color_chatbackground_new1">#F1FFFF</color>
+    <color name="trans">#00000000</color>
+
 </resources>

@@ -11,6 +11,8 @@ import com.speakame.Xmpp.CommonMethods;
 
 public class DBDelete {
 
+    private static final String TAG = "DBdelete";
+
     public static void deleteContact(SQLiteDatabase db) {
 
         long id = db.delete(DBTable.TBL_CONTACTIMPORT, null, null);
@@ -52,25 +54,50 @@ public class DBDelete {
         db.close();
         return isDeleted;
     }
-    public static void deleteChatDateWise (SQLiteDatabase db, String keyname, String which, String date) {
 
+
+    public static void deleteChatDateWise(SQLiteDatabase db, String keyname, String which, String date) {
+//fvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
         Log.v("DBDelete", "~~~~~~~~~~~~~~ Inside DB Delete class ~~~~~~~~~~~~~~");
+/*
 
         if (which.equalsIgnoreCase("chat")) {
-
-            boolean isDeleted = db.delete(DBTable.TBL_CHAT, DBTable.KEY_RECEIVER + "='" + keyname + "' AND " + DBTable.KEY_DATE + " BETWEEN '" + date + "' AND '" + CommonMethods.getCurrentDate() + "'", null) > 0;
+            boolean isDeleted = db.delete(DBTable.TBL_CHAT, DBTable.KEY_RECEIVER + "=" + keyname + " AND " + DBTable.KEY_DATE + " BETWEEN '" + date + "' AND '" + CommonMethods.getCurrentDate() + "'", null) > 0;
             Log.d("deleteChat", "Delete Query :--" + DBTable.KEY_RECEIVER + "='" + keyname + "' AND " + DBTable.KEY_DATE + " BETWEEN '" + date + "' AND '" + CommonMethods.getCurrentDate() + "'");
             Log.d("deleteChat", ":::" + isDeleted);
 
         } else {
-
             boolean isDeleted = db.delete(DBTable.TBL_CHAT, DBTable.KEY_RECEIVER + "='" + keyname + "' AND " + DBTable.KEY_DATE + " BETWEEN '" + date + "' AND '" + CommonMethods.getCurrentDate() + "'", null) > 0;
             Log.d("deleteChat", ":::" + isDeleted);
+        }
+*/
 
+        if (which.equalsIgnoreCase("chat")) {
+
+            String DEL_DATA = "DELETE from " + DBTable.TBL_CHAT + " where " + DBTable.KEY_RECEIVER + " = '" + keyname + "' AND " + DBTable.KEY_DATE + " BETWEEN '" + date + "' AND '" + CommonMethods.getCurrentDate() + "'";
+            db.execSQL(DEL_DATA);
+
+            boolean isDeleted = true;
+//            boolean isDeleted = db.delete(DBTable.TBL_CHAT, DBTable.KEY_RECEIVER + "='" + keyname + "' AND " + DBTable.KEY_DATE + " BETWEEN '" + date + "' AND '" + CommonMethods.getCurrentDate() + "'", null) > 0;
+
+            Log.d(TAG, "Delete Query :- " + DEL_DATA);
+            Log.d(TAG, "Delete Query :- " + DBTable.KEY_RECEIVER + "='" + keyname + "' AND " + DBTable.KEY_DATE + " BETWEEN '" + date + "' AND '" + CommonMethods.getCurrentDate() + "'");
+            Log.d(TAG, "data deleted :: :-" + isDeleted);
+
+        } else {
+            boolean isDeleted = db.delete(DBTable.TBL_CHAT, DBTable.KEY_RECEIVER + "='" + keyname + "' AND " + DBTable.KEY_DATE + " BETWEEN '" + date + "' AND '" + CommonMethods.getCurrentDate() + "'", null) > 0;
+            Log.d("deleteChat", ":::" + isDeleted);
         }
 
         Log.v("DB_Delete", "Delete Query ...");
     }
 
+    public static void deleteContactName(SQLiteDatabase db, String name, String key_receiver) {
+
+        Log.v("DBDelete", "~~~~~~~~~~~~~~ Inside DB Delete class ~~~~~~~~~~~~~~");
+        boolean isDeleted = db.delete(DBTable.TBL_CHAT, DBTable.KEY_RECIVERNAME + "='" + name + " ' WHERE " + DBTable.KEY_RECEIVER + " = '" + key_receiver + "'", null) > 0;
+        Log.d("deleteChat", "Delete Query :--" + DBTable.KEY_RECIVERNAME + "='" + name + " ' WHERE " + DBTable.KEY_RECEIVER + " = '" + key_receiver + "'");
+        Log.d("deleteChat", ":::" + isDeleted);
+    }
 
 }

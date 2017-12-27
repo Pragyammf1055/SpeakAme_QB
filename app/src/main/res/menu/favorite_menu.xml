@@ -5,11 +5,9 @@
 
     <item
         android:id="@+id/action_contact"
-        android:icon="@drawable/add_contact"
+        android:icon="@drawable/cuser"
         android:orderInCategory="1"
         android:title="Add contact"
         app:showAsAction="always" />
-
-
 
 </menu>

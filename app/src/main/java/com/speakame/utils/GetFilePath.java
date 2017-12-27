@@ -9,21 +9,27 @@ import android.os.Build;
 import android.os.Environment;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
+import android.util.Log;
 
 /**
  * Created by rachit on 7/10/16.
  */
 public class GetFilePath {
 
+    private static final String TAG = "GetFilePath";
 
     @TargetApi(Build.VERSION_CODES.KITKAT)
     public static String getPath(final Context context, final Uri uri) {
 
         final boolean isKitKat = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
 
+
         // DocumentProvider
         if (isKitKat && DocumentsContract.isDocumentUri(context, uri)) {
             // ExternalStorageProvider
+
+            Log.v(TAG, "Inside uri 1111 :- " + uri);
+
             if (isExternalStorageDocument(uri)) {
                 final String docId = DocumentsContract.getDocumentId(uri);
                 final String[] split = docId.split(":");
@@ -38,6 +44,8 @@ public class GetFilePath {
             // DownloadsProvider
             else if (isDownloadsDocument(uri)) {
 
+                Log.v(TAG, "Inside uri 2222 :- " + uri);
+
                 final String id = DocumentsContract.getDocumentId(uri);
                 final Uri contentUri = ContentUris.withAppendedId(
                         Uri.parse("content://downloads/public_downloads"), Long.valueOf(id));
@@ -46,6 +54,9 @@ public class GetFilePath {
             }
             // MediaProvider
             else if (isMediaDocument(uri)) {
+
+                Log.v(TAG, "Inside uri 3333 :- " + uri);
+
                 final String docId = DocumentsContract.getDocumentId(uri);
                 final String[] split = docId.split(":");
                 final String type = split[0];
@@ -69,10 +80,13 @@ public class GetFilePath {
         }
         // MediaStore (and general)
         else if ("content".equalsIgnoreCase(uri.getScheme())) {
+            Log.v(TAG, "Inside uri 4444 :- " + uri);
+
             return getDataColumn(context, uri, null, null);
         }
         // File
         else if ("file".equalsIgnoreCase(uri.getScheme())) {
+            Log.v(TAG, "Inside uri 5555 :- " + uri);
             return uri.getPath();
         }
 

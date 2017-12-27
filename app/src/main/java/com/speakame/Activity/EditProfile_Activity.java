@@ -26,9 +26,13 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.quickblox.chat.QBChatService;
+import com.quickblox.chat.QBRoster;
+import com.quickblox.chat.listeners.QBRosterListener;
+import com.quickblox.chat.listeners.QBSubscriptionListener;
+import com.quickblox.chat.model.QBPresence;
 import com.speakame.Classes.AnimRootActivity;
 import com.speakame.R;
-import com.speakame.Services.XmppConneceted;
 import com.speakame.Xmpp.ChatMessage;
 import com.speakame.utils.AppConstants;
 import com.speakame.utils.AppPreferences;
@@ -47,6 +51,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
+import org.jivesoftware.smack.SmackException;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -59,11 +64,13 @@ import java.io.UnsupportedEncodingException;
 import java.net.SocketTimeoutException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Collection;
 import java.util.Date;
 
 import dmax.dialog.SpotsDialog;
 
 public class EditProfile_Activity extends AnimRootActivity {
+    private static final String TAG = "EditProfile";
     //keep track of camera capture intent
     public static ImageView language, language_blue, chat, chat_blue, setting, setting_blue, star,
             on_image, off_image, star_blue, user, user_blue, user_profile;
@@ -73,8 +80,8 @@ public class EditProfile_Activity extends AnimRootActivity {
     Bitmap thePic;
     TextView title_name, txt1, txt2, txt3;
     EditText editstatus, editText_name;
-    String Status, Encoded_userimage="", Username, currentDateTimeString;
-    ImageView   prof_pic;
+    String Status, Encoded_userimage = "", Username, currentDateTimeString;
+    ImageView prof_pic;
     //captured picture uri
     Typeface tf3, tf2;
     private Uri picUri;
@@ -167,9 +174,7 @@ public class EditProfile_Activity extends AnimRootActivity {
         if (AppPreferences.getTotf(EditProfile_Activity.this).equalsIgnoreCase("0")) {
             user_blue.setVisibility(View.VISIBLE);
             user.setVisibility(View.GONE);
-
         }
-
 
         if (user.getVisibility() == View.VISIBLE) {
 
@@ -223,7 +228,6 @@ public class EditProfile_Activity extends AnimRootActivity {
             editstatus.setText(AppPreferences.getUserstatus(EditProfile_Activity.this));
         }
 
-
         if (AppPreferences.getUserprofile(EditProfile_Activity.this).equalsIgnoreCase("")) {
             prof_pic.setBackgroundResource(R.drawable.add_pic);
 
@@ -234,7 +238,7 @@ public class EditProfile_Activity extends AnimRootActivity {
                     .into(prof_pic);
         }
 
-        System.out.println("profpic"+AppPreferences.getUserprofile(EditProfile_Activity.this));
+        System.out.println("profpic :- " + AppPreferences.getUserprofile(EditProfile_Activity.this));
 
         editstatus.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -243,7 +247,6 @@ public class EditProfile_Activity extends AnimRootActivity {
 
             }
         });
-
 
         prof_pic.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -264,11 +267,8 @@ public class EditProfile_Activity extends AnimRootActivity {
                     Toast toast = Toast.makeText(EditProfile_Activity.this, errorMessage, Toast.LENGTH_SHORT);
                     toast.show();
                 }
-
             }
         });
-
-
     }
 
     @Override
@@ -292,7 +292,11 @@ public class EditProfile_Activity extends AnimRootActivity {
                 Username = editText_name.getText().toString();
                 Status = editstatus.getText().toString();
 
-                new UpdateprofileAsynch().execute();
+                if (Function.isConnectingToInternet(EditProfile_Activity.this)) {
+                    new UpdateprofileAsynch().execute();
+                } else {
+                    Toast.makeText(getApplicationContext(), "Internet not Connected !", Toast.LENGTH_SHORT).show();
+                }
                 break;
         }
         return super.onOptionsItemSelected(item);
@@ -325,7 +329,7 @@ public class EditProfile_Activity extends AnimRootActivity {
             @Override
             public void onClick(View v) {
                 Status = stat_edit.getText().toString();
-                Log.w("EditProfile_Activity", "Update status:-"+ Status);
+                Log.w("EditProfile_Activity", "Update status:-" + Status);
                 AppPreferences.setUserstatus(EditProfile_Activity.this, Status);
                 markerDialog.dismiss();
                 editstatus.setText(Status);
@@ -368,7 +372,6 @@ public class EditProfile_Activity extends AnimRootActivity {
                 Log.d("pictureimage", Encoded_userimage);
 
 
-
             }
 
         }
@@ -401,7 +404,6 @@ public class EditProfile_Activity extends AnimRootActivity {
             Toast toast = Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT);
             toast.show();
         }
-
     }
 
     @Override
@@ -423,7 +425,6 @@ public class EditProfile_Activity extends AnimRootActivity {
 
                 }
             }
-
         }
     }
 
@@ -505,6 +506,64 @@ public class EditProfile_Activity extends AnimRootActivity {
         star_blue.setVisibility(View.GONE);
     }
 
+    private void sendImageinPresence() {
+
+        QBRosterListener rosterListener = new QBRosterListener() {
+            @Override
+            public void entriesDeleted(Collection<Integer> userIds) {
+            }
+
+            @Override
+            public void entriesAdded(Collection<Integer> userIds) {
+
+            }
+
+            @Override
+            public void entriesUpdated(Collection<Integer> userIds) {
+            }
+
+            @Override
+            public void presenceChanged(QBPresence presence) {
+                Log.v("EditProfile", "userID...........=" + presence);
+            }
+        };
+        QBSubscriptionListener subscriptionListener = new QBSubscriptionListener() {
+            @Override
+            public void subscriptionRequested(int userId) {
+            }
+        };
+
+
+        QBRoster chatRoster = QBChatService.getInstance().getRoster(QBRoster.SubscriptionMode.mutual, subscriptionListener);
+        chatRoster.addRosterListener(rosterListener);
+
+        JSONObject presenceJson = new JSONObject();
+        try {
+            presenceJson.put("sender_id", AppPreferences.getLoginId(EditProfile_Activity.this));
+            presenceJson.put("profile_image", AppPreferences.getUserprofile(EditProfile_Activity.this));
+            presenceJson.put("profile_name", editText_name.getText().toString());
+            presenceJson.put("chat_Type", "singleChat");
+            presenceJson.put("profile_language", "");
+            presenceJson.put("status", editstatus.getText().toString());
+
+            Log.v(TAG, "Json object sending as a status while sending presence :- " + presenceJson);
+
+        } catch (JSONException e) {
+// TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+//................................................................................................//
+        QBPresence presence = new QBPresence(QBPresence.Type.online, presenceJson.toString(), 1, QBPresence.Mode.available);
+
+        Log.v(TAG, "User Presnece in Edit user image 19 dec :- " + presence);
+        try {
+            chatRoster.sendPresence(presence);
+        } catch (SmackException.NotConnectedException e) {
+
+        }
+    }
+
     private class UpdateprofileAsynch extends AsyncTask<Void, Void, String> {
         private AlertDialog mProgressDialog;
         private JSONObject jsonObj;
@@ -541,8 +600,6 @@ public class EditProfile_Activity extends AnimRootActivity {
                         + AppConstants.COMMONURL);
                 HttpPost httppost = new HttpPost(AppConstants.COMMONURL);
                 jsonObj = new JSONObject();
-
-
 
                 jsonObj.put("method", "editProfile");
                 jsonObj.put("userImage", Encoded_userimage);
@@ -607,14 +664,16 @@ public class EditProfile_Activity extends AnimRootActivity {
                             //AppPreferences.setUsergender(EditProfile_Activity.this, jsonObject2.getString("gender"));
                             AppPreferences.setUserstatus(EditProfile_Activity.this, jsonObject2.getString("userProfileStatus"));
                         }
-                        XmppConneceted activity = new XmppConneceted();
+
+                        sendImageinPresence();
+//                        XmppConneceted activity = new XmppConneceted();
                         ChatMessage chatMessage = new ChatMessage();
                         chatMessage.Groupimage = "updateProPic";
                         chatMessage.receiver = AppPreferences.getMobileuser(EditProfile_Activity.this);
                         chatMessage.ReciverFriendImage = resultArray.getJSONObject(0).getString("userImage");
                         chatMessage.userStatus = resultArray.getJSONObject(0).getString("userProfileStatus");
 
-                        activity.getmService().xmpp.updateProfile(chatMessage);
+//                        activity.getmService().xmpp.updateProfile(chatMessage);
                     } else if (jsonObj.getString("status").equalsIgnoreCase("400")) {
                         status = "400";
                     } else if (jsonObj.getString("status").equalsIgnoreCase("500")) {
@@ -638,19 +697,30 @@ public class EditProfile_Activity extends AnimRootActivity {
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
             mProgressDialog.dismiss();
-            Log.d("status", status + "");
-            if (status.equalsIgnoreCase("200")) {
-                Snackbar.make(findViewById(android.R.id.content), "Profile updated successfully", Snackbar.LENGTH_LONG).setAction("Action", null).show();
-                senduseriD();
-                finish();
+            Log.d(TAG, "status :- " + status + "");
 
+            if (!status.equalsIgnoreCase(null) || !status.equalsIgnoreCase("null") || !status.equalsIgnoreCase("")) {
+
+                if (status.equalsIgnoreCase("200")) {
+                    Snackbar.make(findViewById(android.R.id.content), "Profile updated successfully.", Snackbar.LENGTH_LONG).setAction("Action", null).show();
+                    senduseriD();
+                    Intent intent = new Intent(EditProfile_Activity.this, Setting_Activity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(intent);
+                } else {
+
+                    Snackbar.make(findViewById(android.R.id.content), "Check network connection", Snackbar.LENGTH_LONG)
+                            .setAction("Action", null).show();
+
+                }
 
             } else {
-                Snackbar.make(findViewById(android.R.id.content), "Check network connection", Snackbar.LENGTH_LONG)
+
+                Snackbar.make(findViewById(android.R.id.content), "Server not responding.", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
+
             }
         }
-
     }
-
 }

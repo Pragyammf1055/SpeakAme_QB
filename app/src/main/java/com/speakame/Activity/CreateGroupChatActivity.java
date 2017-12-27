@@ -19,7 +19,6 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -63,11 +62,12 @@ public class CreateGroupChatActivity extends AnimRootActivity implements VolleyC
     MultiUserChat muc;
     String nickname = "yogi";
     String jid = "9993243209@speakame/Smack";
-    private Uri picUri;
-    private AlertDialog mProgressDialog;
     FrameLayout fm;
     ImageView emojiImageView;
     EmojiconEditText emojiconEditText;
+    private Uri picUri;
+    private AlertDialog mProgressDialog;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -322,15 +322,14 @@ public class CreateGroupChatActivity extends AnimRootActivity implements VolleyC
                         GroupProfileImage = jsonObject2.getString("group_image");
 
                         System.out.println("grpimg" + GroupProfileImage);
-
                     }
 
                     Intent intent = new Intent(CreateGroupChatActivity.this, GroupMemberList_Activity.class);
-                    intent.putExtra("groupname", GroupName);
-                    intent.putExtra("groupid", group_id);
-                    intent.putExtra("groupimage", GroupProfileImage);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK
-                            | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    intent.setAction("CreateGroupChatActivity");
+                    intent.putExtra("groupName", GroupName);
+                    intent.putExtra("groupId", group_id);
+                    intent.putExtra("groupImage", GroupProfileImage);
                     startActivity(intent);
                     finish();
 

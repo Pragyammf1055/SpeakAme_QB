@@ -10,7 +10,6 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Gravity;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
@@ -36,13 +35,12 @@ public class Privacy_Activity extends AnimRootActivity {
     private static final String TAG = "Profile_Activity";
     public static ImageView language, language_blue, chat, chat_blue, setting, setting_blue, star,
             star_blue, user, user_blue, user_profile;
+    final CharSequence[] photo = {"Everyone", "MyContacts", "Nobody"};
     TextView toolbartext, text1, text2, text3, text4, text5, text6, text7, text8, text9, text10, text11, text12, text13;
     String MyprofilePhoto, MyStatus;
     ProgressDialog mProgressDialog;
     String selectedOption;
     LinearLayout statusLayout, profilePhotoLayout, lastSeenLayout;
-
-    final CharSequence[] photo = {"Everyone", "MyContacts", "Nobody"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,7 +100,6 @@ public class Privacy_Activity extends AnimRootActivity {
         } else {
             text7.setText(AppPreferences.getStatusprivacy(Privacy_Activity.this));
         }
-
 
         profilePhotoLayout.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -229,7 +226,6 @@ public class Privacy_Activity extends AnimRootActivity {
         } else {
             text3.setText("Everyone");
         }
-
 
         lastSeenLayout.setOnClickListener(new View.OnClickListener() {
             @Override

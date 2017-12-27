@@ -1,3 +1,4 @@
+/*
 package com.speakame.Services;
 
 import android.app.ActivityManager;
@@ -10,7 +11,7 @@ import android.os.IBinder;
 import android.util.Log;
 
 import com.speakame.Xmpp.LocalBinder;
-import com.speakame.Xmpp.MyService;
+
 
 import org.jivesoftware.smack.XMPPException;
 
@@ -75,3 +76,4 @@ public class XmppConneceted extends Service {
 
 
 }
+*/

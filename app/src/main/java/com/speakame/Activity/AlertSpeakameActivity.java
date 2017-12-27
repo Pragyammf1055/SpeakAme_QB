@@ -11,9 +11,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.speakame.Beans.User;
 import com.speakame.Classes.AnimRootActivity;
-import com.speakame.Database.DatabaseHelper;
 import com.speakame.R;
 import com.speakame.utils.AppConstants;
 import com.speakame.utils.AppPreferences;
@@ -49,11 +47,12 @@ public class AlertSpeakameActivity extends AnimRootActivity {
         mbtn_continue.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+
                 senduserId();
 
             }
         });
-
     }
 
     private void senduserId() {
@@ -68,7 +67,7 @@ public class AlertSpeakameActivity extends AnimRootActivity {
 
             jsonObject.put("method", "userContinue");
             jsonObject.put("user_id", AppPreferences.getLoginId(AlertSpeakameActivity.this));
-            jsonObject.put("mobilenumber", AppPreferences.getMobileuser(AlertSpeakameActivity.this));
+            jsonObject.put("mobilenumber",/* AppPreferences.getCountrycode(AlertSpeakameActivity.this) + " " +*/ AppPreferences.getMobileuser(AlertSpeakameActivity.this));
 
             jsonArray.put(jsonObject);
             System.out.println("send>json--" + jsonArray);
@@ -80,7 +79,6 @@ public class AlertSpeakameActivity extends AnimRootActivity {
         jsonParser.parseVollyJsonArray(AppConstants.DEMOCOMMONURL, 1, jsonArray, new VolleyCallback() {
             @Override
             public void backResponse(String response) {
-
 
                 Log.d("response>>>>>", response);
                 //  mProgressDialog.dismiss();
@@ -94,7 +92,6 @@ public class AlertSpeakameActivity extends AnimRootActivity {
 
                             for (int i = 0; orderArray.length() > i; i++) {
                                 JSONObject jsonObject2 = orderArray.getJSONObject(i);
-
 
                                 /*String loginId = jsonObject2.getString("userId");
                                 AppPreferences.setLoginId(AlertSpeakameActivity.this, Integer.parseInt(jsonObject2.getString("userId")));
@@ -117,8 +114,6 @@ public class AlertSpeakameActivity extends AnimRootActivity {
                                 AppPreferences.setPicprivacy(AlertSpeakameActivity.this, jsonObject2.getString("profie_pic_privacy"));
                                 AppPreferences.setStatusprivacy(AlertSpeakameActivity.this, jsonObject2.getString("profie_status_privacy"));
                                 AppPreferences.setLoginStatus(AlertSpeakameActivity.this, jsonObject2.getString("user_status"));
-                                AppPreferences.setRegisterDate(AlertSpeakameActivity.this, jsonObject2.getString("start_date"));
-                                AppPreferences.setRegisterEndDate(AlertSpeakameActivity.this, jsonObject2.getString("end_date"));
 
                                 User user = new User();
                                 user.setName(jsonObject2.getString("username"));
@@ -126,9 +121,10 @@ public class AlertSpeakameActivity extends AnimRootActivity {
                                 user.setPassword(jsonObject2.getString("password"));
 
                                 DatabaseHelper.getInstance(AlertSpeakameActivity.this).insertUser(user);*/
-
-
+                                AppPreferences.setRegisterDate(AlertSpeakameActivity.this, jsonObject2.getString("start_date"));
+                                AppPreferences.setRegisterEndDate(AlertSpeakameActivity.this, jsonObject2.getString("end_date"));
                             }
+
                             Intent intent = new Intent(AlertSpeakameActivity.this, MainScreenActivity.class);
                             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK
                                     | Intent.FLAG_ACTIVITY_NEW_TASK);

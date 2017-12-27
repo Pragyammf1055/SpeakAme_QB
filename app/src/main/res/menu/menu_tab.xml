@@ -9,12 +9,12 @@
         android:orderInCategory="1"
         android:title="Contact"
         app:showAsAction="always"/>
+
     <item
         android:id="@+id/action_menu"
         android:icon="@drawable/right_menu_icon"
         android:orderInCategory="1"
         android:title="Add Contacts"
         app:showAsAction="always"/>
-
 
 </menu>

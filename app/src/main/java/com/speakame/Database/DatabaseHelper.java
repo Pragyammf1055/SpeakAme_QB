@@ -6,6 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Environment;
 import android.util.Log;
 
+import com.quickblox.core.helper.StringifyArrayList;
 import com.speakame.Beans.AllBeans;
 import com.speakame.Beans.User;
 import com.speakame.Xmpp.ChatMessage;
@@ -20,7 +21,8 @@ import java.util.List;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "speakame.db";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
+    private static final String TAG = "DatabaseHelper";
     private static DatabaseHelper dbHelper;
     //private static SQLiteDatabase db = null;
 
@@ -35,10 +37,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             dbHelper = new DatabaseHelper(context);
             //openConnecion();
         }
-
         return dbHelper;
     }
-
 
 
    /* public static void openConnecion() {
@@ -85,21 +85,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         //  closeConnecion();
 
     }
-    public void UpdateLastSeen(ChatMessage message) {
+
+    public void UpdateUserImage(String userImageUrl, String qbFriendId) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 
-            DataUpdate.UpdateLastSeen(db, message);
+        DataUpdate.UpdateUserImage(db, userImageUrl, qbFriendId);
     }
-    public void UpdateMsgStatus(String status, String receiptId) {
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
 
-            DataUpdate.UpdateMsgStatus(db, status, receiptId);
-    }
     public void UpdateMsgRead(String status, String reciver) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 
             DataUpdate.UpdateMsgRead(db, status, reciver);
     }
+
     public void UpdateContactName(String recivername, String reciver) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 
@@ -115,6 +113,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
             DataUpdate.UpdateFriendPro(db, image, userStatus, reciver);
     }
+
     public void UpdateGroupName(String name, String groupId) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 
@@ -186,6 +185,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public ArrayList<ChatMessage> getDateWiseChat(String which, String reciver, String date) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
+//        fdddddddddddddddddddddd
         ArrayList<ChatMessage> list = DBDataGet.getDateWiseChat(db, which, reciver, date);
         // closeConnecion();
         return list;
@@ -230,8 +230,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return user;
     }
 
-
-
     public boolean deleteGroup(String groupName) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         boolean isDeleted = DBDelete.deleteGroup(db,groupName);
@@ -255,12 +253,77 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return isDeleted;
     }
     public void ChatDelete_ByDate(String which, String reciver, String date) {
-
+//fvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
         Log.v("DataBase Helper", " ~~~~~~~~~~~~~~ Inside getDateWiseChatDelete() ~~~~~~~~~~~~~~");
 
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         DBDelete.deleteChatDateWise(db, reciver, which, date);
 // closeConnecion();
     }
+
+
+    public void UpdateLastSeen(ChatMessage message) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+        DataUpdate.UpdateLastSeen(db, message);
+    }
+
+    public String getLastSeenQB(int reciver) {
+
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        String list = DBDataGet.getQBLastSeen(db, reciver);
+        String date = null;
+
+      /*  try {
+            date = Function.formatToYesterdayOrToday(list);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+*/
+        Log.v(TAG, "Date 1 :- " + list);
+        Log.v(TAG, "Date 2 :- " + date);
+// closeConnecion();
+        return list;
+    }
+
+    public void UpdateReadStatus(String status, String qbDialogId, String qbMessageId, String qbRecipientId) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+//dcsssssssssssssssssssssssssssss
+        DataUpdate.UpdateReadStatus(db, status, qbDialogId, qbMessageId, qbRecipientId);
+    }
+
+    public StringifyArrayList<String> getMessageUpdateStatus(String dialogid) {
+
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        StringifyArrayList<String> list = DBDataGet.getUpdateMessageStatus(db, dialogid, "");
+// closeConnecion();
+        return list;
+    }
+
+    public void InsertStatus(User user) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        DataInsert.InsertUserStatus(db, user);
+// closeConnecion();
+    }
+
+    public void UpdateMsgStatus(String status, String receiptId) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        DataUpdate.UpdateMsgStatus(db, status, receiptId);
+    }
+
+
+    public void UpdateQBChatDialog(String qbDialogId, byte[] ser_QBByteData) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+//dcsssssssssssssssssssssssssssss
+        DataUpdate.UpdateChatDialog(db, qbDialogId, ser_QBByteData);
+    }
+
+
+    public void UpdateReadStatusForAllMessage(String status, String qbDialogId, String receiver) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+//dcsssssssssssssssssssssssssssss
+        DataUpdate.UpdateReadStatusForAll(db, status, qbDialogId, receiver);
+    }
+
 }
 

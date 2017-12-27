@@ -1,6 +1,7 @@
 package com.speakame.Activity;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Rect;
 import android.graphics.Typeface;
@@ -15,13 +16,18 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import com.quickblox.chat.QBRestChatService;
+import com.quickblox.chat.model.QBChatDialog;
+import com.quickblox.chat.model.QBDialogType;
+import com.quickblox.core.QBEntityCallback;
+import com.quickblox.core.exception.QBResponseException;
 import com.speakame.Adapter.NewGroupMember_Adapter;
 import com.speakame.Beans.AllBeans;
 import com.speakame.Classes.AnimRootActivity;
+import com.speakame.QuickBlox.GooglePlayServicesHelper;
 import com.speakame.R;
-import com.speakame.Services.XmppConneceted;
+import com.speakame.Services.QBService;
 import com.speakame.utils.AppConstants;
 import com.speakame.utils.AppPreferences;
 import com.speakame.utils.Function;
@@ -41,17 +47,21 @@ import dmax.dialog.SpotsDialog;
 
 
 public class GroupMemberList_Activity extends AnimRootActivity implements VolleyCallback {
+
+    private static final String TAG = "GroupList_Activity";
     public static TextView title_content;
     public TextView nocontenttext, title_name;
+    public QBService qbService;
     RecyclerView recyclerView;
     ArrayList<AllBeans> friendlist;
     AlertDialog mProgressDialog;
     NewGroupMember_Adapter newGroupMember_adapter;
     AllBeans allBeans;
-    String GroupName, GroupId, GroupImagePicture;
     //JSONArray listvalue = new JSONArray();
-
+    String GroupName, GroupId, GroupImagePicture;
     ArrayList<Integer> memberIdList;
+    QBChatDialog groupChatDialog;
+    GooglePlayServicesHelper googlePlayServicesHelper;
 
     public static void updatemember(int count) {
         title_content.setText("Add member(" + count + " member)");
@@ -61,41 +71,55 @@ public class GroupMemberList_Activity extends AnimRootActivity implements Volley
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_contact_display);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_arrow_back_white_24dp);
-        title_name = (TextView) findViewById(R.id.title_name);
-        title_content = (TextView) findViewById(R.id.content_name);
-        nocontenttext = (TextView) findViewById(R.id.novaluetext);
+
+        setToolbar();
 
         memberIdList = new ArrayList<Integer>();
+        qbService = new QBService();
 
-        title_name.setText("New Group");
         title_content.setText("Add member(0 member)");
+
         Intent intent = getIntent();
-        GroupName = intent.getStringExtra("groupname");
-        GroupId = intent.getStringExtra("groupid");
-        GroupImagePicture = intent.getStringExtra("groupimage");
+        if (intent.getAction().equalsIgnoreCase("CreateGroupChatActivity")) {
+
+            GroupName = intent.getStringExtra("groupName");
+            GroupId = intent.getStringExtra("groupId");
+            GroupImagePicture = intent.getStringExtra("groupImage");
+
+        } else if (intent.getAction().equalsIgnoreCase("ViewGroupDetail_Activity")) {
+
+            GroupName = intent.getStringExtra("groupName");
+            GroupId = intent.getStringExtra("groupId");
+            memberIdList = intent.getIntegerArrayListExtra("group_MemberId");
+        }
+
+        Log.v(TAG, "Grp 1 :- " + GroupName);
+        Log.v(TAG, "Grp 2 :- " + GroupId);
+        Log.v(TAG, "Grp 3 :- " + GroupImagePicture);
+        Log.v(TAG, "Grp 4 :- " + memberIdList);
+
         System.out.println("imggrp" + GroupImagePicture);
-        memberIdList = intent.getIntegerArrayListExtra("groupmemberid");
         title_name.setText(GroupName);
-
-        Typeface tf1 = Typeface.createFromAsset(getAssets(), "Raleway-Regular.ttf");
-        title_name.setTypeface(tf1);
-        title_content.setTypeface(tf1);
-        nocontenttext.setTypeface(tf1);
-
 
         recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         recyclerView.addItemDecoration(new HorizontalDividerItemDecoration.Builder(this).build());
 
-
         friendlist = new ArrayList<AllBeans>();
+
+        callGetCheckListAPi();
+
+        googlePlayServicesHelper = new GooglePlayServicesHelper();
+
+
+    }
+
+    private void callGetCheckListAPi() {
+
         mProgressDialog = new SpotsDialog(GroupMemberList_Activity.this);
         mProgressDialog.setMessage("Please wait...");
         mProgressDialog.setCancelable(false);
         mProgressDialog.show();
+
         JSONObject jsonObject = new JSONObject();
         JSONArray jsonArray = new JSONArray();
         try {
@@ -112,6 +136,23 @@ public class GroupMemberList_Activity extends AnimRootActivity implements Volley
         JSONParser jsonParser = new JSONParser(getApplicationContext());
         jsonParser.parseVollyJsonArray(AppConstants.USER_CONNECTION_APIS, 1, jsonArray, GroupMemberList_Activity.this);
         System.out.println("jsonArray" + jsonObject);
+    }
+
+    private void setToolbar() {
+
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_arrow_back_white_24dp);
+        title_name = (TextView) findViewById(R.id.title_name);
+        title_content = (TextView) findViewById(R.id.content_name);
+        nocontenttext = (TextView) findViewById(R.id.novaluetext);
+
+        Typeface tf1 = Typeface.createFromAsset(getAssets(), "Raleway-Regular.ttf");
+        title_name.setTypeface(tf1);
+        title_content.setTypeface(tf1);
+        nocontenttext.setTypeface(tf1);
 
     }
 
@@ -134,8 +175,9 @@ public class GroupMemberList_Activity extends AnimRootActivity implements Volley
             case R.id.done:
 //                Intent intent = new Intent(getApplicationContext(), TwoTab_Activity.class);
 //                startActivity(intent);
-
                 registergroupmember();
+                QBChatDialog dialog = qbService.getGrpDialog();
+                Log.v(TAG, " Chat Dialog after grp created :- " + dialog);
                 break;
         }
         return super.onOptionsItemSelected(item);
@@ -160,6 +202,9 @@ public class GroupMemberList_Activity extends AnimRootActivity implements Volley
                         allBeans.setFriendmobile(topObject.getString("speaka_number"));
                         allBeans.setFriendimage(topObject.getString("user_image"));
                         allBeans.setFriendStatus(topObject.getString("userProfileStatus"));
+                        allBeans.setFriendQB_id(Integer.parseInt(topObject.getString("qb_id")));
+
+                        Log.v(TAG, "QB id of freind:-" + allBeans.getFriendQB_id());
 
                         if (memberIdList != null) {
                             if (memberIdList.contains(Integer.parseInt(topObject.getString("speaka_id")))) {
@@ -167,7 +212,6 @@ public class GroupMemberList_Activity extends AnimRootActivity implements Volley
                             } else {
                                 allBeans.setSelected(false);
                                 friendlist.add(allBeans);
-
                             }
 
                         } else {
@@ -222,7 +266,8 @@ public class GroupMemberList_Activity extends AnimRootActivity implements Volley
 
         try {
             newGroupMember_adapter.stringArrayList.addAll(memberIdList);
-        }catch (NullPointerException e){}
+        } catch (NullPointerException e) {
+        }
 
         try {
             jsonObject.put("method", "singleGroupView");
@@ -236,43 +281,59 @@ public class GroupMemberList_Activity extends AnimRootActivity implements Volley
         } catch (JSONException e) {
             e.printStackTrace();
         }
+
         JSONParser jsonParser = new JSONParser(GroupMemberList_Activity.this);
+
         jsonParser.parseVollyJsonArray(AppConstants.USERGROUPURL, 1, jsonArray, new VolleyCallback() {
             @Override
             public void backResponse(String response) {
 
-
-                Log.d("response>>>>>", response);
+                Log.d(TAG, "response singleGroupView :- " + response);
+                Log.d(TAG, "Memeber list :- " + memberIdList);
                 //  mProgressDialog.dismiss();
                 if (response != null) {
                     try {
                         JSONObject mainObject = new JSONObject(response);
 
                         if (mainObject.getString("status").equalsIgnoreCase("200")) {
-                            JSONArray orderArray = mainObject.getJSONArray("result");
 
-                            XmppConneceted activity = new XmppConneceted();
-                            boolean creategroup = false;
-                            String msg ="";
+                            String msg = "";
+
+                            JSONArray orderArray = mainObject.getJSONArray("result");
+//
+                            ArrayList<Integer> occupantIdsList = newGroupMember_adapter.getFriendQbIdList();
+                            Log.v(TAG, "Friend List :- " + occupantIdsList);
+
+//dsvvvvvvvvvvvdsvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+                            createGroupInQuickBlox(GroupMemberList_Activity.this, occupantIdsList, GroupName, GroupId, GroupImagePicture);
+
+                            Log.v(TAG, " Chat Dialog after grp created  inside :- " + groupChatDialog);
+
                             if (memberIdList == null) {
-                                creategroup =  activity.getmService().xmpp.createGroupChat(GroupName, GroupId, AppPreferences.getMobileuser(GroupMemberList_Activity.this), NewGroupMember_Adapter.contactArrayList, GroupImagePicture);
-                                msg = "Group cannot be created";
+
+                                msg = "Group cannnot be created ";
                             } else {
-                                creategroup = activity.getmService().xmpp.addNewMemberInGroup(GroupName, GroupId, AppPreferences.getMobileuser(GroupMemberList_Activity.this), NewGroupMember_Adapter.contactArrayList);
-                                msg = "menber not added";
+//                                creategroup = activity.getmService().xmpp.addNewMemberInGroup(GroupName, GroupId, AppPreferences.getMobileuser(GroupMemberList_Activity.this), NewGroupMember_Adapter.contactArrayList);
+//                                msg = "member not added";
                             }
-                            if(creategroup){
+
+/*
+
+                            if (creategroup) {
+
+                                QBChatDialog dialog = qbService.getGrpDialog();
+
                                 Intent intent = new Intent(GroupMemberList_Activity.this, TwoTab_Activity.class);
-                                intent.setAction("");
+                                intent.setAction("GroupMember");
                                 intent.putExtra("groupimage", GroupImagePicture);
                                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                                 startActivity(intent);
                                 finish();
 
-                            }else {
+                            } else {
                                 Toast.makeText(GroupMemberList_Activity.this, msg, Toast.LENGTH_SHORT).show();
                             }
-
+*/
 
                         } else if (mainObject.getString("status").equalsIgnoreCase("400")) {
                             // Toast.makeText(getApplicationContext(), "Alerady accepted", Toast.LENGTH_LONG).show();
@@ -280,7 +341,7 @@ public class GroupMemberList_Activity extends AnimRootActivity implements Volley
                                     .setAction("Action", null).show();
                         } else if (mainObject.getString("status").equalsIgnoreCase("100")) {
                             // Toast.makeText(getApplicationContext(), "Alerady accepted", Toast.LENGTH_LONG).show();
-                            Snackbar.make(findViewById(android.R.id.content), "No network connection", Snackbar.LENGTH_LONG)
+                            Snackbar.make(findViewById(android.R.id.content), "Server issue", Snackbar.LENGTH_LONG)
                                     .setAction("Action", null).show();
                         }
 
@@ -296,6 +357,55 @@ public class GroupMemberList_Activity extends AnimRootActivity implements Volley
         System.out.println("jsonObject" + jsonObject);
     }
 
+    public void createGroupInQuickBlox(final Context context, final ArrayList<Integer> occupantIdsList, final String GroupName, final String GroupId, final String groupImagePicture) {
+
+        qbService.registerQbChatListeners();
+        Log.v(TAG, "Inside Group create using QB service :- " + occupantIdsList + " -- Name :-  " + GroupName);
+        QBChatDialog dialog = new QBChatDialog();
+        dialog.setName(GroupName);
+        dialog.setPhoto(groupImagePicture);
+        dialog.setType(QBDialogType.GROUP);
+        dialog.setOccupantsIds(occupantIdsList);
+//dvsssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss
+        QBRestChatService.createChatDialog(dialog).performAsync(new QBEntityCallback<QBChatDialog>() {
+            @Override
+            public void onSuccess(QBChatDialog dialog, Bundle args) {
+                groupChatDialog = dialog;
+
+                Log.v(TAG, "dialog 1 :- " + groupChatDialog);
+                Log.v(TAG, "dialog 2 :- " + dialog.getDialogId());
+                Log.v(TAG, "dialog 3 :- " + dialog.getOccupants());
+                Log.v(TAG, "dialog 3 :- " + dialog.getName());
+
+                qbService.initChatMessageDatabase(context, GroupName, GroupId, groupImagePicture, groupChatDialog);
+//dvssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss
+                Log.v(TAG, " Chat Dialog after grp created 12334:- " + dialog);
+                Intent intent = new Intent(GroupMemberList_Activity.this, TwoTab_Activity.class);
+                intent.setAction("GroupMember");
+                intent.putExtra("groupimage", GroupImagePicture);
+                intent.putExtra(ChatActivity.EXTRA_DIALOG_ID, groupChatDialog);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+            }
+
+            @Override
+            public void onError(QBResponseException errors) {
+                Log.e(TAG, "QB Error creating group dialog :- " + errors.getMessage());
+            }
+
+        });
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        Intent intent = new Intent(getApplicationContext(), TwoTab_Activity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
+        finish();
+    }
+
     public class VerticalSpaceItemDecoration extends RecyclerView.ItemDecoration {
 
         private final int mVerticalSpaceHeight;
@@ -309,14 +419,5 @@ public class GroupMemberList_Activity extends AnimRootActivity implements Volley
                                    RecyclerView.State state) {
             outRect.bottom = mVerticalSpaceHeight;
         }
-    }
-
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-        Intent intent = new Intent(getApplicationContext(), TwoTab_Activity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        startActivity(intent);
-        finish();
     }
 }

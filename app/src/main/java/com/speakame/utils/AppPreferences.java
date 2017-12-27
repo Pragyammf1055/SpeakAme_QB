@@ -29,6 +29,7 @@ public class AppPreferences {
     public static final String VERIFYFB = "verify_fb";
     public static final String VERIFYGPLUS = "verify_gplus";
     public static final String MOBILENUMBERUSER = "mobilenumber";
+    public static final String MOBILENUMBERUSER_WOC = "mobilenumber_woc";
     public static final String FNAME = "fname";
     public static final String TOTF = "totf";
     public static final String CountryCode = "country_code";
@@ -52,12 +53,17 @@ public class AppPreferences {
     public static final String STATUS_INDEX = "status_index";
     public static final String PROFILE_PIC_INDEX = "profile_pic_index";
     public static final String LAST_SEEN_INDEX = "last_seen_index";
+    public static final String QB_USERID = "qb_userid";
 
+    public static final String FREE_STATUS = "free_status";
+    public static final String MOBILE_CC = "mobilenumber_cc";
+
+    public static final String CONTACT_ARRAY_LIST_SAVE = "contact_array_list_save";
 
     private static AppPreferences instance;
-
     private final SharedPreferences sharedPreferences;
     private final SharedPreferences.Editor editor;
+
 
     public AppPreferences(Context context) {
         instance = this;
@@ -65,7 +71,6 @@ public class AppPreferences {
         sharedPreferences = context.getSharedPreferences(prefsFile, Context.MODE_PRIVATE);
         editor = sharedPreferences.edit();
     }
-
 
     public static String getConvertTone(Context context) {
         SharedPreferences pereference = context.getSharedPreferences(
@@ -95,6 +100,33 @@ public class AppPreferences {
         editor.commit();
     }
 
+    public static String getMobileUserWithoutCountry(Context context) {
+        SharedPreferences pereference = context.getSharedPreferences(
+                MBPREFERENCES, 0);
+        return pereference.getString(MOBILENUMBERUSER_WOC, "");
+    }
+
+    public static void setMobileuserWithoutCountry(Context context, String number) {
+        SharedPreferences preferences = context.getSharedPreferences(
+                MBPREFERENCES, 0);
+        Editor editor = preferences.edit();
+        editor.putString(MOBILENUMBERUSER_WOC, number);
+        editor.commit();
+    }
+
+    public static String getQB_LoginId(Context context) {
+        SharedPreferences pereference = context.getSharedPreferences(
+                MBPREFERENCES, 0);
+        return pereference.getString(MOBILE_CC, "");
+    }
+
+    public static void setQB_LoginId(Context context, String number) {
+        SharedPreferences preferences = context.getSharedPreferences(
+                MBPREFERENCES, 0);
+        Editor editor = preferences.edit();
+        editor.putString(MOBILE_CC, number);
+        editor.commit();
+    }
 
     public static String getCountrycode(Context context) {
         SharedPreferences pereference = context.getSharedPreferences(
@@ -328,9 +360,6 @@ public class AppPreferences {
         editor.commit();
     }
 
-
-
-
     public static String getUsercity(Context context) {
         SharedPreferences pereference = context.getSharedPreferences(
                 MBPREFERENCES, 0);
@@ -344,9 +373,6 @@ public class AppPreferences {
         editor.putString(USERCITY, id);
         editor.commit();
     }
-
-
-
 
     public static String getBlockList(Context context) {
         SharedPreferences pereference = context.getSharedPreferences(
@@ -378,6 +404,20 @@ public class AppPreferences {
         return pereference.getInt(LOGINID, 0);
     }
 
+    public static void setQBUserId(Context context,
+                                   int id) {
+        SharedPreferences preferences = context.getSharedPreferences(
+                MBPREFERENCES, 0);
+        Editor editor = preferences.edit();
+        editor.putInt(QB_USERID, id);
+        editor.commit();
+    }
+
+    public static int getQBUserId(Context context) {
+        SharedPreferences pereference = context.getSharedPreferences(
+                MBPREFERENCES, 0);
+        return pereference.getInt(QB_USERID, 0);
+    }
 
     public static String getPicprivacy(Context context) {
         SharedPreferences pereference = context.getSharedPreferences(
@@ -406,7 +446,6 @@ public class AppPreferences {
         editor.putString(STATUSPRIVACY, id);
         editor.commit();
     }
-
 
     public static String getSocialId(Context context) {
         SharedPreferences pereference = context.getSharedPreferences(
@@ -589,9 +628,6 @@ public class AppPreferences {
         editor.commit();
     }
 
-
-
-
     public static int getStatusIndex(Context context) {
         SharedPreferences pereference = context.getSharedPreferences(
                 MBPREFERENCES, 0);
@@ -671,10 +707,25 @@ public class AppPreferences {
         editor.putString(NOTIFICATION_RINGTONE_URI, ringtoneUri);
         editor.commit();
     }
+
     public static String getNotificationRingtoneUri(Context context) {
         SharedPreferences pereference = context.getSharedPreferences(
                 MBPREFERENCES, 0);
         return pereference.getString(NOTIFICATION_RINGTONE_URI, "");
+    }
+
+    public static void setFreeStatus(Context context, String status) {
+        SharedPreferences preferences = context.getSharedPreferences(
+                MBPREFERENCES, 0);
+        Editor editor = preferences.edit();
+        editor.putString(FREE_STATUS, status);
+        editor.commit();
+    }
+
+    public static String getFreeStatus(Context context) {
+        SharedPreferences pereference = context.getSharedPreferences(
+                MBPREFERENCES, 0);
+        return pereference.getString(FREE_STATUS, "");
     }
 
 }

@@ -39,9 +39,7 @@ import com.rockerhieu.emojicon.EmojiconTextView;
 import com.speakame.Activity.TwoTab_Activity;
 import com.speakame.Database.DatabaseHelper;
 import com.speakame.R;
-import com.speakame.Services.XmppConneceted;
 import com.speakame.utils.AppConstants;
-import com.speakame.utils.CallBackUi;
 import com.speakame.utils.UploadImage;
 import com.speakame.utils.VolleyCallback;
 import com.squareup.picasso.Callback;
@@ -338,13 +336,13 @@ public class ChatAdapterOld extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
                                 DatabaseHelper.getInstance(context).insertChat(message);
                                 message.files = response;
-                                XmppConneceted activity = new XmppConneceted();
+                               /* XmppConneceted activity = new XmppConneceted();
                                 activity.getmService().xmpp.sendMessage(message, new CallBackUi() {
                                     @Override
                                     public void update(String s) {
 
                                     }
-                                });
+                                });*/
 
                             }
                         }
@@ -757,6 +755,22 @@ Log.d("FILESSS",message.files);
         notifyDataSetChanged();
     }
 
+    public void updateStatus(String status, String receiptId) {
+        Log.d("onReceiptReceived upd", status);
+        for (int i = 0; i < chatMessageList.size(); i++) {
+
+            if (chatMessageList.get(i).receiptId == null) {
+
+            } else if (chatMessageList.get(i).receiptId.equalsIgnoreCase(receiptId)) {
+                chatMessageList.get(i).msgStatus = status;
+
+                MediaPlayer mp = MediaPlayer.create(context, R.raw.tick);
+                mp.start();
+                notifyItemChanged(i);
+            }
+        }
+    }
+
     public static class MessageViewHolder extends RecyclerView.ViewHolder {
         public static ImageView msgStatus;
         public TextView time, reciverName;
@@ -852,25 +866,6 @@ Log.d("FILESSS",message.files);
             layout = (LinearLayout) view.findViewById(R.id.bubble_layout);
             msg = (TextView) view.findViewById(R.id.message_text);
             time = (TextView) view.findViewById(R.id.time_text);
-        }
-    }
-
-
-
-    public void updateStatus(String status, String receiptId){
-        Log.d("onReceiptReceived upd", status);
-        for(int i=0; i<chatMessageList.size(); i++ ){
-
-            if(chatMessageList.get(i).receiptId == null){
-
-            }else
-            if(chatMessageList.get(i).receiptId.equalsIgnoreCase(receiptId)){
-                chatMessageList.get(i).msgStatus = status;
-
-                MediaPlayer mp = MediaPlayer.create(context, R.raw.tick);
-                mp.start();
-                notifyItemChanged(i);
-            }
         }
     }
 

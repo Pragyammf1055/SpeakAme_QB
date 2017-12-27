@@ -9,7 +9,6 @@
     tools:context=".Activity.Setting_Activity"
     tools:showIn="@layout/activity_setting">
 
-
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -32,18 +31,16 @@
                 android:paddingRight="@dimen/activity_horizontal_margin"
                 android:paddingTop="@dimen/activity_vertical_margin">
 
-
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:orientation="horizontal"
-                    android:weightSum="3.5">
+                    android:layout_marginLeft="@dimen/_5sdp"
+                    android:orientation="horizontal">
 
                     <de.hdodenhof.circleimageview.CircleImageView
                         android:id="@+id/user_profile"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="2.5"
+                        android:layout_width="@dimen/_50sdp"
+                        android:layout_height="@dimen/_50sdp"
                         android:src="@drawable/user_icon" />
 
                     <TextView
@@ -58,7 +55,6 @@
                         android:textSize="@dimen/textsize"
                         android:textStyle="bold" />
 
-
                 </LinearLayout>
 
                 <View
@@ -66,9 +62,7 @@
                     android:layout_height="@dimen/_1sdp"
                     android:layout_marginTop="@dimen/_10sdp"
                     android:background="@color/colorblack"
-                    android:visibility="gone"
-
-                    ></View>
+                    android:visibility="gone"></View>
 
                 <LinearLayout
                     android:id="@+id/l1"
@@ -145,16 +139,16 @@
                     <ImageView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:tint="@color/colorPrimary"
-                        android:src="@drawable/change_lang" />
+                        android:src="@drawable/change_lang"
+                        android:tint="@color/colorPrimary" />
 
                     <TextView
                         android:id="@+id/txtlanguage"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_gravity="left|center"
                         android:layout_marginLeft="@dimen/_20sdp"
                         android:layout_weight="1"
-                        android:layout_gravity="left|center"
                         android:text="Change language"
                         android:textColor="@color/inputeditcolor" />
 
@@ -174,9 +168,7 @@
                         android:layout_gravity="center"
                         android:layout_weight="0"
                         android:src="@drawable/right_arrow" />
-
                 </LinearLayout>
-
 
                 <LinearLayout
                     android:id="@+id/totflanguage"
@@ -272,7 +264,7 @@
                     <ImageView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:src="@drawable/notificationsetting"
+                        android:src="@drawable/refer_frnd"
                         android:tint="@color/colorPrimary" />
 
                     <TextView
@@ -379,4 +371,5 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true" />
+
 </RelativeLayout>

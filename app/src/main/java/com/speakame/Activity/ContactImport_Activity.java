@@ -1,14 +1,18 @@
 package com.speakame.Activity;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
+import android.content.pm.PackageManager;
 import android.graphics.Rect;
 import android.graphics.Typeface;
+import android.os.Build;
 import android.os.Bundle;
-import android.provider.ContactsContract;
+import android.support.annotation.RequiresApi;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.PopupMenu;
@@ -27,14 +31,16 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.quickblox.chat.model.QBChatDialog;
+import com.quickblox.chat.model.QBPresence;
 import com.speakame.Adapter.ImportcontactAdapter;
 import com.speakame.Beans.AllBeans;
+import com.speakame.Beans.User;
 import com.speakame.Classes.AnimRootActivity;
 import com.speakame.Database.DatabaseHelper;
 import com.speakame.R;
 import com.speakame.utils.AppConstants;
 import com.speakame.utils.AppPreferences;
-import com.speakame.utils.ConnectionDetector;
 import com.speakame.utils.Contactloader.Contact;
 import com.speakame.utils.Contactloader.ContactFetcher;
 import com.speakame.utils.Contactloader.ContactPhone;
@@ -55,6 +61,9 @@ import java.util.Locale;
 import dmax.dialog.SpotsDialog;
 
 public class ContactImport_Activity extends AnimRootActivity {
+    private static final String TAG = "ContactImport";
+    private static final int PERMISSIONS_REQUEST_READ_CONTACTS = 100;
+    private static final String EXTRA_QB_DIALOG = "qb_dialog";
     RecyclerView recyclerView;
     AllBeans allBeans;
     TextView toolbartext, nocontenttext;
@@ -66,6 +75,18 @@ public class ContactImport_Activity extends AnimRootActivity {
     JSONArray alContactsnumber = new JSONArray();
     LinearLayout linearLayout;
 
+
+    public static void startForResult(Activity activity, int code) {
+        startForResult(activity, code, null);
+    }
+
+    public static void startForResult(Activity activity, int code, QBChatDialog dialog) {
+        Intent intent = new Intent(activity, ContactImport_Activity.class);
+        intent.putExtra(EXTRA_QB_DIALOG, dialog);
+        activity.startActivityForResult(intent, code);
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -83,8 +104,7 @@ public class ContactImport_Activity extends AnimRootActivity {
         toolbartext.setTypeface(tf1);
         recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         recyclerView.addItemDecoration(new HorizontalDividerItemDecoration.Builder(this).build());
-        linearLayout =  (LinearLayout) findViewById(R.id.linearLayout);
-
+        linearLayout = (LinearLayout) findViewById(R.id.linearLayout);
 
         srch_edit.addTextChangedListener(new TextWatcher() {
             @Override
@@ -100,126 +120,42 @@ public class ContactImport_Activity extends AnimRootActivity {
             @Override
             public void afterTextChanged(Editable s) {
 
-
                 String value = srch_edit.getText().toString().toLowerCase(Locale.getDefault());
                 importcontactAdapter.filter(value.toLowerCase());
-
             }
         });
 
-        srch_edit.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (!hasFocus) {
-                    Function.hideSoftKeyboard(ContactImport_Activity.this);
-                }
-            }
-        });
-
-        linearLayout.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                Function.hideSoftKeyboard(ContactImport_Activity.this);
-                return true;
-            }
-        });
 
         /////////getiingallcontact in list///////////
 
         ArrayList<Contact> listContacts = new ContactFetcher(ContactImport_Activity.this).fetchAll();
-        for(Contact contact : listContacts){
-            for(ContactPhone phone : contact.numbers){
-                Log.d("ContactFetch", contact.name +"::"+ phone.number);
-                alContactsnumber.put( phone.number);
+        for (Contact contact : listContacts) {
+            for (ContactPhone phone : contact.numbers) {
+                Log.d(TAG, "ContactFetch :- " + contact.name + "::" + phone.number);
+
+                String number = phone.number;
+
+                if (number.replace("-", "").replace(" ", "").length() > 10) {
+
+                    Log.v(TAG, "Length_10 if Length is more than 10 :- " + contact.name + "::" + phone.number);
+
+                    number = getLastnCharacters(phone.number.toString(), 10);
+
+                    Log.v(TAG, "Length_10 Getting last 10 characters from string  :- " + number);
+                } else {
+                    number = phone.number;
+                }
+
+                Log.v(TAG, "Length_10 Phone number after conditions :- " + number);
+
+                alContactsnumber.put(number);
                 alContactsname.put(contact.name);
             }
         }
 
-        /*ContentResolver cr = getApplicationContext().getContentResolver(); //Activity/Application android.content.Context
-        Cursor cursor = cr.query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
-        // jsonContacts = new JSONArray();
-        if (cursor.moveToFirst()) {
-
-            //jsonContacts = new JSONObject();
-            do {
-                String id = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID));
-
-                if (Integer.parseInt(cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER))) > 0) {
-                    Cursor pCur = cr.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?", new String[]{id}, null);
-                    while (pCur.moveToNext()) {
-                        String contactNumber = pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-                        String contactname = pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
-
-                        alContactsnumber.put(contactNumber);
-                        alContactsname.put(contactname);
-
-                        System.out.println("contactnumber"+contactNumber);
-                        System.out.println("contactname"+contactname);
-
-
-                        break;
-
-                    }
-                    pCur.close();
-                }
-
-            } while (cursor.moveToNext());
-        }*/
-        ///////endcontactimport////////////////////////
-
-        /*if (AppPreferences.getAckwnoledge(ContactImport_Activity.this).equalsIgnoreCase("1")) {
-
-            if ((ConnectionDetector
-                    .isConnectingToInternet(ContactImport_Activity.this))) {
-
-                friendlist = DatabaseHelper.getInstance(ContactImport_Activity.this).getContactList();
-                if (friendlist.isEmpty()) {
-                    importcontact();
-                    System.out.println("listdata" + friendlist);
-
-                } else {
-
-                    importcontactAdapter = new ImportcontactAdapter(ContactImport_Activity.this, friendlist);
-                    RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(ContactImport_Activity.this);
-                    recyclerView.setLayoutManager(mLayoutManager);
-                    recyclerView.setHasFixedSize(true);
-                    recyclerView.addItemDecoration(new VerticalSpaceItemDecoration(5));
-                    recyclerView.setItemAnimator(new DefaultItemAnimator());
-                    recyclerView.setAdapter(importcontactAdapter);
-                }
-
-
-            } else {
-
-                friendlist = DatabaseHelper.getInstance(ContactImport_Activity.this).getContactList();
-
-                System.out.println("listdata" + friendlist);
-
-                if (friendlist != null) {
-                    importcontactAdapter = new ImportcontactAdapter(ContactImport_Activity.this, friendlist);
-                    RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(ContactImport_Activity.this);
-                    recyclerView.setLayoutManager(mLayoutManager);
-                    recyclerView.setHasFixedSize(true);
-                    recyclerView.addItemDecoration(new VerticalSpaceItemDecoration(5));
-                    recyclerView.setItemAnimator(new DefaultItemAnimator());
-                    recyclerView.setAdapter(importcontactAdapter);
-
-                }
-            }
-
-        } else {
-
-            sendallcontact();
-        }*/
-       // int numberitem= recyclerView.getAdapter().getItemCount();
-
-
-      //  System.out.println("numberitm"+numberitem);
         sendallcontact();
-
-
+        checkPermission();
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -235,7 +171,7 @@ public class ContactImport_Activity extends AnimRootActivity {
 
             if (isSerch) {
                 isSerch = false;
-                getSupportActionBar().setHomeAsUpIndicator(R.drawable.cross);
+                getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_close_white_24dp);
                 srch_edit.setVisibility(View.VISIBLE);
             } else {
                 isSerch = true;
@@ -254,31 +190,52 @@ public class ContactImport_Activity extends AnimRootActivity {
                 public boolean onMenuItemClick(MenuItem item) {
 
                     switch (item.getItemId()) {
-                        case R.id.setting:
-                            Intent intent = new Intent(ContactImport_Activity.this, Setting_Activity.class);
+                        case R.id.favorites:
+
+                            Intent intent = new Intent(ContactImport_Activity.this, Favoirite_Activity.class);
                             startActivity(intent);
-                            finish();
                             break;
-                        case R.id.edit_profile:
-                            Intent intent1 = new Intent(ContactImport_Activity.this, EditProfile_Activity.class);
-                            startActivity(intent1);
-                            finish();
+
+                        case R.id.addcontact:
+//                            Intent intent2 = new Intent(ContactImport_Activity.this, SocialContactActivity.class);
+//                            startActivity(intent2);
+
+                            Intent intent2 = new Intent(ContactImport_Activity.this, ContactList_Activity.class);
+                            startActivity(intent2);
+                            break;
+                        case R.id.creategroup:
+                            Intent intent3 = new Intent(ContactImport_Activity.this, CreateGroupChatActivity.class);
+                            startActivity(intent3);
                             break;
                         case R.id.refresh:
                             alContactsnumber = new JSONArray();
                             alContactsname = new JSONArray();
                             ArrayList<Contact> listContacts = new ContactFetcher(ContactImport_Activity.this).fetchAll();
-                            for(Contact contact : listContacts){
-                                for(ContactPhone phone : contact.numbers){
-                                    Log.d("ContactFetch", contact.name +"::"+ phone.number);
-                                    alContactsnumber.put( phone.number);
+                            for (Contact contact : listContacts) {
+                                for (ContactPhone phone : contact.numbers) {
+
+                                    Log.d(TAG, " Length_10 ContactFetch in contact import activity :- " + contact.name + "::" + phone.number);
+
+                                    String number = phone.number;
+
+                                    if (number.replace("-", "").replace(" ", "").length() > 10) {
+
+                                        Log.v(TAG, "Length_10 if Length is more than 10 :- " + contact.name + "::" + phone.number);
+
+                                        number = getLastnCharacters(phone.number.toString(), 10);
+
+                                        Log.v(TAG, "Length_10 Getting last 10 characters from string  :- " + number);
+                                    } else {
+                                        number = phone.number;
+                                    }
+
+                                    Log.v(TAG, "Length_10 Phone number after conditions :- " + number);
+                                    alContactsnumber.put(number);
                                     alContactsname.put(contact.name);
                                 }
-
                             }
                             sendallcontact();
                             break;
-
                     }
                     return true;
                 }
@@ -287,11 +244,24 @@ public class ContactImport_Activity extends AnimRootActivity {
             return true;
         }
 
-
         return super.onOptionsItemSelected(item);
     }
 
+    public String getLastnCharacters(String inputString,
+                                     int subStringLength) {
+        int length = inputString.length();
+        if (length <= subStringLength) {
+            return inputString;
+        }
+        int startIndex = length - subStringLength;
+        return inputString.substring(startIndex);
+    }
+
     private void sendallcontact() {
+
+//        7313398300
+        Log.v(TAG, "Contact Array List Number :- " + alContactsnumber.toString());
+        Log.v(TAG, "Contact Array List Name :- " + alContactsname.toString());
         mProgressDialog = new SpotsDialog(ContactImport_Activity.this);
         mProgressDialog.setTitle("Your contact is updating...");
         mProgressDialog.setCancelable(false);
@@ -300,13 +270,13 @@ public class ContactImport_Activity extends AnimRootActivity {
         JSONArray jsonArray = new JSONArray();
         try {
             jsonObject.put("method", AppConstants.CHECKLIST);
-            jsonObject.put("contactNumber", alContactsnumber);
-            jsonObject.put("contactName", alContactsname);
             jsonObject.put("user_id", AppPreferences.getLoginId(ContactImport_Activity.this));
             jsonObject.put("mobile_uniquekey", Function.getAndroidID(ContactImport_Activity.this));
+            jsonObject.put("contactNumber", alContactsnumber);
+            jsonObject.put("contactName", alContactsname);
             // jsonObject.put("mobile_number", AppPreferences.getMobileuser(MainScreenActivity.this));
-
             jsonArray.put(jsonObject);
+            Log.d(TAG, "JSON REQUEST CHECKLIST :- " + jsonArray.toString());
             System.out.println("sendallcontact>>>>>" + jsonArray);
 
         } catch (JSONException e) {
@@ -316,7 +286,7 @@ public class ContactImport_Activity extends AnimRootActivity {
         jsonParser.parseVollyJsonArray(AppConstants.USER_CONNECTION_APIS, 1, jsonArray, new VolleyCallback() {
             @Override
             public void backResponse(String response) {
-                Log.d("responseallcontact>>>>>", response);
+                Log.d(TAG, "JSON RESPONSE CHECKLIST :- " + response);
                 //  mProgressDialog.dismiss();
                 if (response != null) {
                     try {
@@ -336,7 +306,6 @@ public class ContactImport_Activity extends AnimRootActivity {
                             Toast.makeText(getApplicationContext(), "Contact Not Updated", Toast.LENGTH_LONG).show();
                         } else if (mainObject.getString("status").equalsIgnoreCase("100")) {
                             Toast.makeText(getApplicationContext(), "No internet connection", Toast.LENGTH_LONG).show();
-
                         }
 
                     } catch (JSONException e) {
@@ -353,7 +322,6 @@ public class ContactImport_Activity extends AnimRootActivity {
 
     /////////////////////////////////////
 
-
     private void importcontact() {
 
         final AlertDialog mProgressDialog = new SpotsDialog(ContactImport_Activity.this);
@@ -369,6 +337,7 @@ public class ContactImport_Activity extends AnimRootActivity {
             jsonObject.put("mobile_uniquekey", Function.getAndroidID(ContactImport_Activity.this));
 
             jsonArray.put(jsonObject);
+            Log.v(TAG, "JSON REQUEST GETCHECKLIST :- " + jsonArray);
             System.out.println("sendJson" + jsonArray);
 
         } catch (JSONException e) {
@@ -379,7 +348,7 @@ public class ContactImport_Activity extends AnimRootActivity {
             @Override
             public void backResponse(String response) {
 
-                Log.d("response>>>>>", response);
+                Log.v(TAG, "JSON RESPONSE GETCHECKLIST :- " + response);
                 //  mProgressDialog.dismiss();
                 if (response != null) {
                     try {
@@ -399,10 +368,15 @@ public class ContactImport_Activity extends AnimRootActivity {
                                 allBeans.setFavriouteFriend(topObject.getString("faviroute"));
                                 allBeans.setLanguages(topObject.getString("language"));
                                 allBeans.setBlockedStatus(topObject.getString("blockedStatus"));
+                                if (!topObject.getString("qb_id").equalsIgnoreCase("")) {
+                                }
+                                allBeans.setFriendQB_id(Integer.parseInt(topObject.getString("qb_id")));
                                 allBeans.setGroupName("");
-                               // DatabaseHelper.getInstance(ContactImport_Activity.this).insertContact(allBeans);
+                                DatabaseHelper.getInstance(ContactImport_Activity.this).insertContact(allBeans);
                                 friendlist.add(allBeans);
+                                Log.v(TAG, "QB ID of user :- " + allBeans.getFriendQB_id());
 
+                                checkUserPresence(allBeans.getFriendQB_id());
 
                                 //////Sorting name////////
                                 Collections.sort(friendlist, new Comparator<AllBeans>() {
@@ -414,18 +388,18 @@ public class ContactImport_Activity extends AnimRootActivity {
                                 //////Sorting name////////
                             }
                             Toast.makeText(getApplicationContext(), "Contact updated", Toast.LENGTH_LONG).show();
-                                importcontactAdapter = new ImportcontactAdapter(ContactImport_Activity.this, friendlist);
-                                RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(ContactImport_Activity.this);
-                                recyclerView.setLayoutManager(mLayoutManager);
-                                recyclerView.setHasFixedSize(true);
-                                recyclerView.addItemDecoration(new VerticalSpaceItemDecoration(5));
-                                recyclerView.setItemAnimator(new DefaultItemAnimator());
+                            importcontactAdapter = new ImportcontactAdapter(ContactImport_Activity.this, friendlist);
+                            RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(ContactImport_Activity.this);
+                            recyclerView.setLayoutManager(mLayoutManager);
+                            recyclerView.setHasFixedSize(true);
+                            recyclerView.addItemDecoration(new VerticalSpaceItemDecoration(5));
+                            recyclerView.setItemAnimator(new DefaultItemAnimator());
 
-                                recyclerView.setAdapter(importcontactAdapter);
+                            recyclerView.setAdapter(importcontactAdapter);
 
                         } else if (mainObject.getString("status").equalsIgnoreCase("400")) {
 
-                            Toast.makeText(getApplicationContext(), "Synch", Toast.LENGTH_LONG).show();
+                            Toast.makeText(getApplicationContext(), "No contact found", Toast.LENGTH_LONG).show();
                             //    sendallcontact();
 
                         } else if (mainObject.getString("status").equalsIgnoreCase("100")) {
@@ -434,6 +408,7 @@ public class ContactImport_Activity extends AnimRootActivity {
 //                            nocontenttext.setText("no internet connection");
 //                            recyclerView.setVisibility(View.GONE);
                             // sendallcontact();
+
                         }
 
 
@@ -449,7 +424,27 @@ public class ContactImport_Activity extends AnimRootActivity {
         System.out.println("jsonObject" + jsonObject);
     }
 
+    private void checkUserPresence(int qbUserId) {
 
+        if (TwoTab_Activity.сhatRoster != null) {
+            QBPresence qbPresence = TwoTab_Activity.сhatRoster.getPresence(qbUserId);
+            Log.v(TAG, "qbPresence :- " + qbPresence);
+
+            if (qbPresence.getType() == QBPresence.Type.online) {
+                Toast.makeText(getApplicationContext(), "User " + qbUserId + " is online", Toast.LENGTH_SHORT).show();
+                Log.v(TAG, "User " + qbUserId + " is online");
+                User user = new User();
+                user.setFriend_id(qbUserId);
+                user.setStatus("Online");
+                DatabaseHelper.getInstance(ContactImport_Activity.this).InsertStatus(user);
+                Log.v(TAG, "QB status online from database 111111111 :- " + DatabaseHelper.getInstance(ContactImport_Activity.this).getLastSeenQB(user.getFriend_id()));
+
+            } else {
+                Log.v(TAG, "User " + qbUserId + " is offline");
+                Toast.makeText(getApplicationContext(), "User " + qbUserId + " is offline", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
     ////////////////////////////////////
 
     @Override
@@ -459,10 +454,26 @@ public class ContactImport_Activity extends AnimRootActivity {
         finish();
     }
 
-    public interface ClickListener {
-        void onClick(View view, int position);
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent event) {
+        View view = getCurrentFocus();
+        boolean ret = super.dispatchTouchEvent(event);
 
-        void onLongClick(View view, int position);
+        if (view instanceof EditText) {
+            View w = getCurrentFocus();
+            int scrcoords[] = new int[2];
+            w.getLocationOnScreen(scrcoords);
+            float x = event.getRawX() + w.getLeft() - scrcoords[0];
+            float y = event.getRawY() + w.getTop() - scrcoords[1];
+
+            if (event.getAction() == MotionEvent.ACTION_UP
+                    && (x < w.getLeft() || x >= w.getRight()
+                    || y < w.getTop() || y > w.getBottom())) {
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(getWindow().getCurrentFocus().getWindowToken(), 0);
+            }
+        }
+        return ret;
     }
 
 //    public static class RecyclerTouchListener implements RecyclerView.OnItemTouchListener {
@@ -504,6 +515,84 @@ public class ContactImport_Activity extends AnimRootActivity {
 //        public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
 //        }
 //    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[],
+                                           int[] grantResults) {
+        switch (requestCode) {
+
+            case 1: {
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // startAction();
+                } else {
+                    finish();
+                }
+                return;
+            }
+
+            case 2: {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                } else {
+
+                }
+            }
+        }
+    }
+
+    private void checkPermission() {
+
+        if (ContextCompat.checkSelfPermission(ContactImport_Activity.this,
+                Manifest.permission.READ_CONTACTS)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            if (ActivityCompat.shouldShowRequestPermissionRationale(ContactImport_Activity.this,
+                    Manifest.permission.READ_CONTACTS)) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    requestPermissions(
+                            new String[]
+                                    {Manifest.permission.READ_CONTACTS}
+                            , 1);
+                }
+
+            } else {
+
+                ActivityCompat.requestPermissions(ContactImport_Activity.this,
+                        new String[]{Manifest.permission.READ_CONTACTS},
+                        1);
+
+            }
+        }
+        if (ContextCompat.checkSelfPermission(ContactImport_Activity.this,
+                Manifest.permission.WRITE_CONTACTS)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            if (ActivityCompat.shouldShowRequestPermissionRationale(ContactImport_Activity.this,
+                    Manifest.permission.WRITE_CONTACTS)) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    requestPermissions(
+                            new String[]
+                                    {Manifest.permission.WRITE_CONTACTS}
+                            , 1);
+                }
+
+            } else {
+
+                ActivityCompat.requestPermissions(ContactImport_Activity.this,
+                        new String[]{Manifest.permission.WRITE_CONTACTS},
+                        1);
+
+            }
+        }
+    }
+
+    public interface ClickListener {
+        void onClick(View view, int position);
+
+        void onLongClick(View view, int position);
+    }
 
     public class VerticalSpaceItemDecoration extends RecyclerView.ItemDecoration {
 
