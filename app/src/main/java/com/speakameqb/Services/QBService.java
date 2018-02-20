@@ -1946,7 +1946,7 @@ xxxxxxxxxxxx*/
     }
 
     public String getContactName(String number) {
-
+        ChangeProfilePic();
         String name = number;
         ArrayList<Contact> listContacts = new ContactFetcher(QBService.this).fetchAll();
         for (Contact contact : listContacts) {
