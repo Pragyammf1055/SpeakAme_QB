@@ -1966,7 +1966,7 @@ xxxxxxxxxxxx*/
 
     public void ChangeProfilePic() {
         Log.v(TAG, "Change Profile pic in Services !!!!!!!!!!! ");
-        Log.v(TAG, "Chqazdfrgergegeg! ");
+        Log.v(TAG, "svdddddddddddddd! ");
     }
 
     private class SystemMessagesListener implements QBSystemMessageListener {
