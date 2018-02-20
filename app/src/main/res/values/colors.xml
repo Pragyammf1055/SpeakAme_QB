@@ -2,7 +2,14 @@
 <resources>
     <color name="colorPrimary">#3b579d</color>
     <color name="colorPrimaryDark">#3b579d</color>
+    <color name="colorPrimaryDark_new">#4969b7</color>
+    <!--
+     <color name="indigo_700">#303F9F</color>
+     <color name="indigo_500">#3F51B5</color>
+     <color name="indigo_A200">#536DFE</color>-->
+
     <color name="colorAccent">#3b579d</color>
+
     <color name="appcolor_light">#b0c2ef</color>
     <color name="colorwhite">#ffffff</color>
     <color name="colorblack">#000000</color>
@@ -27,5 +34,19 @@
     <color name="color_chatbackground_new">#f7ffff</color>
     <color name="color_chatbackground_new1">#F1FFFF</color>
     <color name="trans">#00000000</color>
+    <color name="color_delete_activity_bg">#F0EFF6</color>
+
+
+    <color name="delete_activity_bg_color">#F0EFF6</color>
+    <color name="heading_text_color">#3d3c3c</color>
+    <color name="sub_text_color">#4c4c4c</color>
+    <color name="inputeditcolor_new">#4285DD</color>
+    <color name="red_btn_text">#F24338</color>
+    <color name="color_view_veritcal">#e7e4e4</color>
+    <color name="dsv">#e7e4e4</color>
+    <color name="LTGRAY">#d3d3d3</color>
+    <color name="LTGRAY_">#FFCCCCCC</color>
+    <color name="DGRAY_">#FF888888</color>
+    <color name="colorAccentsdv">#03A9F4</color>
 
 </resources>

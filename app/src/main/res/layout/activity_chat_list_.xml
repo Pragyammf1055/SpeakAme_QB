@@ -11,7 +11,7 @@
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="-15dp"
+        android:layout_marginLeft="-10dp"
         android:theme="@style/AppTheme.AppBarOverlay">
 
         <LinearLayout
@@ -27,20 +27,34 @@
                 app:popupTheme="@style/AppTheme.PopupOverlay">
 
                 <LinearLayout
+                    android:id="@+id/backLinearLayout"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content">
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:visibility="visible">
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:padding="@dimen/_2sdp"
+                        android:src="@drawable/ic_arrow_back_white_24dp" />
 
                     <de.hdodenhof.circleimageview.CircleImageView
                         android:id="@+id/conversation_contact_photo"
                         android:layout_width="@dimen/_40sdp"
                         android:layout_height="@dimen/_40sdp"
-                        android:src="@drawable/user_icon" />
+                        android:layout_marginLeft="@dimen/_5sdp"
+                        android:layout_marginRight="@dimen/_5sdp"
+                        android:src="@drawable/profile_default" />
 
                 </LinearLayout>
 
                 <LinearLayout
+                    android:id="@+id/nameToolbarTitle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/_15sdp"
                     android:orientation="vertical">
 
                     <TextView
@@ -66,10 +80,11 @@
                         android:layout_gravity="left"
                         android:layout_marginLeft="@dimen/_4sdp"
                         android:ellipsize="marquee"
+                        android:freezesText="true"
                         android:marqueeRepeatLimit="marquee_forever"
+                        android:maxLines="1"
                         android:scrollHorizontally="true"
-                        android:singleLine="true"
-                        android:text=""
+                        android:text="pragya"
                         android:textColor="@color/colorwhite"
                         android:textSize="12dp" />
                 </LinearLayout>
@@ -82,6 +97,6 @@
 
     <include
         layout="@layout/custom_reval"
-        android:visibility="gone" />
+        android:visibility="visible" />
 
 </android.support.design.widget.CoordinatorLayout>

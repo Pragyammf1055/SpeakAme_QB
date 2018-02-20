@@ -1,142 +1,220 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/bubble_layout_parent"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:id="@+id/linear_layout_main"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true">
+        android:layout_marginBottom="@dimen/_10sdp"
+        android:layout_marginLeft="@dimen/_20sdp"
+        android:layout_marginRight="@dimen/_20sdp"
+        android:layout_marginTop="@dimen/_5sdp"
+        android:gravity="center"
+        android:visibility="visible">
 
-        <LinearLayout
-            android:id="@+id/bubble_layout"
+        <TextView
+            android:id="@+id/text_view_TimeStamp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/bubble1"
-            android:orientation="vertical">
+            android:layout_centerHorizontal="true"
+            android:layout_marginLeft="@dimen/_20sdp"
+            android:layout_marginRight="@dimen/_20sdp"
+            android:background="@drawable/round_shape"
+            android:padding="@dimen/_5sdp"
+            android:text="Today" />
 
-            <RelativeLayout
-                android:id="@+id/files"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
+    </LinearLayout>
 
-                <RelativeLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerInParent="true">
+    <RelativeLayout
+        android:id="@+id/bubble_layout_parent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/linear_layout_main">
 
-                    <ImageView
-                        android:id="@+id/image"
-                        android:layout_width="@dimen/_100sdp"
-                        android:layout_height="@dimen/_100sdp"
-                        android:layout_centerInParent="true"
-                        android:scaleType="fitXY"
-                        android:src="@drawable/user_profile"
-                        android:visibility="gone" />
-
-                    <VideoView
-                        android:id="@+id/video"
-                        android:layout_width="@dimen/_100sdp"
-                        android:layout_height="@dimen/_100sdp"
-                        android:visibility="gone" />
-                </RelativeLayout>
-
-
-                <ImageView
-                    android:id="@+id/startUpload"
-                    android:layout_width="@dimen/_40sdp"
-                    android:layout_height="@dimen/_40sdp"
-                    android:layout_centerInParent="true"
-                    android:visibility="visible" />
-
-                <RelativeLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerInParent="true">
-
-                    <ImageView
-                        android:id="@+id/cancel"
-                        android:layout_width="@dimen/_40sdp"
-                        android:layout_height="@dimen/_40sdp"
-                        android:src="@drawable/ic_close_white_24dp"
-                        android:visibility="gone" />
-
-                    <ProgressBar
-                        android:id="@+id/progressBar"
-                        style="?android:attr/progressBarStyleHorizontal"
-                        android:layout_width="@dimen/_50sdp"
-                        android:layout_height="@dimen/_50sdp"
-                        android:layout_alignBottom="@id/cancel"
-                        android:layout_alignRight="@id/cancel"
-                        android:layout_alignTop="@id/cancel"
-                        android:layout_centerInParent="true"
-                        android:indeterminate="false"
-                        android:max="100"
-                        android:progress="0"
-                        android:progressDrawable="@drawable/progressbarbg"
-                        android:secondaryProgress="100"
-                        android:visibility="gone" />
-                </RelativeLayout>
-
-            </RelativeLayout>
-
-            <RelativeLayout
-                android:id="@+id/textMsgBg"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/transparentbg"
-                android:paddingLeft="@dimen/_5sdp"
-                android:paddingRight="@dimen/_5sdp">
-
-
-                <ImageView
-                    android:id="@+id/docImage"
-                    android:layout_width="@dimen/_40sdp"
-                    android:layout_height="@dimen/_40sdp"
-                    android:src="@drawable/pdf_icon"
-                    android:visibility="gone" />
-
-                <com.rockerhieu.emojicon.EmojiconTextView
-                    android:id="@+id/message_text"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:layout_marginLeft="@dimen/_5sdp"
-                    android:layout_marginTop="@dimen/_5sdp"
-                    android:layout_toRightOf="@+id/docImage"
-                    android:maxWidth="@dimen/_200sdp"
-                    android:text="Hi "
-                    android:textColor="@android:color/primary_text_light" />
-
-            </RelativeLayout>
-
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true">
 
             <LinearLayout
+                android:id="@+id/bubble_layout"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:gravity="right|center"
-                android:orientation="horizontal">
+                android:background="@drawable/bubble1"
+                android:orientation="vertical">
 
-                <TextView
-                    android:id="@+id/time_text"
+                <RelativeLayout
+                    android:id="@+id/files"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:text="12:00 pm"
-                    android:textColor="@android:color/primary_text_light"
-                    android:textSize="@dimen/_8sdp" />
+                    android:layout_marginLeft="@dimen/_2sdp"
+                    android:layout_marginRight="@dimen/_2sdp"
+                    android:layout_marginTop="@dimen/_1sdp">
 
-                <ImageView
-                    android:id="@+id/msgStatus"
+                    <RelativeLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerInParent="true">
+
+                        <ImageView
+                            android:id="@+id/image"
+                            android:layout_width="@dimen/_160sdp"
+                            android:layout_height="@dimen/_160sdp"
+                            android:layout_centerInParent="true"
+                            android:adjustViewBounds="true"
+                            android:scaleType="fitXY"
+                            android:src="@drawable/user_profile"
+                            android:visibility="gone" />
+
+                        <VideoView
+                            android:id="@+id/video"
+                            android:layout_width="@dimen/_160sdp"
+                            android:layout_height="@dimen/_160sdp"
+                            android:visibility="gone" />
+
+                        <ProgressBar
+                            android:id="@+id/progressBar"
+                            style="?android:attr/progressBarStyle"
+                            android:layout_width="@dimen/_45sdp"
+                            android:layout_height="@dimen/_45sdp"
+                            android:layout_centerHorizontal="true"
+                            android:layout_centerVertical="true"
+                            android:indeterminate="false"
+                            android:max="100"
+                            android:progress="0"
+                            android:progressDrawable="@drawable/circular_progressbar"
+                            android:secondaryProgress="100"
+                            android:visibility="visible" />
+
+                        <ProgressBar
+                            android:id="@+id/progress_Bar"
+                            style="?android:attr/progressBarStyleSmall"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:indeterminate="false"
+                            android:indeterminateDrawable="@drawable/circular_determinate"
+                            android:max="100"
+                            android:progress="0"
+                            android:visibility="gone" />
+
+                    </RelativeLayout>
+
+                    <ImageView
+                        android:id="@+id/startUpload"
+                        android:layout_width="@dimen/_40sdp"
+                        android:layout_height="@dimen/_40sdp"
+                        android:layout_centerInParent="true"
+                        android:visibility="visible" />
+
+                    <RelativeLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerInParent="true"
+                        android:visibility="gone">
+
+                        <ImageView
+                            android:id="@+id/cancel"
+                            android:layout_width="@dimen/_40sdp"
+                            android:layout_height="@dimen/_40sdp"
+                            android:src="@drawable/ic_close_white_24dp"
+                            android:visibility="gone" />
+
+                        <ProgressBar
+                            android:id="@+id/progressBar1"
+                            style="?android:attr/progressBarStyleSmall"
+                            android:layout_width="@dimen/_50sdp"
+                            android:layout_height="@dimen/_50sdp"
+                            android:layout_alignBottom="@id/cancel"
+                            android:layout_alignRight="@id/cancel"
+                            android:layout_alignTop="@id/cancel"
+                            android:layout_centerInParent="true"
+                            android:indeterminate="false"
+                            android:max="100"
+                            android:progress="0"
+                            android:secondaryProgress="100"
+                            android:visibility="gone" />
+
+                        <ProgressBar
+                            android:id="@+id/progressBar2"
+                            style="?android:attr/progressBarStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_centerHorizontal="true"
+                            android:layout_centerVertical="true"
+                            android:indeterminate="false"
+                            android:max="100"
+                            android:progress="0"
+                            android:secondaryProgress="100"
+                            android:visibility="gone" />
+
+                    </RelativeLayout>
+
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:id="@+id/textMsgBg"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="@dimen/_3sdp"
-                    android:visibility="gone" />
+                    android:layout_marginLeft="@dimen/_2sdp"
+                    android:layout_marginTop="@dimen/_3sdp"
+                    android:background="@drawable/transparentbg"
+                    android:paddingLeft="@dimen/_2sdp"
+                    android:paddingRight="@dimen/_2sdp">
+
+                    <ImageView
+                        android:id="@+id/docImage"
+                        android:layout_width="@dimen/_40sdp"
+                        android:layout_height="@dimen/_40sdp"
+                        android:src="@drawable/pdf_icon"
+                        android:visibility="gone" />
+
+                    <com.rockerhieu.emojicon.EmojiconTextView
+                        android:id="@+id/message_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:layout_marginBottom="@dimen/_5sdp"
+                        android:layout_marginLeft="@dimen/_2sdp"
+                        android:layout_marginRight="@dimen/_2sdp"
+                        android:layout_marginTop="@dimen/_5sdp"
+                        android:layout_toRightOf="@+id/docImage"
+                        android:maxWidth="@dimen/_200sdp"
+                        android:text="Hi"
+                        android:textColor="@android:color/primary_text_light"
+                        android:textSize="@dimen/_12sdp" />
+                </RelativeLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/_2sdp"
+                    android:layout_marginLeft="@dimen/_2sdp"
+                    android:layout_marginTop="@dimen/_2sdp"
+                    android:gravity="right|center"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/time_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:text="12:00 pm"
+                        android:textColor="@android:color/primary_text_light"
+                        android:textSize="@dimen/_8sdp" />
+
+                    <ImageView
+                        android:id="@+id/msgStatus"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="@dimen/_3sdp"
+                        android:src="@drawable/read"
+                        android:visibility="invisible" />
+                </LinearLayout>
             </LinearLayout>
-
         </LinearLayout>
-    </LinearLayout>
+    </RelativeLayout>
 </RelativeLayout>

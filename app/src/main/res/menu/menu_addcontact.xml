@@ -5,7 +5,7 @@
 
     <item
         android:id="@+id/addcontact"
-        android:icon="@drawable/cuser"
+        android:icon="@drawable/ic_person_add_white_24dp"
         android:orderInCategory="1"
         android:title="Add Contact"
         app:showAsAction="always" />

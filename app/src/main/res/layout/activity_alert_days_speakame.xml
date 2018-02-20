@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:background="@drawable/alertday"
     android:fitsSystemWindows="true"
-    tools:context="com.speakame.Activity.AlertDaysSpeakameActivity">
+    tools:context="com.speakameqb.Activity.AlertDaysSpeakameActivity">
 
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"

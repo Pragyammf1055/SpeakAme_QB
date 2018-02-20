@@ -60,7 +60,7 @@
     <string name="title_activity_contact_import_">Contact</string>
     <string name="server">ip-172-31-30-231</string>
     <string name="serverandresorces">\@ip-172-31-30-231/Smack</string>
-    <!--<string name="server">speakame</string>-->
+    <!--<string name="server">speakameqb</string>-->
     <string name="facebook_app_id">190401661364045</string>
 
     <string name="msg_notify">Yo have received a new notification</string>
@@ -278,8 +278,7 @@
     </string>
     <string name="label_error_incorrect_phone">Incorrect phone</string>
 
-
-    <string name="string_free_user">As a thank you for being one of the early adaptors SpeakAme would like to make you a Free for life user! All you would need to do is to keep the same phone number and you are Free for the LIFE of the account!" If you choose to delete your account you may forfeit your free for life status...</string>
+    <string name="string_free_user">As a thank you for being one of the early adaptors SpeakAme would like to make you a Free for life user! All you would need to do is to keep the same phone number and you are Free for the LIFE of the account!" If you choose to delete your account you may forfeit your free for life status.</string>
     <string name="title_activity_chat1">" "</string>
 
 

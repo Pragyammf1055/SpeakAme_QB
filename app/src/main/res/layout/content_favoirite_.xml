@@ -21,7 +21,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center"
-            android:text="No Faviourate found"
+            android:text="No Favorites found"
             android:visibility="gone" />
         <EditText
             android:id="@+id/serch_edit"

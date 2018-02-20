@@ -10,8 +10,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:padding="@dimen/_5sdp"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:padding="@dimen/_5sdp">
 
 
         <de.hdodenhof.circleimageview.CircleImageView
@@ -20,7 +20,7 @@
             android:layout_height="@dimen/_50sdp"
             android:layout_gravity="start"
             android:padding="@dimen/_2sdp"
-            android:src="@drawable/user_icon" />
+            android:src="@drawable/profile_default" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -35,10 +35,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Abrhan Lincon"
-                android:textStyle="bold"
                 android:textAppearance="?android:attr/textAppearanceMedium"
                 android:textColor="@color/colorblack"
-                android:textSize="@dimen/_14sdp" />
+                android:textSize="@dimen/_14sdp"
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/messagetext"

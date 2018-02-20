@@ -17,7 +17,7 @@
             android:id="@+id/image"
             android:layout_width="@dimen/_50sdp"
             android:layout_height="@dimen/_50sdp"
-            android:src="@drawable/user_icon" />
+            android:src="@drawable/profile_default" />
 
 
         <TextView
@@ -26,9 +26,9 @@
             android:layout_height="match_parent"
             android:layout_marginLeft="@dimen/_16sdp"
             android:gravity="center"
-            android:textSize="@dimen/_14sdp"
             android:text="Group Name"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textSize="@dimen/_14sdp" />
 
 
         <TextView

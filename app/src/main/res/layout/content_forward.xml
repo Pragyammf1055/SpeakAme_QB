@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="com.speakame.Activity.ForwardActivity"
+    tools:context="com.speakameqb.Activity.ForwardActivity"
     tools:showIn="@layout/activity_forward">
 
     <android.support.v7.widget.RecyclerView
@@ -45,8 +45,8 @@
             android:layout_width="@dimen/_50sdp"
             android:layout_height="@dimen/_50sdp"
             android:layout_alignParentRight="true"
-            android:layout_marginRight="@dimen/fab_margin"
             android:layout_marginBottom="@dimen/fab_margin"
+            android:layout_marginRight="@dimen/fab_margin"
             android:background="@drawable/sendbutton" />
 
 

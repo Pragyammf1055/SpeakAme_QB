@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tool="http://schemas.android.com/tools"
-    package="com.speakame">
+    package="com.speakameqb">
 
     <uses-sdk android:minSdkVersion="8" />
 
@@ -9,10 +9,13 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.CALL_PHONE" />
     <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <!--<user-permission android:name="android.permission.READ_CONTACTS" />-->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_CONTACTS" />
+    <!--<user-permission android:name="android.permission.WRITE_CONTACTS" />-->
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <!--<user-permission android:name="android.permission.READ_PHONE_STATE" />-->
     <uses-permission android:name="android.Manifest.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.READ_PROFILE" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -25,13 +28,15 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.MANAGE_USERS" />
 
+    <uses-permission android:name="com.google.android.apps.photos.permission.GOOGLE_PHOTOS" />
+    <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES" />
     <!--
         <permission
             android:name="com.quickblox.sample.pushnotifications.permission.C2D_MESSAGE"
             android:protectionLevel="signature" />
     -->
     <application
-        android:name=".AppController"
+        android:name="com.speakameqb.AppController"
         android:allowBackup="true"
         android:hardwareAccelerated="false"
         android:icon="@mipmap/app_icon"
@@ -42,146 +47,172 @@
         android:theme="@style/AppTheme"
         tool:replace="android:icon">
         <activity
-            android:name=".Activity.Splash_Activity"
+            android:name="com.speakameqb.Activity.Splash_Activity"
             android:theme="@style/AppTheme.Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="image/*" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND_MULTIPLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="image/*" />
+            </intent-filter>
+
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="video/*" />
+            </intent-filter>
+
+
         </activity>
-        <activity android:name=".Activity.Main_Activity" />
+        <activity android:name="com.speakameqb.Activity.Main_Activity" />
         <activity
-            android:name=".Activity.SignIn_Activity"
+            android:name="com.speakameqb.Activity.SignIn_Activity"
             android:label="@string/title_activity_sign_in_"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize|stateHidden" />
         <activity
-            android:name=".Activity.SignUp_Activity"
+            android:name="com.speakameqb.Activity.SignUp_Activity"
             android:label="@string/title_activity_sign_up_"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize|stateHidden" />
         <activity
-            android:name=".Activity.Verify_numberActivity"
+            android:name="com.speakameqb.Activity.Verify_numberActivity"
             android:label="@string/title_activity_forgot__password"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".Activity.MainScreenActivity"
+            android:name="com.speakameqb.Activity.MainScreenActivity"
             android:label="@string/title_activity_main_screen"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".Activity.Addnewcontact_activity"
+            android:name="com.speakameqb.Activity.Addnewcontact_activity"
             android:label="@string/title_activity_addnewcontact_activity"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize|stateHidden" />
         <activity
-            android:name=".Activity.Invitefrnd_activity"
+            android:name="com.speakameqb.Activity.Invitefrnd_activity"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".Activity.TwoTab_Activity"
+            android:name="com.speakameqb.Activity.TwoTab_Activity"
             android:label="@string/title_activity_two_tab_"
             android:launchMode="singleTop"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme.NoActionBar">
+
+        </activity>
         <activity
-            android:name=".Activity.Privacy_Activity"
+            android:name="com.speakameqb.Activity.Privacy_Activity"
             android:label="@string/title_activity_privacy_"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".Activity.HelpFeedback_Activity"
+            android:name="com.speakameqb.Activity.HelpFeedback_Activity"
             android:label="@string/title_activity_help_feedback_"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".Activity.Account_Activity"
+            android:name="com.speakameqb.Activity.Account_Activity"
             android:label="@string/title_activity_account_"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".Activity.GroupMemberList_Activity"
+            android:name="com.speakameqb.Activity.GroupMemberList_Activity"
             android:label="@string/title_activity_contact_display"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".Activity.CreateGroupChatActivity"
+            android:name="com.speakameqb.Activity.CreateGroupChatActivity"
             android:label="@string/title_activity_create_group_chat"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".Activity.SocialContactActivity"
+            android:name="com.speakameqb.Activity.SocialContactActivity"
             android:label="@string/title_activity_social_contact"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".Activity.Setting_Activity"
+            android:name="com.speakameqb.Activity.Setting_Activity"
             android:label="@string/title_activity_setting"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".Activity.DeleteAccount_Activity"
+            android:name="com.speakameqb.Activity.DeleteAccount_Activity"
             android:label="@string/title_activity_delete_account_"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize|stateHidden" />
         <activity
-            android:name=".Activity.ChangeNumber_Activity"
+            android:name="com.speakameqb.Activity.ChangeNumber_Activity"
             android:label="@string/title_activity_change_number_"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".Activity.PaymentInfo_Activity"
+            android:name="com.speakameqb.Activity.PaymentInfo_Activity"
             android:label="@string/title_activity_payment_info_"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".Activity.Notification_Activity"
+            android:name="com.speakameqb.Activity.Notification_Activity"
             android:label="@string/title_activity_notification_"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".Activity.Contactus_Activity"
+            android:name="com.speakameqb.Activity.Contactus_Activity"
             android:label="@string/title_activity_contactus_"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".Activity.ChatActivity"
+            android:name="com.speakameqb.Activity.ChatActivity"
             android:label="@string/title_activity_chat_list_"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize|stateHidden" />
         <activity
-            android:name=".Activity.ViewContact_DetailActivity"
+            android:name="com.speakameqb.Activity.ViewContact_DetailActivity"
             android:label="@string/title_activity_view_contact__detail"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".Activity.Favoirite_Activity"
+            android:name="com.speakameqb.Activity.Favoirite_Activity"
             android:label="@string/title_activity_favoirite_"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".Activity.Languagelearn_activity"
+            android:name="com.speakameqb.Activity.Languagelearn_activity"
             android:label="@string/title_activity_languagelearn_activity"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustPan|stateHidden" />
         <activity
-            android:name=".Activity.GroupChat_Activity"
+            android:name="com.speakameqb.Activity.GroupChat_Activity"
             android:label="@string/title_activity_group_chat_"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".Activity.EditProfile_Activity"
+            android:name="com.speakameqb.Activity.EditProfile_Activity"
             android:label="@string/title_activity_edit_profile_"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".Activity.ContactList_Activity"
+            android:name="com.speakameqb.Activity.ContactList_Activity"
             android:label="@string/title_activity_contact_list_"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".Activity.ViewGroupDetail_Activity"
+            android:name="com.speakameqb.Activity.ViewGroupDetail_Activity"
             android:label="@string/title_activity_view_group_detail_"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".Activity.ContactImport_Activity"
+            android:name="com.speakameqb.Activity.ContactImport_Activity"
             android:label="@string/title_activity_contact_import_"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
 
         <service
-            android:name=".Services.QBService"
+            android:name="com.speakameqb.Services.QBService"
             android:enabled="true" />
         <service
-            android:name=".Services.LastSeenService"
+            android:name="com.speakameqb.Services.LastSeenService"
             android:enabled="true" />
         <service
-            android:name=".Xmpp.MyService"
+            android:name=".Services.ContactImportService"
             android:enabled="true" />
         <service
-            android:name=".Services.HomeService"
+            android:name="com.speakameqb.Services.HomeService"
             android:enabled="true" />
 
         <!--
@@ -195,7 +226,7 @@
         -->
 
         <activity
-            android:name=".Activity.SendImageActivity"
+            android:name="com.speakameqb.Activity.SendImageActivity"
             android:label="@string/title_activity_send_image"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
@@ -211,6 +242,7 @@
             android:enabled="true"
             android:exported="true" />
 
+
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"
             android:value="@string/facebook_app_id" />
@@ -223,57 +255,58 @@
             android:value="@integer/google_play_services_version" />
 
         <activity
-            android:name=".Activity.ConfirmDelet_Account"
+            android:name="com.speakameqb.Activity.ConfirmDelet_Account"
             android:label="@string/title_activity_confirm_delet__account"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize|stateHidden" />
         ​
         <activity
-            android:name=".Activity.Forgot_paasword"
+            android:name="com.speakameqb.Activity.Forgot_paasword"
             android:label="@string/title_activity_forgot_paasword"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".Activity.ChatSetting"
+            android:name="com.speakameqb.Activity.ChatSetting"
             android:label="@string/title_activity_chat_setting"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".Activity.ConfirmLoginOtp"
+            android:name="com.speakameqb.Activity.ConfirmLoginOtp"
             android:label="LOGIN"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".Activity.ForwardActivity"
+            android:name="com.speakameqb.Activity.ForwardActivity"
             android:label="@string/title_activity_forward"
             android:theme="@style/AppTheme.NoActionBar" />
 
-        <service android:name=".Services.VibrateService" />
-        <service android:name=".Services.ContactImportService" />
+        <service android:name="com.speakameqb.Services.VibrateService" />
+
 
         <activity
-            android:name=".Activity.ConfirmChangeNumberActivity"
+            android:name="com.speakameqb.Activity.ConfirmChangeNumberActivity"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".Activity.AlertSpeakameActivity"
+            android:name="com.speakameqb.Activity.AlertSpeakameActivity"
             android:label="@string/title_activity_alert_speakame"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".Activity.CountryListActivity"
+            android:name="com.speakameqb.Activity.CountryListActivity"
             android:label="@string/title_activity_country_list"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".Activity.SelectLanguageActivity"
+            android:name="com.speakameqb.Activity.SelectLanguageActivity"
             android:theme="@style/AppTheme.NoActionBar" />
 
         <receiver
-            android:name=".Recivers.NetworkStateChecker"
+            android:name="com.speakameqb.Recivers.NetworkStateChecker"
             android:enabled="true"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
                 <action android:name="android.net.wifi.WIFI_STATE_CHANGED" />
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
             </intent-filter>
         </receiver>
         <receiver
-            android:name=".Recivers.SmsReceiver"
+            android:name="com.speakameqb.Recivers.SmsReceiver"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.example.UPDATE_STATUS" />
@@ -281,21 +314,21 @@
         </receiver>
 
         <activity
-            android:name=".Activity.AlertDaysSpeakameActivity"
+            android:name="com.speakameqb.Activity.AlertDaysSpeakameActivity"
             android:label="@string/title_activity_alert_days_speakame"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".Activity.InstructionChangeNumberActivity"
+            android:name="com.speakameqb.Activity.InstructionChangeNumberActivity"
             android:label="@string/title_activity_instruction_change_number"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".Activity.EditNameActivity"
+            android:name="com.speakameqb.Activity.EditNameActivity"
             android:label="@string/title_activity_edit_name"
             android:theme="@style/AppTheme.NoActionBar" />
 
         <provider
             android:name="android.support.v4.content.FileProvider"
-            android:authorities="com.speakame"
+            android:authorities="com.speakameqb"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data
@@ -303,10 +336,11 @@
                 android:resource="@xml/provider_paths" />
         </provider>
 
-        <activity android:name=".Activity.ReferFreindActivity" />
+        <activity android:name="com.speakameqb.Activity.ReferFreindActivity" />
+
         <activity
-            android:name=".Activity.HelpFullActivity"
-            android:label="Helpful Hints"></activity>
+            android:name="com.speakameqb.Activity.HelpFullActivity"
+            android:label="Helpful Hints" />
 
         <meta-data
             android:name="com.quickblox.messages.TYPE"
@@ -319,19 +353,19 @@
             android:value="DEVELOPMENT" />
 
         <service
-            android:name=".Services.MyFirebaseMessagingService"
-            android:enabled="true"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT" />
-            </intent-filter>
-        </service>
-        <service
-            android:name=".Services.MyFirebaseInstanceIDService"
+            android:name="com.speakameqb.Services.MyFirebaseInstanceIDService"
             android:enabled="true"
             android:exported="true">
             <intent-filter>
                 <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
+            </intent-filter>
+        </service>
+        <service
+            android:name="com.speakameqb.Services.MyFirebaseMessagingService"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
         <service android:name="com.quickblox.messages.services.fcm.QBFcmPushListenerService">
@@ -345,6 +379,9 @@
             </intent-filter>
         </service>
 
+        <activity
+            android:name="com.speakameqb.Activity.CollapsingToolbarActivity"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>

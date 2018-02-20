@@ -110,7 +110,7 @@
 
         <view
             android:id="@+id/listViewBackground"
-            class="com.speakame.utils.BackgroundContainer"
+            class="com.speakameqb.utils.BackgroundContainer"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
     android:id="@+id/row"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginTop="@dimen/padding"
     android:gravity="center_horizontal|center_vertical"
@@ -19,7 +19,7 @@
         android:id="@+id/userpic"
         android:layout_width="@dimen/_50sdp"
         android:layout_height="@dimen/_50sdp"
-        android:src="@drawable/user_icon" />
+        android:src="@drawable/profile_default" />
 
 
     <LinearLayout

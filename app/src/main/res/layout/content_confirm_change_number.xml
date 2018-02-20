@@ -10,7 +10,7 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="com.speakame.Activity.ConfirmChangeNumberActivity"
+    tools:context="com.speakameqb.Activity.ConfirmChangeNumberActivity"
     tools:showIn="@layout/activity_confirm_change_number">
 
     <LinearLayout
@@ -62,8 +62,8 @@
             android:background="@color/editbg"
             android:gravity="center"
             android:hint="Enter Otp"
-            android:maxLength="6"
             android:inputType="number"
+            android:maxLength="6"
             android:textColor="@color/inputeditcolor"
             android:textSize="@dimen/title_size" />
 

@@ -4,6 +4,14 @@
     tools:context=".BaseActivity">
 
     <item
+        android:id="@+id/action_search"
+        android:icon="@android:drawable/ic_menu_search"
+        android:orderInCategory="1"
+        android:title="Search"
+        app:actionViewClass="android.support.v7.widget.SearchView"
+        app:showAsAction="always" />
+
+    <item
         android:id="@+id/action_contact"
         android:icon="@drawable/cuser"
         android:orderInCategory="1"
@@ -12,9 +20,9 @@
 
     <item
         android:id="@+id/action_menu"
-        android:icon="@drawable/right_menu_icon"
+        android:icon="@drawable/ic_more_vert_white_24dp"
         android:orderInCategory="1"
         android:title="Add Contacts"
-        app:showAsAction="always"/>
+        app:showAsAction="always" />
 
 </menu>

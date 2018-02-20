@@ -11,7 +11,7 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="com.speakame.Activity.AlertDaysSpeakameActivity"
+    tools:context="com.speakameqb.Activity.AlertDaysSpeakameActivity"
     tools:showIn="@layout/activity_alert_days_speakame">
 
     <LinearLayout
@@ -115,7 +115,6 @@
                     android:text="@string/string_free_user"
                     android:textSize="@dimen/_14sdp"
                     android:textStyle="bold" />
-
 
             </LinearLayout>
         </RelativeLayout>

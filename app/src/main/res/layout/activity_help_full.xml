@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/editbg"
-    tools:context="com.speakame.Activity.HelpFullActivity">
+    tools:context="com.speakameqb.Activity.HelpFullActivity">
 
 
     <LinearLayout
@@ -31,8 +30,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Password recommendations"
-                android:textStyle="bold"
-                android:textSize="@dimen/_14sdp"/>
+                android:textSize="@dimen/_14sdp"
+                android:textStyle="bold" />
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -53,9 +52,9 @@
     </LinearLayout>
     <LinearLayout
         android:id="@+id/ll2"
-        android:layout_below="@+id/ll1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_below="@+id/ll1"
         android:layout_marginTop="@dimen/_10sdp"
         android:orientation="horizontal">
 
@@ -75,8 +74,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Account Guidelines"
-                android:textStyle="bold"
-                android:textSize="@dimen/_14sdp"/>
+                android:textSize="@dimen/_14sdp"
+                android:textStyle="bold" />
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

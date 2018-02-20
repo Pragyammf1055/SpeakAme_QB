@@ -7,17 +7,19 @@
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="?attr/actionBarSize">
+        android:layout_marginTop="?attr/actionBarSize"
+        android:visibility="visible">
 
         <io.codetail.widget.RevealFrameLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_5sdp">
 
             <LinearLayout
                 android:id="@+id/reveal_items"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@android:color/white"
+                android:background="@drawable/backgroud_reveal"
                 android:orientation="horizontal"
                 android:paddingBottom="@dimen/_10sdp"
                 android:paddingTop="@dimen/_10sdp">

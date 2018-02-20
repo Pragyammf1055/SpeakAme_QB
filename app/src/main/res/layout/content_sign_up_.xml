@@ -20,7 +20,7 @@
             android:layout_width="@dimen/_100sdp"
             android:layout_height="@dimen/_100sdp"
             android:padding="10dp"
-            android:src="@drawable/user_icon" />
+            android:src="@drawable/profile_default" />
 
         <EditText
             android:id="@+id/username"

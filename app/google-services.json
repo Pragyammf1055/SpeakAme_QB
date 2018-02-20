@@ -8,26 +8,18 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:467759138007:android:f23cd101c5326eb7",
+        "mobilesdk_app_id": "1:467759138007:android:5340d6e4e29fa1fc",
         "android_client_info": {
-          "package_name": "com.speakame"
+          "package_name": "com.speakameqb"
         }
       },
       "oauth_client": [
         {
-          "client_id": "467759138007-79ur12d76o3qetaorgahek44cv4h07a3.apps.googleusercontent.com",
+          "client_id": "467759138007-fbbqna3h5l55qruckc2vo71rbqesakg6.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.speakame",
-            "certificate_hash": "6c2fa95a4211fefe5c0048ffe48e0d139dd48eb2"
-          }
-        },
-        {
-          "client_id": "467759138007-m25m0oie4cs95aeul8bgmnihqobrfn3i.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.speakame",
-            "certificate_hash": "63c6908bd74421cbceff283875d9302d4a6e946d"
+            "package_name": "com.speakameqb",
+            "certificate_hash": "7f9c7d10a6e0cba9649a67c6e96fcc0d89d9ecb5"
           }
         },
         {
@@ -50,6 +42,13 @@
             {
               "client_id": "467759138007-b7sai9bt2b9nnutu6j61ctb0eqsibal0.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "467759138007-3t40au319fbm38niodfjk51at47g8j0o.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.housecheckwoner.havetage"
+              }
             }
           ]
         },

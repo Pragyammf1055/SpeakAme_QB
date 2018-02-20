@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:background="@drawable/alert"
     android:fitsSystemWindows="true"
-    tools:context="com.speakame.Activity.AlertSpeakameActivity">
+    tools:context="com.speakameqb.Activity.AlertSpeakameActivity">
 
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"

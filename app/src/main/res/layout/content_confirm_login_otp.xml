@@ -10,7 +10,7 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="com.speakame.Activity.ConfirmLoginOtp"
+    tools:context="com.speakameqb.Activity.ConfirmLoginOtp"
     tools:showIn="@layout/activity_confirm_login_otp">
 
     <LinearLayout

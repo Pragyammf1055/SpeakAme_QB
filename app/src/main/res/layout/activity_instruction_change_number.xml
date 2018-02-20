@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:background="@drawable/notice"
     android:fitsSystemWindows="true"
-    tools:context="com.speakame.Activity.InstructionChangeNumberActivity">
+    tools:context="com.speakameqb.Activity.InstructionChangeNumberActivity">
 
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"

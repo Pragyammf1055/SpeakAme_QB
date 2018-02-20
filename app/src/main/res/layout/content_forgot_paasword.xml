@@ -10,7 +10,7 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="com.speakame.Activity.Forgot_paasword"
+    tools:context="com.speakameqb.Activity.Forgot_paasword"
     tools:showIn="@layout/activity_forgot_paasword">
 
 
@@ -30,18 +30,18 @@
                 android:id="@+id/cntrycode"
                 android:layout_width="wrap_content"
                 android:layout_height="45dp"
+                android:layout_marginRight="@dimen/_5sdp"
                 android:layout_marginTop="15dp"
                 android:layout_weight="0.5"
                 android:background="@color/editbg"
+                android:cursorVisible="false"
                 android:editable="false"
+                android:focusableInTouchMode="false"
                 android:gravity="center"
                 android:hint="+"
-                android:cursorVisible="false"
-                android:focusableInTouchMode="false"
                 android:inputType="number"
                 android:maxLength="6"
                 android:singleLine="true"
-                android:layout_marginRight="@dimen/_5sdp"
                 android:textColor="@color/inputeditcolor" />
 
             <EditText

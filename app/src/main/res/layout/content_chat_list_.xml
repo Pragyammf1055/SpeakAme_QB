@@ -29,6 +29,7 @@
             android:id="@+id/linear"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@drawable/add_block_buttobackground"
             android:gravity="center"
             android:orientation="horizontal"
             android:visibility="visible">
@@ -38,7 +39,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.98"
-                android:background="#1D000000"
+                android:background="#00000000"
                 android:gravity="center"
                 android:text="Block"
                 android:textColor="@color/colorblack" />
@@ -80,7 +81,7 @@
             android:layout_alignParentBottom="true"
             android:background="@color/colorwhite"
             android:orientation="vertical">
-            s
+
             <View
                 android:layout_width="wrap_content"
                 android:layout_height="1dp"

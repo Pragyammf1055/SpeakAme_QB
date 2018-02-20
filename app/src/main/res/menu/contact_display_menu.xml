@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/done"
+        android:icon="@drawable/ic_check_white_24dp"
         android:title=""
-        android:icon="@drawable/right"
         app:showAsAction="always" />
 </menu>
