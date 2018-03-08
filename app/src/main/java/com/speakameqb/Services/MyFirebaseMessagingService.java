@@ -105,6 +105,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             }
 
             Log.d(TAG, "Normal message 002000 first :- : " + qb_sender_no);
+            Log.d(TAG, "Normal message 002000 first :- : " + qb_sender_no);
 
             if (!qb_sender_no.equalsIgnoreCase("")) {
 
