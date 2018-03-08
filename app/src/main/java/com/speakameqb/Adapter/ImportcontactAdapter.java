@@ -446,9 +446,7 @@ try {
             @Override
             public void backResponse(String response) {
 
-
-                Log.d("response>>>>>", response);
-// mProgressDialog.dismiss();
+                Log.v("response>>>>>", response);
                 if (response != null) {
                     try {
                         JSONObject mainObject = new JSONObject(response);

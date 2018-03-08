@@ -1,6 +1,8 @@
 package com.speakameqb.Activity;
 
 import android.Manifest;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
@@ -35,6 +37,7 @@ import com.speakameqb.utils.AppPreferences;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 public class Splash_Activity extends AppCompatActivity {
@@ -224,8 +227,16 @@ Log.d(TAG, " handleSendImage fileName : -- " + fileName);
             @Override
             public void run() {
 
+                Calendar cur_cal = Calendar.getInstance();
+                cur_cal.setTimeInMillis(System.currentTimeMillis());
+                cur_cal.add(Calendar.SECOND, 50);
+                Log.d("Testing", "Calender Set time:" + cur_cal.getTime());
+
                 Intent service = new Intent(Splash_Activity.this, QBService.class);
                 startService(service);
+                PendingIntent pintent = PendingIntent.getService(Splash_Activity.this, 0, service, 0);
+                AlarmManager alarm = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+                alarm.setRepeating(AlarmManager.RTC_WAKEUP, cur_cal.getTimeInMillis(), 30 * 1000, pintent);
 
                 if (AppPreferences.getLoginStatus(Splash_Activity.this).equalsIgnoreCase("")) {
                     Intent intent = new Intent(Splash_Activity.this, Main_Activity.class);

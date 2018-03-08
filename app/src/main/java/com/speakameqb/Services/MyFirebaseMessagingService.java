@@ -262,7 +262,6 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
         String vibrationType = AppPreferences.getVibrationType(this);
 
-
         Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
 
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)

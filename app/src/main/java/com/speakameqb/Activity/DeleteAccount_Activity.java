@@ -17,6 +17,10 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.quickblox.core.QBEntityCallback;
+import com.quickblox.core.exception.QBResponseException;
+import com.quickblox.users.QBUsers;
+import com.quickblox.users.model.QBUser;
 import com.speakameqb.Classes.AnimRootActivity;
 import com.speakameqb.R;
 import com.speakameqb.utils.AppConstants;
@@ -29,12 +33,14 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class DeleteAccount_Activity extends AnimRootActivity {
+    final static String TAG = "DeleteAccount_Activity";
     TextView toolbartext, txt1, txt2, txt3;
     EditText edit1, edit2;
     Button btn_delete;
     String VerifyNumber;
     ProgressDialog mProgressDialog;
     LinearLayout mliLinearLayout;
+    String mobile_number, otp, user_id;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,7 +102,6 @@ public class DeleteAccount_Activity extends AnimRootActivity {
             }
         });
 
-
     }
 
 
@@ -118,14 +123,14 @@ public class DeleteAccount_Activity extends AnimRootActivity {
         mProgressDialog.show();
         JSONObject jsonObject = new JSONObject();
         JSONArray jsonArray = new JSONArray();
-        try {
 
+        try {
             jsonObject.put("method", "deleteNumber");
             jsonObject.put("mobile_number", VerifyNumber);
             jsonObject.put("user_id", AppPreferences.getLoginId(DeleteAccount_Activity.this));
 
             jsonArray.put(jsonObject);
-            System.out.println("send>json--" + jsonArray);
+            Log.v(TAG, "send>json--" + jsonArray);
 
         } catch (JSONException e) {
             e.printStackTrace();
@@ -136,7 +141,7 @@ public class DeleteAccount_Activity extends AnimRootActivity {
             public void backResponse(String response) {
 
 
-                Log.d("response>>", response);
+                Log.v(TAG, "RESPONSE OF PHP " + response);
                 //  mProgressDialog.dismiss();
                 if (response != null) {
                     try {
@@ -144,18 +149,33 @@ public class DeleteAccount_Activity extends AnimRootActivity {
 
                         if (mainObject.getString("status").equalsIgnoreCase("200")) {
 
-                            Intent intent = new Intent(DeleteAccount_Activity.this, ConfirmDelet_Account.class);
-                            startActivity(intent);
-
-
                             JSONArray orderArray = mainObject.getJSONArray("result");
 
+                            Log.v(TAG, "Results 0000001 :-- " + orderArray);
                             for (int i = 0; orderArray.length() > i; i++) {
                                 JSONObject topObject = orderArray.getJSONObject(i);
+                                mobile_number = topObject.getString("mobile_number");
+                                otp = topObject.getString("otp");
+                                user_id = topObject.getString("user_id");
+                                //Log.v(TAG, "Mobile = " + mobile_number + " otp = " + otp + " user id = " + user_id);
                                 //  AppPreferences.setPicprivacy(DeleteAccount_Activity.this, topObject.getString("profie_pic_setting"));
-
-
                             }
+
+                            int QbuserID = AppPreferences.getQBUserId(DeleteAccount_Activity.this);
+                            Log.v(TAG, "QBUserID : -- " + QbuserID);
+                            QBUsers.getUser(QbuserID).performAsync(new QBEntityCallback<QBUser>() {
+                                @Override
+                                public void onSuccess(QBUser qbUser, Bundle bundle) {
+                                    Log.v(TAG, "QB ka response after php :- " + qbUser);
+                                    Intent intent = new Intent(DeleteAccount_Activity.this, ConfirmDelet_Account.class);
+                                    startActivity(intent);
+                                }
+
+                                @Override
+                                public void onError(QBResponseException e) {
+                                    Log.v(TAG, "QB ka error after php :- " + e.getMessage());
+                                }
+                            });
 
 
                         } else if (mainObject.getString("status").equalsIgnoreCase("400")) {
@@ -174,8 +194,8 @@ public class DeleteAccount_Activity extends AnimRootActivity {
 
             }
         });
-        System.out.println("AppConstants.COMMONURL---------" + AppConstants.DEMOCOMMONURL);
-        System.out.println("jsonObject" + jsonObject);
+        Log.v(TAG, "AppConstants.COMMONURL---------" + AppConstants.DEMOCOMMONURL);
+        Log.v(TAG, "jsonObject" + jsonObject);
     }
 
     public void showAppQuitAlertDialog(String message, Context context) {
@@ -186,13 +206,10 @@ public class DeleteAccount_Activity extends AnimRootActivity {
         builder.setPositiveButton(getResources().getString(R.string.ok), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-
                 dialog.dismiss();
                 Runtime.getRuntime().gc();
             }
         });
-
-
         AlertDialog msg = builder.create();
         msg.show();
     }

@@ -382,6 +382,19 @@
         <activity
             android:name="com.speakameqb.Activity.CollapsingToolbarActivity"
             android:theme="@style/AppTheme.NoActionBar"></activity>
+
+        <activity
+            android:name="com.speakameqb.Activity.ImageSelectActivity"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
+
+        <activity
+            android:name="com.speakameqb.Activity.AlbumSelectActivity"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
+
+        <activity
+            android:name="com.speakameqb.Activity.AlbumActivity"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
+
     </application>
 
 </manifest>

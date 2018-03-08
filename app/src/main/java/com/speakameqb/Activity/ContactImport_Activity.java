@@ -156,7 +156,8 @@ public class ContactImport_Activity extends AnimRootActivity {
 
                 Log.v(TAG, "Length_10 Phone number after conditions :- " + number);
 
-                alContactsnumber.put(number);
+//                alContactsnumber.put(number);
+                alContactsnumber.put(phone.number.replace("(", "").replace(")", "").replaceAll(" ", ""));
                 alContactsname.put(contact.name);
             }
         }
@@ -290,9 +291,9 @@ public class ContactImport_Activity extends AnimRootActivity {
                                     } else {
                                         number = phone.number;
                                     }
-
                                     Log.v(TAG, "Length_10 Phone number after conditions :- " + number);
-                                    alContactsnumber.put(number);
+//                                    alContactsnumber.put(number);
+                                    alContactsnumber.put(phone.number.replace("(", "").replace(")", "").replaceAll(" ", ""));
                                     alContactsname.put(contact.name);
                                 }
                             }
@@ -363,13 +364,11 @@ public class ContactImport_Activity extends AnimRootActivity {
                                 System.out.println("valueallcontact" + AppPreferences.getAckwnoledge(ContactImport_Activity.this));
                             }
                             importcontact();
-
                         } else if (mainObject.getString("status").equalsIgnoreCase("400")) {
                             Toast.makeText(getApplicationContext(), "Contact Not Updated", Toast.LENGTH_LONG).show();
                         } else if (mainObject.getString("status").equalsIgnoreCase("100")) {
                             Toast.makeText(getApplicationContext(), "No internet connection", Toast.LENGTH_LONG).show();
                         }
-
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -396,7 +395,6 @@ public class ContactImport_Activity extends AnimRootActivity {
             jsonObject.put("method", AppConstants.GETCHECKLIST);
             jsonObject.put("user_id", AppPreferences.getLoginId(ContactImport_Activity.this));
             jsonObject.put("mobile_uniquekey", Function.getAndroidID(ContactImport_Activity.this));
-
             jsonArray.put(jsonObject);
             Log.v(TAG, "JSON REQUEST GETCHECKLIST :- " + jsonArray);
             System.out.println("sendJson" + jsonArray);
@@ -520,6 +518,7 @@ public class ContactImport_Activity extends AnimRootActivity {
 
                         if (dataFrom.equalsIgnoreCase("Api_Calling")) {
                             Log.v(TAG, "QB ID of user Api_Calling :- " + qbId);
+
                             createDialogQuickBlox(allBeans.getFriendQB_id(), allBeans.getFriendname());
 
                            /* boolean ifExists = DatabaseHelper.getInstance(ContactImport_Activity.this).ifChatDialogExists(qbId);
@@ -533,7 +532,6 @@ public class ContactImport_Activity extends AnimRootActivity {
                                 Log.v(TAG, "Get QbChatDialog if Exists :- " + DatabaseHelper.getInstance(ContactImport_Activity.this).getChatDialogUsingQBId(qbId));
                             }*/
                         }
-//dsvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 //                        checkUserPresence(allBeans.getFriendQB_id());
                         //////Sorting name////////
                         Collections.sort(friendlist, new Comparator<AllBeans>() {

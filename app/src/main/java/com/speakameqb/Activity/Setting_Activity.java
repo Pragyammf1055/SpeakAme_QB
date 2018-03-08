@@ -361,6 +361,7 @@ public class Setting_Activity extends AnimRootActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(Setting_Activity.this, EditProfile_Activity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
 //                finish();
             }

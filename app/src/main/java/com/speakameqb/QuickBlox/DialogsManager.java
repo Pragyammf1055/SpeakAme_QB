@@ -75,7 +75,6 @@ public class DialogsManager {
 
     public void sendSystemMessageAboutCreatingDialog(QBSystemMessagesManager systemMessagesManager, QBChatDialog dialog, Context context, String body, ChatMessage chatMessage) {
 
-
 //        vsddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
 
         List<Integer> arrayList = dialog.getOccupants();

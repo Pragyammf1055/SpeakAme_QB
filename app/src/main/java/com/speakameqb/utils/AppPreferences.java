@@ -61,6 +61,12 @@ public class AppPreferences {
     public static final String FCM_SUBSCRIBE_ID = "fcm_subscribe_id";
 
     public static final String CONTACT_ARRAY_LIST_SAVE = "contact_array_list_save";
+    public static final String IMAGES_LIST_GSON = "images_list_gson";
+    public static final String IMAGES_LIST_POS = "images_list_pos";
+    public static final String IMAGES_LIST_SIZE = "images_list_size";
+    public static final String APP_TERMINATION = "app_termination";
+    public static final String BADGE_COUNT = "badge_count";
+
     public static SharedPreferences sharedPreferences;
     private static AppPreferences instance;
     private final SharedPreferences.Editor editor;
@@ -757,5 +763,79 @@ public class AppPreferences {
                 MBPREFERENCES, 0);
         return pereference.getInt(FCM_SUBSCRIBE_ID, 0);
     }
+
+
+    public static void setprofileImageArray(Context context, String gson) {
+        SharedPreferences preferences = context.getSharedPreferences(
+                MBPREFERENCES, 0);
+        Editor editor = preferences.edit();
+        editor.putString(IMAGES_LIST_GSON, gson);
+        editor.commit();
+    }
+
+    public static String getprofileImageArray(Context context) {
+        SharedPreferences pereference = context.getSharedPreferences(
+                MBPREFERENCES, 0);
+        return pereference.getString(IMAGES_LIST_GSON, " ");
+    }
+
+    public static void clearprofileImageArray(Context context) {
+        SharedPreferences preferences = context.getSharedPreferences(
+                MBPREFERENCES, 0);
+        Editor editor = preferences.edit();
+        editor.remove(IMAGES_LIST_GSON);
+        editor.commit();
+    }
+
+    public static void setprofileImagePos(Context context, int pos, int size) {
+        SharedPreferences preferences = context.getSharedPreferences(
+                MBPREFERENCES, 0);
+        Editor editor = preferences.edit();
+        editor.putInt(IMAGES_LIST_POS, pos);
+        editor.putInt(IMAGES_LIST_SIZE, size);
+        editor.commit();
+    }
+
+    public static int getprofileImagePos(Context context) {
+        SharedPreferences pereference = context.getSharedPreferences(
+                MBPREFERENCES, 0);
+        return pereference.getInt(IMAGES_LIST_POS, 0);
+    }
+
+    public static int getprofileImageSize(Context context) {
+        SharedPreferences pereference = context.getSharedPreferences(
+                MBPREFERENCES, 0);
+        return pereference.getInt(IMAGES_LIST_SIZE, 0);
+    }
+
+    public static void setAppTerminated(Context context, boolean pos) {
+        SharedPreferences preferences = context.getSharedPreferences(
+                MBPREFERENCES, 0);
+        Editor editor = preferences.edit();
+        editor.putBoolean(APP_TERMINATION, pos);
+        editor.commit();
+    }
+
+    public static boolean getAppTerminated(Context context) {
+        SharedPreferences pereference = context.getSharedPreferences(
+                MBPREFERENCES, 0);
+        return pereference.getBoolean(APP_TERMINATION, false);
+    }
+
+
+    public static void setBadgeCount(Context context, int count) {
+        SharedPreferences preferences = context.getSharedPreferences(
+                MBPREFERENCES, 0);
+        Editor editor = preferences.edit();
+        editor.putInt(BADGE_COUNT, count);
+        editor.commit();
+    }
+
+    public static int getBadgeCount(Context context) {
+        SharedPreferences preferences = context.getSharedPreferences(
+                MBPREFERENCES, 0);
+        return preferences.getInt(BADGE_COUNT, 0);
+    }
+
 
 }

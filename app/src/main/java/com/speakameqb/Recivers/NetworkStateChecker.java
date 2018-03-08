@@ -9,7 +9,10 @@ import android.net.NetworkInfo;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.speakameqb.utils.ConnectionDetector;
 import com.speakameqb.utils.Function;
+
+import java.lang.ref.WeakReference;
 
 
 /**
@@ -18,9 +21,13 @@ import com.speakameqb.utils.Function;
 
 public class NetworkStateChecker extends BroadcastReceiver {
 
-
     private static final String TAG = "NetworkStateChecker";
     public static ConnectionReceiverListener connectionReceiverListener;
+    private static WeakReference<BroadcastReceiver> mActivityRef;
+
+    public static void updateActivity(BroadcastReceiver service) {
+        mActivityRef = new WeakReference<BroadcastReceiver>(service);
+    }
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -28,9 +35,22 @@ public class NetworkStateChecker extends BroadcastReceiver {
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
 
+        int CONNECTIVITY_TYPE = Function.getConnectivityStatus(context);
+        Log.v(TAG, " CONNECTIVITY_TYPE :-  " + CONNECTIVITY_TYPE);
+
         String status = Function.getConnectivityStatusString(context);
 
         Toast.makeText(context, status, Toast.LENGTH_LONG).show();
+
+        boolean isConnected = ConnectionDetector.isConnectingToInternet(context);
+
+        Toast.makeText(context, isConnected + " :- ", Toast.LENGTH_LONG).show();
+
+        if (isConnected) {
+            connectionReceiverListener.onNetworkConnectionChanged(true);
+        } else {
+            connectionReceiverListener.onNetworkConnectionChanged(false);
+        }
 
         if (activeNetwork != null) { // connected to the internet
 
@@ -56,6 +76,7 @@ public class NetworkStateChecker extends BroadcastReceiver {
         if (connectionReceiverListener != null) {
 //            connectionReceiverListener.onNetworkConnectionChanged(isConnected);
         }
+
     }
 
 

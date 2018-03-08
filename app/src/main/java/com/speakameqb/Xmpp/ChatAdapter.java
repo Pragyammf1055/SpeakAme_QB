@@ -342,7 +342,6 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                     vh1.msgStatus.setImageResource(R.drawable.read);
                     vh1.progressBar.setVisibility(View.GONE);
                 } else if (message.readStatus.equalsIgnoreCase("5")) {
-
                     vh1.msgStatus.setImageResource(R.drawable.stopwatch);
                     vh1.progressBar.setVisibility(View.VISIBLE);
 //                    Toast.makeText(context, "Read Status is 5 condition", Toast.LENGTH_SHORT).show();
@@ -351,7 +350,6 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                     vh1.msgStatus.setImageResource(0);
 //                    Toast.makeText(context, "Read Status is 0 first else last condition", Toast.LENGTH_SHORT).show();
                 }
-
 
             } else {
                 vh1.progressBar.setVisibility(View.GONE);

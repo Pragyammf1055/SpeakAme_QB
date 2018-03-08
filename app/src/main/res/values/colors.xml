@@ -49,4 +49,6 @@
     <color name="DGRAY_">#FF888888</color>
     <color name="colorAccentsdv">#03A9F4</color>
 
+    <color name="multiple_image_select_albumTextBackground">#99FFFFFF</color>
+    <color name="multiple_image_select_primaryText">#212121</color>
 </resources>

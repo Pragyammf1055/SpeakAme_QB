@@ -129,6 +129,13 @@ dependencies {
     compile 'com.github.CardinalNow:Android-CircleProgressIndicator:v0.2'
     compile 'com.github.jakob-grabner:Circle-Progress-View:v1.3'
     compile 'com.dinuscxj:circleprogressbar:1.1.1'
+    compile 'com.jackandphantom.android:circularprogressbar:1.2.0'
+    compile 'com.flipboard:bottomsheet-core:1.5.3'
+    compile 'com.flipboard:bottomsheet-commons:1.5.3'
+    compile 'com.github.MdFarhanRaja:SearchableSpinner:1.2'
+
+    compile 'com.github.bumptech.glide:glide:3.8.0'
+
     testCompile 'junit:junit:4.12'
 
 }

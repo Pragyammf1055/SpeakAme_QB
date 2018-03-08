@@ -17,6 +17,10 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.quickblox.core.QBEntityCallback;
+import com.quickblox.core.exception.QBResponseException;
+import com.quickblox.users.QBUsers;
+import com.quickblox.users.model.QBUser;
 import com.speakameqb.Beans.User;
 import com.speakameqb.Classes.AnimRootActivity;
 import com.speakameqb.Database.DatabaseHelper;
@@ -48,17 +52,22 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.SocketTimeoutException;
+import java.text.NumberFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 
 import dmax.dialog.SpotsDialog;
 
 public class ConfirmChangeNumberActivity extends AnimRootActivity {
+    final static String TAG = "ConfirmChangeNumberAct";
     TextView toolbartext, textviewhead, textsmrytextone, textsmrytexttwo;
-
     EditText medit_otp;
     Button mbtn_submit;
 
-    String NewNumber, OtpNumber;
+    String NewNumber, OtpNumber, countrycode;
+    JSONArray orderArray;
+    int i = 0;
+    int j = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,7 +95,8 @@ public class ConfirmChangeNumberActivity extends AnimRootActivity {
 
         Intent intent = getIntent();
         NewNumber = intent.getStringExtra("newnumber");
-        textviewhead.setText("Verify" + " " + NewNumber);
+        countrycode = intent.getStringExtra("countrycode");
+        textviewhead.setText("Verify" + " " + countrycode + NewNumber);
 
         mbtn_submit.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -97,7 +107,18 @@ public class ConfirmChangeNumberActivity extends AnimRootActivity {
                     mbtn_submit.setError(getResources().getString(R.string.error_field_required));
 
                 } else {
-                    sendOtpChangenumber(OtpNumber);
+//                    sendOtpChangenumber(OtpNumber);
+                    try {
+                        i = ((Number) NumberFormat.getInstance().parse(NewNumber)).intValue();
+                        //j = Integer.parseInt(NewNumber);
+                        // Log.v(TAG, "i............ " + i);
+                        // Log.v(TAG, "j............ " + j);
+                        sendOtpChangenumber(OtpNumber);
+                        Log.v(TAG, "getQB_loginID :--- " + AppPreferences.getQB_LoginId(ConfirmChangeNumberActivity.this));
+                        Log.v(TAG, "getQBuserID :--- " + String.valueOf(AppPreferences.getQBUserId(ConfirmChangeNumberActivity.this)));
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
 
                 }
 
@@ -117,6 +138,7 @@ public class ConfirmChangeNumberActivity extends AnimRootActivity {
         mProgressDialog.show();
         JSONObject jsonObject = new JSONObject();
         JSONArray jsonArray = new JSONArray();
+
         try {
 
             jsonObject.put("method", "numberOtpCheck");
@@ -127,7 +149,7 @@ public class ConfirmChangeNumberActivity extends AnimRootActivity {
             // jsonObject.put("mobile_number", AppPreferences.getMobileuser(MainScreenActivity.this));
 
             jsonArray.put(jsonObject);
-            System.out.println("send>json--" + jsonArray);
+            Log.v(TAG, "send Otp Change number JSON :-- " + jsonArray);
 
         } catch (JSONException e) {
             e.printStackTrace();
@@ -137,53 +159,54 @@ public class ConfirmChangeNumberActivity extends AnimRootActivity {
             @Override
             public void backResponse(String response) {
 
-
-                Log.d("response>>>>>", response);
+                Log.v(TAG, "response php Otp Change Number() :--- " + response);
                 //  mProgressDialog.dismiss();
                 if (response != null) {
                     try {
                         JSONObject mainObject = new JSONObject(response);
 
                         if (mainObject.getString("status").equalsIgnoreCase("200")) {
-                            JSONArray orderArray = mainObject.getJSONArray("result");
+                            orderArray = mainObject.getJSONArray("result");
 
-                            for (int i = 0; orderArray.length() > i; i++) {
-                                JSONObject jsonObject2 = orderArray.getJSONObject(i);
-                                String loginId = jsonObject2.getString("userId");
-                                AppPreferences.setLoginId(ConfirmChangeNumberActivity.this, Integer.parseInt(jsonObject2.getString("userId")));
-                                AppPreferences.setSocialId(ConfirmChangeNumberActivity.this, jsonObject2.getString("social_id"));
-                                AppPreferences.setMobileuser(ConfirmChangeNumberActivity.this, jsonObject2.getString("mobile"));
-                                AppPreferences.setPassword(ConfirmChangeNumberActivity.this, jsonObject2.getString("password"));
-                                AppPreferences.setFirstUsername(ConfirmChangeNumberActivity.this, jsonObject2.getString("username"));
-                                AppPreferences.setUserprofile(ConfirmChangeNumberActivity.this, jsonObject2.getString("userImage"));
+                            QBUser user = new QBUser();
+                            user.setId(AppPreferences.getQBUserId(ConfirmChangeNumberActivity.this));
+                            user.setLogin(countrycode.concat(NewNumber));
+                            Log.v(TAG, "QuickBlox update with code number " + countrycode.concat(NewNumber));
 
-                                System.out.println("userpic" + jsonObject2.getString("userImage"));
-                                System.out.println("usermobile" + jsonObject2.getString("mobile"));
-                                System.out.println("userPassword" + jsonObject2.getString("password"));
-                                AppPreferences.setEmail(ConfirmChangeNumberActivity.this, jsonObject2.getString("email"));
-                                AppPreferences.setUsercity(ConfirmChangeNumberActivity.this, jsonObject2.getString("country"));
-                                AppPreferences.setCountrycode(ConfirmChangeNumberActivity.this, jsonObject2.getString("countrycode"));
-                                AppPreferences.setUSERLANGUAGE(ConfirmChangeNumberActivity.this, jsonObject2.getString("language"));
-                                AppPreferences.setUsergender(ConfirmChangeNumberActivity.this, jsonObject2.getString("gender"));
-                                AppPreferences.setUserstatus(ConfirmChangeNumberActivity.this, jsonObject2.getString("userProfileStatus"));
-                                AppPreferences.setBlockList(ConfirmChangeNumberActivity.this, jsonObject2.getString("block_users"));
-                                AppPreferences.setPicprivacy(ConfirmChangeNumberActivity.this, jsonObject2.getString("profie_pic_privacy"));
-                                AppPreferences.setStatusprivacy(ConfirmChangeNumberActivity.this, jsonObject2.getString("profie_status_privacy"));
+                            QBUsers.updateUser(user).performAsync(new QBEntityCallback<QBUser>() {
+                                @Override
+                                public void onSuccess(QBUser qbUser, Bundle bundle) {
+                                    Log.v(TAG, "QB UpdateUser() onSuccess :--- " + qbUser);
+                                    AppPreferences.setQB_LoginId(ConfirmChangeNumberActivity.this, qbUser.getLogin());
+                                    AppPreferences.setMobileuser(ConfirmChangeNumberActivity.this, qbUser.getLogin());
+                                    AppPreferences.setMobileuserWithoutCountry(ConfirmChangeNumberActivity.this, NewNumber);
+                                    try {
+                                        for (int i = 0; orderArray.length() > i; i++) {
+                                            JSONObject jsonObject2 = orderArray.getJSONObject(i);
+                                            String loginId = jsonObject2.getString("userId");
 
-                                User user = new User();
-                                user.setName(jsonObject2.getString("username"));
-                                user.setMobile(jsonObject2.getString("mobile"));
-                                user.setPassword(jsonObject2.getString("password"));
+                                            User user = new User();
+                                            user.setName(jsonObject2.getString("username"));
+                                            user.setMobile(qbUser.getLogin());//(jsonObject2.getString("mobile"));
+                                            user.setPassword(jsonObject2.getString("password"));
 
-                                DatabaseHelper.getInstance(ConfirmChangeNumberActivity.this).insertUser(user);
+                                            DatabaseHelper.getInstance(ConfirmChangeNumberActivity.this).insertUser(user);
+
+                                            Intent intent = new Intent();
+                                            setResult(741, intent);
+                                            finish();
+                                        }
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
 
 
-//                                MyXMPP.deleteUserr();
-                                new AddmemberAsynch().execute(jsonObject2.getString("mobile"), jsonObject2.getString("password"),
-                                        jsonObject2.getString("username"), jsonObject2.getString("email"));
-
-                            }
-
+                                @Override
+                                public void onError(QBResponseException e) {
+                                    Log.v(TAG, "QBUpdateUser onError() :-- " + e.getMessage());
+                                }
+                            });
 
                         } else if (mainObject.getString("status").equalsIgnoreCase("400")) {
 
@@ -199,8 +222,8 @@ public class ConfirmChangeNumberActivity extends AnimRootActivity {
 
             }
         });
-        System.out.println("AppConstants.COMMONURL---------" + AppConstants.DEMOCOMMONURL);
-        System.out.println("jsonObject" + jsonObject);
+        Log.v(TAG, "AppConstants.COMMONURL---------" + AppConstants.DEMOCOMMONURL);
+        Log.v(TAG, "jsonObject" + jsonObject);
     }
 
     public void dismissKeyboard(Activity activity) {

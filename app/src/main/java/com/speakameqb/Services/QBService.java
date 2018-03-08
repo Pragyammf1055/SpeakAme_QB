@@ -4,6 +4,7 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -21,12 +22,15 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.telephony.TelephonyManager;
+import android.util.Base64;
 import android.util.Log;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.quickblox.auth.session.QBSessionManager;
 import com.quickblox.chat.QBChatService;
 import com.quickblox.chat.QBIncomingMessagesManager;
@@ -61,6 +65,7 @@ import com.speakameqb.Activity.TwoTab_Activity;
 import com.speakameqb.Adapter.BroadcastnewgroupAdapter;
 import com.speakameqb.AppController;
 import com.speakameqb.Beans.AllBeans;
+import com.speakameqb.Beans.Image;
 import com.speakameqb.Beans.User;
 import com.speakameqb.Database.DatabaseHelper;
 import com.speakameqb.QuickBlox.ChatHelper;
@@ -69,12 +74,14 @@ import com.speakameqb.QuickBlox.QbChatDialogMessageListenerImp;
 import com.speakameqb.R;
 import com.speakameqb.Xmpp.ChatMessage;
 import com.speakameqb.Xmpp.CommonMethods;
+import com.speakameqb.utils.AppConstants;
 import com.speakameqb.utils.AppPreferences;
 import com.speakameqb.utils.Contactloader.Contact;
 import com.speakameqb.utils.Contactloader.ContactFetcher;
 import com.speakameqb.utils.Contactloader.ContactPhone;
 import com.speakameqb.utils.DownloadFile;
 import com.speakameqb.utils.Function;
+import com.speakameqb.utils.JSONParser;
 import com.speakameqb.utils.ListCountry;
 import com.speakameqb.utils.TextTranslater;
 import com.speakameqb.utils.VolleyCallback;
@@ -84,14 +91,18 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Message;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -156,6 +167,7 @@ public class QBService extends Service implements DialogsManager.ManagingDialogs
     private SystemMessagesListener systemMessagesListener;
     private QBChatDialogMessageListener allDialogsMessagesListener;
     private String ImageStringUrl = "";
+    private String Encoded_userimage = "";
 
 
     public QBService() {
@@ -185,17 +197,6 @@ public class QBService extends Service implements DialogsManager.ManagingDialogs
         context.startService(intent);
     }
 
-    @Nullable
-    @Override
-    public IBinder onBind(Intent intent) {
-        return null;
-    }
-
-    @Override
-    public void onStart(Intent intent, int startId) {
-        super.onStart(intent, startId);
-    }
-
     @Override
     public void onCreate() {
         super.onCreate();
@@ -208,14 +209,15 @@ public class QBService extends Service implements DialogsManager.ManagingDialogs
         /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Code started on 15 February 2018 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
         initChatService();
-        chatLogin();
+        Log.w(TAG, "~~~~~~~~~~~~~~~~~~~~~ chatLogin() from On create () ~~~~~~~~~~~~~~~~~~~~~ ");
+
+//        chatLogin();
 
         /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Code started on 15 February 2018 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
     }
 
     private void initListener() {
-
         allDialogsMessagesListener = new AllDialogsMessageListener();
         systemMessagesListener = new SystemMessagesListener();
         dialogsManager = new DialogsManager();
@@ -224,20 +226,18 @@ public class QBService extends Service implements DialogsManager.ManagingDialogs
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-
+        Toast.makeText(this, "On onStartCommand() called .. ", Toast.LENGTH_SHORT).show();
         Log.v(TAG, "Inside onStartCommand !!!!!!!!");
-
         /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Code started on 15 February 2018 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
         initChatService();
         Log.v(TAG, "Service chatService.isLoggedIn() :- " + chatService.isLoggedIn());
         Log.v(TAG, "Service ! chatService.isLoggedIn() :- " + !chatService.isLoggedIn());
         if (!chatService.isLoggedIn()) {
+            Log.w(TAG, "~~~~~~~~~~~~~~~~~~~~~ chatLogin() from onStartCommand () ~~~~~~~~~~~~~~~~~~~~~ ");
             chatLogin();
         }
-
         adapter = new BroadcastnewgroupAdapter();
         /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Code started on 15 February 2018 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-
         return Service.START_STICKY;
     }
 
@@ -815,7 +815,6 @@ xxxxxxxxxxxx*/
                 Log.v(TAG, "TimeZoneOffset :- " + TimeZoneOffset);
 
                 Log.v(TAG, "Inside incomming message listener");
-
                 Log.v(TAG, "Message body Receive :- " + qbChatMessage.getBody());
                 Log.v(TAG, "2 Dialog id :- " + qbChatMessage.getDialogId());
                 Log.v(TAG, "2-1 Message id :- " + qbChatMessage.getId());
@@ -841,7 +840,8 @@ xxxxxxxxxxxx*/
                     Log.v(TAG, "mQbChatMessage is not null 1:- " + mQbChatMessage);
 
                     final String sender_lang = chatMessage.senderlanguages;
-                    final String my_language = AppPreferences.getUSERLANGUAGE(TwoTab_Activity.instance);
+                    final String my_language = AppPreferences.getUSERLANGUAGE(QBService.this);
+//                    sdvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
                     ListCountry country = new ListCountry();
                     String sorcountrycode = country.getCode(QBService.this, sender_lang.trim());
                     if (sorcountrycode.equalsIgnoreCase("")) {
@@ -1093,16 +1093,21 @@ xxxxxxxxxxxx*/
             public void onSuccess(Object o, Bundle bundle) {
                 Log.v(TAG, "Login to chat service done ");
 
-                incomingMessage();
                 initRoster(chatService);
+                registerQbChatListeners();
+
                 QBSubscriptiondevice();
                 initListener();
-                registerQbChatListeners();
+
+                incomingMessage();
                 initPrivateChatMessageListener();
                 initGroupChatMessageListener();
+
                 initIsTypingListener();
                 initMessageSentListener();
 
+                Log.v(TAG, "App terminated before :- " + AppPreferences.getAppTerminated(QBService.this));
+                changeProfilePicDynamically();
             }
 
             @Override
@@ -1133,16 +1138,30 @@ xxxxxxxxxxxx*/
         if (QBChatService.getInstance().isLoggedIn()) {
             Log.v(TAG, "on destroy called :- TwoTab ");
             chatLogout(chatService);
+            try {
+                chatService.logout();
+                Log.v(TAG, "Chat logout done successfully !!! ");
+            } catch (SmackException.NotConnectedException e) {
+                e.printStackTrace();
+                Log.v(TAG, "Internet not connected Exception while logging out from chat service :- " + e.getMessage());
+            }
         }
+    }
+
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
     }
 
     private void chatLogout(QBChatService chatService) {
 
+        Log.v(TAG, "on destroy called :- TwoTab ");
         chatService.logout(new QBEntityCallback<Void>() {
             @Override
             public void onSuccess(Void aVoid, Bundle bundle) {
 
-                Log.v(TAG, "Logged out from chat success fully !!!");
+                Log.v(TAG, "Logged out from chat successfully !!!");
 
             }
 
@@ -1258,8 +1277,8 @@ xxxxxxxxxxxx*/
         initListener();
         Log.v(TAG, "Inside registerQbChatListeners");
         dialogsManager = new DialogsManager();
-        incomingMessagesManager = QBChatService.getInstance().getIncomingMessagesManager();
-        systemMessagesManager = QBChatService.getInstance().getSystemMessagesManager();
+        incomingMessagesManager = chatService.getIncomingMessagesManager();
+        systemMessagesManager = chatService.getSystemMessagesManager();
 
         if (incomingMessagesManager != null) {
             incomingMessagesManager.addDialogMessageListener(allDialogsMessagesListener != null
@@ -1636,12 +1655,13 @@ xxxxxxxxxxxx*/
 
     @Override
     public void onDialogCreated(QBChatDialog chatDialog) {
-
+        Log.v(TAG, "Overridden() on Dialog Created :- " + chatDialog);
     }
 
     @Override
     public void onDialogUpdated(String dialogId) {
 
+        Log.v(TAG, "Overriden() on Dialog Updated :- " + dialogId);
     }
 
     @Override
@@ -1968,17 +1988,346 @@ xxxxxxxxxxxx*/
         Log.v(TAG, "Change Profile pic in Services !!!!!!!!!!! ");
     }
 
+
+    private void getQBChatDialogByDialogID(final String dialog_id, final ChatMessage chatMessage) {
+
+        String abc = "+91 9074900690";
+
+        Log.v(TAG, "abc 123 :- " + abc.contains("9074900690"));
+
+        Log.v(TAG, " inside creating dialog when receiving group creation dialog :- " + dialog_id);
+
+        QBRestChatService.getChatDialogById(dialog_id).performAsync(new QBEntityCallback<QBChatDialog>() {
+
+            @Override
+            public void onSuccess(final QBChatDialog res, Bundle bundle) {
+
+                Log.v(TAG, "SQLITE QB group Chat dialog :- " + res);
+                byte[] ser_QBByteData = SerializationUtils.serialize(res);
+
+                Log.v(TAG, "Updating dialog into bytes :- " + ser_QBByteData);
+//dsvvvvvvvvvvvvvvvvvvvvvvdssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss
+//                DatabaseHelper.getInstance(TwoTab_Activity.this).UpdateQBChatDialog(dialog_id, ser_QBByteData);
+
+                chatMessage.qbChatDialogBytes = ser_QBByteData;
+                DatabaseHelper.getInstance(QBService.this).insertQbIdQbChatPrivateDialoge(0, dialog_id, chatMessage.qbChatDialogBytes, "Group");
+                createGroupWindows(chatMessage, QBService.this, " Two Tab while receiving created GROUP notification ...");
+
+            }
+
+            @Override
+            public void onError(QBResponseException e) {
+
+                Log.v(TAG, "Error in getting QBChatDialog from dialod id " + e.getMessage());
+
+            }
+        });
+
+    }
+
+    private void onGroupMessageReceived(ChatMessage chatMessage, String dialog_id) {
+
+        Log.v(TAG, "10kfjjjjjjjjjjnmsdbvvbfsbvbvkvb :-" + chatMessage);//body='9754051431 added you '
+//body='9511204189 added in group by 9754051431'
+        String msg = chatMessage.body;
+        String[] number = msg.split(" ");
+        String stringFinal = "";
+        for (int i = 0; i < number.length; i++) {
+            Log.d(TAG, " ArrayStringBody : -- " + number[i] + " : : " + i);
+
+            if (i > 0) {
+                stringFinal += number[i] + " ";
+                if (i == 5) {
+                    String userNameAdmin = getContactName(number[5]);
+                    stringFinal += userNameAdmin;
+                }
+            }
+
+        }
+        Log.d(TAG, " getNumberFromsplet 1200: -- " + number[1] + " : " + stringFinal);
+
+        if (number[0].trim().equalsIgnoreCase("Hi")) {
+            Log.d(TAG, " getNumberFromsplet 11: -- " + number[0]);
+            Log.d(TAG, " getNumberFromsplet 12: -- " + number[1]);
+            Log.d(TAG, " chatMessageBodySplite 11: == " + chatMessage.body);
+
+        } else {
+            Log.d(TAG, " getNumberFromsplet 22: -- " + number[0]);
+            Log.d(TAG, " getNumberFromsplet 23: -- " + number[1]);
+            String userName = getContactName(number[0]);
+            chatMessage.body = userName + " " + stringFinal;
+            Log.d(TAG, " chatMessageBodySplite 22: == " + chatMessage.body + " :: " + stringFinal);
+        }
+
+        chatMessage.isOtherMsg = 1;
+        chatMessage.dialog_id = dialog_id;
+
+        Log.v(TAG, "QB Serialize Group dialog to data " + chatMessage.qbChatDialogBytes);
+        Log.d(TAG, " chatMessageBodySplite 44: == " + chatMessage);
+
+        getQBChatDialogByDialogID(dialog_id, chatMessage);
+
+    }
+
+    private void changeProfilePicDynamically() {
+
+        Log.v(TAG, "App terminated before :- " + AppPreferences.getAppTerminated(QBService.this));
+
+        if (AppPreferences.getAppTerminated(QBService.this)) {
+
+            Log.v(TAG, "Getting profile position :- " + AppPreferences.getprofileImagePos(QBService.this));
+            Log.v(TAG, "Getting profile size :- " + AppPreferences.getprofileImageSize(QBService.this));
+
+            int currentPicPosition = AppPreferences.getprofileImagePos(QBService.this);
+            String getprofileImageArray = AppPreferences.getprofileImageArray(QBService.this);
+
+            if (!getprofileImageArray.equalsIgnoreCase(" ")) {
+
+                ArrayList<Image> imageArrayList = gson.fromJson(getprofileImageArray, new TypeToken<ArrayList<Image>>() {
+                }.getType());
+
+                String Encoded_userimage = "";
+
+                if (imageArrayList != null) {
+
+                    if (imageArrayList.size() - 1 == currentPicPosition) {
+
+                        currentPicPosition = 0;
+                        Encoded_userimage = getEncodedString(imageArrayList, currentPicPosition);
+
+                    } else if (imageArrayList.size() > currentPicPosition) {
+
+                        currentPicPosition = currentPicPosition + 1;
+                        Encoded_userimage = getEncodedString(imageArrayList, currentPicPosition);
+
+                    }
+                    changeProfilePicAPI(Encoded_userimage, currentPicPosition);
+                }
+            }
+
+        }
+    }
+
+    private void changeProfilePicAPI(String encoded_userimage, final int currentPicPosition) {
+
+        DateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+        dateFormatter.setLenient(false);
+        Date today = new Date();
+        String currentDateTimeString = dateFormatter.format(today);
+
+        JSONArray jsonArray = new JSONArray();
+        JSONObject jsonObj = new JSONObject();
+        try {
+            jsonObj.put("method", "editProfile");
+            jsonObj.put("userProfileStatus", AppPreferences.getUserstatus(QBService.this));
+            jsonObj.put("username", AppPreferences.getFirstUsername(QBService.this));
+            jsonObj.put("userId", AppPreferences.getLoginId(QBService.this));
+            jsonObj.put("dateTime", currentDateTimeString);
+            jsonObj.put("userImage", encoded_userimage);
+
+            jsonArray.put(jsonObj);
+
+            Log.v(TAG, "Json Request Change Profile Pic :- " + jsonArray.toString());
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        JSONParser jsonParser = new JSONParser(QBService.this);
+        jsonParser.parseVollyJsonArray(AppConstants.COMMONURL, 1, jsonArray, new VolleyCallback() {
+            @Override
+            public void backResponse(String response) {
+
+                Log.v(TAG, "Json response Change Profile Pic :- " + response);
+                //  mProgressDialog.dismiss();
+                if (response != null) {
+                    try {
+                        JSONObject mainObject = new JSONObject(response);
+
+                        if (mainObject.getString("status").equalsIgnoreCase("200")) {
+
+                            JSONArray resultArray = mainObject.getJSONArray("result");
+                            for (int i = 0; i < resultArray.length(); i++) {
+                                JSONObject jsonObject2 = resultArray.getJSONObject(i);
+
+                                AppPreferences.setFirstUsername(QBService.this, jsonObject2.getString("username"));
+                                AppPreferences.setUserprofile(QBService.this, jsonObject2.getString("userImage"));
+
+                                AppPreferences.setprofileImagePos(QBService.this, currentPicPosition, AppPreferences.getprofileImageSize(QBService.this));
+                                AppPreferences.setUserstatus(QBService.this, jsonObject2.getString("userProfileStatus"));
+                            }
+
+                            sendImageinPresence();
+
+                            ChatMessage chatMessage = new ChatMessage();
+                            chatMessage.Groupimage = "updateProPic";
+                            chatMessage.receiver = AppPreferences.getMobileuser(QBService.this);
+                            chatMessage.ReciverFriendImage = resultArray.getJSONObject(0).getString("userImage");
+                            chatMessage.userStatus = resultArray.getJSONObject(0).getString("userProfileStatus");
+
+                        } else if (mainObject.getString("status").equalsIgnoreCase("400")) {
+
+                        } else if (mainObject.getString("status").equalsIgnoreCase("100")) {
+                            Toast.makeText(getApplicationContext(), "Check network connection", Toast.LENGTH_LONG).show();
+                        }
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+            }
+        });
+    }
+
+    private void sendImageinPresence() {
+
+        QBRosterListener rosterListener = new QBRosterListener() {
+            @Override
+            public void entriesDeleted(Collection<Integer> userIds) {
+            }
+
+            @Override
+            public void entriesAdded(Collection<Integer> userIds) {
+
+            }
+
+            @Override
+            public void entriesUpdated(Collection<Integer> userIds) {
+            }
+
+            @Override
+            public void presenceChanged(QBPresence presence) {
+                Log.v("EditProfile", "userID...........=" + presence);
+            }
+        };
+        QBSubscriptionListener subscriptionListener = new QBSubscriptionListener() {
+            @Override
+            public void subscriptionRequested(int userId) {
+            }
+        };
+
+
+        QBRoster chatRoster = QBChatService.getInstance().getRoster(QBRoster.SubscriptionMode.mutual, subscriptionListener);
+        chatRoster.addRosterListener(rosterListener);
+
+        JSONObject presenceJson = new JSONObject();
+        try {
+            presenceJson.put("sender_id", AppPreferences.getLoginId(QBService.this));
+            presenceJson.put("profile_image", AppPreferences.getUserprofile(QBService.this));
+            presenceJson.put("profile_name", AppPreferences.getFirstUsername(QBService.this));
+            presenceJson.put("chat_Type", "singleChat");
+            presenceJson.put("profile_language", "");
+            presenceJson.put("status", AppPreferences.getUserstatus(QBService.this));
+
+            Log.v(TAG, "Json object sending as a status while sending presence :- " + presenceJson);
+
+        } catch (JSONException e) {
+// TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+//................................................................................................//
+        QBPresence presence = new QBPresence(QBPresence.Type.online, presenceJson.toString(), 1, QBPresence.Mode.available);
+
+        Log.v(TAG, "User Presnece in Edit user image 19 dec :- " + presence);
+        try {
+            chatRoster.sendPresence(presence);
+        } catch (SmackException.NotConnectedException e) {
+
+        }
+    }
+
+    private String getEncodedString(ArrayList<Image> imageArrayList, int currentPicPosition) {
+
+        String list = imageArrayList.get(currentPicPosition).path;
+        File imgFile = new File(list);
+        Bitmap myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+
+//        prof_pic.setImageBitmap(myBitmap);
+
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        myBitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
+        byte[] byteArray = byteArrayOutputStream.toByteArray();
+        Encoded_userimage = Base64.encodeToString(byteArray, Base64.DEFAULT);
+        Log.v(TAG, "Encoded_userimage for sending image to serrver :- " + Encoded_userimage);
+
+        return Encoded_userimage;
+    }
+
     private class SystemMessagesListener implements QBSystemMessageListener {
         @Override
         public void processMessage(final QBChatMessage qbChatMessage) {
-            Log.v(TAG, "Inside systemMessagesManager 1");
 
+            gson = new Gson();
+
+            Log.v(TAG, "Inside systemMessagesManager 1");
+            Log.v(TAG, "Inside systemMessagesManager 1 newww " + qbChatMessage);
+            Log.v(TAG, "Inside message incoming listener 1");
+
+            Log.v(TAG, "Message body Receive 1:- " + qbChatMessage.getBody());
+            Log.v(TAG, "2. :-" + qbChatMessage.getDialogId());
+            Log.v(TAG, "3. :-" + qbChatMessage.getRecipientId());
+            Log.v(TAG, "4. :-" + qbChatMessage.getSenderId());
+            Log.v(TAG, "5. :-" + qbChatMessage.getSmackMessage());
+            Log.v(TAG, "6. :-" + qbChatMessage.getProperties());
+
+            String dialog_type = qbChatMessage.getProperties().get("dialog_type");
+
+            Log.v(TAG, "7. :-" + dialog_type);
+
+//          if (dialog_type))
+            /*
+            *  PRIVATE ---- 3
+            *  GROUP   ---- 2
+            * */
+
+            if (dialog_type.equalsIgnoreCase("2")) { // if dialog type not == PRIVATE
+
+                final ChatMessage chatMessage = gson.fromJson(qbChatMessage.getProperties().get("custom_body"), ChatMessage.class);
+
+                Log.v(TAG, "8. :-" + chatMessage);
+
+                TimeZone timezone = TimeZone.getDefault();
+                TimeZone timeZomeSender = TimeZone.getTimeZone(chatMessage.timeZone);
+                SimpleDateFormat dateFormat_sender = new SimpleDateFormat("yyyy-MM-dd hh:mm aa");
+                dateFormat_sender.setTimeZone(timeZomeSender);
+                Calendar cal_sender = Calendar.getInstance(TimeZone.getTimeZone(chatMessage.timeZone));
+                cal_sender.setTimeInMillis(chatMessage.dateInLong);
+                Date date_sender = cal_sender.getTime();
+
+                Log.v(TAG, "TimeZONE Sender :- " + dateFormat_sender.format(date_sender));
+                Log.v(TAG, "Time 2 :- " + date_sender.getTime());
+
+                Calendar calander_receiver = Calendar.getInstance(timezone);
+                SimpleDateFormat sdf_receiver = new SimpleDateFormat("yyyy-MM-dd hh:mm a");
+                sdf_receiver.setTimeZone(timezone);
+                Date date_receiver = calander_receiver.getTime();
+                Log.v(TAG, "TimeZONE Receiver current:- " + sdf_receiver.format(date_receiver));
+
+                calander_receiver.setTimeInMillis(chatMessage.dateInLong);
+
+                Date date_receiver_send = calander_receiver.getTime();
+                Log.v(TAG, "TimeZONE Receiver sender :- " + sdf_receiver.format(date_receiver_send));
+
+                String current_time = sdf_receiver.format(date_receiver_send);
+                String time[] = current_time.toString().split(" ");
+                String send_time = time[1];
+
+                chatMessage.Date = time[0];
+                chatMessage.Time = send_time + " " + time[2];
+                onGroupMessageReceived(chatMessage, qbChatMessage.getDialogId());
+
+                Log.v(TAG, "9. :-" + chatMessage);
+
+            }
             dialogsManager.onSystemMessageReceived(qbChatMessage);
         }
 
         @Override
         public void processError(QBChatException e, QBChatMessage qbChatMessage) {
 
+            Log.e(TAG, "Error in getting system group message :-" + e.getMessage());
         }
     }
 
@@ -1991,5 +2340,16 @@ xxxxxxxxxxxx*/
         }
     }
 
+    public class IncomingMessageReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            QBService qbService = new QBService();
+            qbService.incomingMessage();
+            Log.i(IncomingMessageReceiver.class.getSimpleName(), "Service Stops! Oooooooooooooppppssssss!!!!");
+            context.startService(new Intent(context, QBService.class));
+            ;
+        }
+    }
 
 }

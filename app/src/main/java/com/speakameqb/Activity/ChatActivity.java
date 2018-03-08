@@ -166,20 +166,19 @@ public class ChatActivity extends AnimRootActivity implements View.OnClickListen
     private static final String PROPERTY_SAVE_TO_HISTORY = "save_to_history";
     public static ArrayList<ChatMessage> chatlist;
     public static ChatAdapter chatAdapter;
-    public static ChatActivity instance = null;
     public static String FriendMobileTWO;
     public static LinearLayoutManager mLayoutManager;
     public static TextView toolbartext;
     public static ImageView conversationimage;
     public static String groupName = "";
     public static RecyclerView mRecyclerView;
+    public static ChatActivity instance = null;
     //keep track of camera capture intent
     final int REQUEST_TAKE_GALLERY_VIDEO = 23;
     final int PICKFILE_REQUEST_CODE = 1;
     final int SENDIMAGE = 22;
     final int ADDCONTACT = 24;
     final int GALLARY_CAPTURE = 101;
-
     //keep track of cropping intent
     final int PIC_CROP = 2;
     final Handler handler = new Handler();
@@ -240,6 +239,7 @@ public class ChatActivity extends AnimRootActivity implements View.OnClickListen
 
         }
     };
+
     TwoTab_Activity twoTab_activity = new TwoTab_Activity();
     TimeZone timezone;
     Calendar calander;
@@ -262,6 +262,7 @@ public class ChatActivity extends AnimRootActivity implements View.OnClickListen
     private QBChatDialogMessageListener globalChatDialogMessageListener;
     private QBChatDialogMessageListener privateChatDialogMessageListener, groupChatDialogMessageListener;
     private QBMessageStatusesManager messageStatusesManager;
+
     private Runnable input_finish_checker = new Runnable() {
         public void run() {
             if (System.currentTimeMillis() > (last_text_edit + delay - 500)) {
@@ -388,6 +389,7 @@ public class ChatActivity extends AnimRootActivity implements View.OnClickListen
                 privateChatDialog = SerializationUtils.deserialize(qbChatDialogByte);
                 Log.v(TAG, "privateChatDialog  from contact is not null :- " + privateChatDialog);
                 QBInit(groupName, privateChatDialog);
+
             }
 
         } else {
@@ -1671,7 +1673,6 @@ Log.v(TAG, "data[1]..........." + data[1]);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-
                 chatMessage.Contact = jsonObject.toString();
 
             } else if (fileExte.equalsIgnoreCase("png") || fileExte.equalsIgnoreCase("jpg") || fileExte.equalsIgnoreCase("jpeg")) {
@@ -1690,7 +1691,6 @@ Log.v(TAG, "data[1]..........." + data[1]);
             File SpeakAmeDirectory = Function.createFolder(folderType);
             chatMessage.fileName = Function.generateNewFileName(fileExte);
             chatMessage.files = Function.copyFile(file, SpeakAmeDirectory + "/" + chatMessage.fileName);
-
             chatMessage.qbFileUploadId = qbFileId;
             chatMessage.qbFileUid = qbFileUid;
 
@@ -1744,9 +1744,7 @@ Log.v(TAG, "data[1]..........." + data[1]);
                 chatMessage.qbChatDialogBytes = SerializationUtils.serialize(privateChatDialog);
 
                 if (chatMessage.groupName.equalsIgnoreCase("")) {
-
                     qbChatMessage.setRecipientId(chatMessage.receiver_QB_Id);
-
                 }
 //                vsddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
 
@@ -4470,7 +4468,6 @@ chatlist.remove();
             @Override
             public void onSuccess(QBFile qbFile, Bundle bundle) {
 //dsvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-
                 Log.i(TAG, ">>> QBFile:" + qbFile.toString());
                 Log.v(TAG, "public url:" + qbFile.getPublicUrl());
                 Log.v(TAG, "private url:" + qbFile.getPrivateUrl());

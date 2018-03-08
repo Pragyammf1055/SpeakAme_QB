@@ -1,36 +1,53 @@
 package com.speakameqb.Activity;
 
+import android.animation.ObjectAnimator;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
+import android.graphics.drawable.BitmapDrawable;
+import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Base64;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.flipboard.bottomsheet.BottomSheetLayout;
+import com.flipboard.bottomsheet.commons.MenuSheetView;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import com.jackandphantom.circularprogressbar.CircleProgressbar;
 import com.quickblox.chat.QBChatService;
 import com.quickblox.chat.QBRoster;
 import com.quickblox.chat.listeners.QBRosterListener;
 import com.quickblox.chat.listeners.QBSubscriptionListener;
 import com.quickblox.chat.model.QBPresence;
+import com.speakameqb.Beans.Image;
 import com.speakameqb.Classes.AnimRootActivity;
 import com.speakameqb.R;
 import com.speakameqb.Xmpp.ChatMessage;
@@ -39,6 +56,7 @@ import com.speakameqb.utils.AppPreferences;
 import com.speakameqb.utils.Function;
 import com.speakameqb.utils.JSONParser;
 import com.speakameqb.utils.VolleyCallback;
+import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
 import org.apache.http.HttpResponse;
@@ -58,15 +76,18 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.SocketTimeoutException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 
+import de.hdodenhof.circleimageview.CircleImageView;
 import dmax.dialog.SpotsDialog;
 
 public class EditProfile_Activity extends AnimRootActivity {
@@ -74,55 +95,62 @@ public class EditProfile_Activity extends AnimRootActivity {
     //keep track of camera capture intent
     public static ImageView language, language_blue, chat, chat_blue, setting, setting_blue, star,
             on_image, off_image, star_blue, user, user_blue, user_profile;
-    final int CAMERA_CAPTURE = 1;
+    final int CAMERA_CAPTURE = 1, PIC_CROP = 2;
+    protected BottomSheetLayout bottomSheetLayout;
     //keep track of cropping intent
-    final int PIC_CROP = 2;
     Bitmap thePic;
-    TextView title_name, txt1, txt2, txt3;
-    EditText editstatus, editText_name;
+    TextView title_name, txt2, txt3, editstatus;
+    EditText editText_name;
     String Status, Encoded_userimage = "", Username, currentDateTimeString;
-    ImageView prof_pic;
+    CircleImageView prof_pic;
     //captured picture uri
     Typeface tf3, tf2;
+    RecyclerView recyclerView;
+    Gson gson = new Gson();
+    CircleProgressbar imageProgressBar;
+    ProgressBar circular_progress_bar;
+    int currentPosition = 0, imageListSize = 0;
+    File mImageFile;
     private Uri picUri;
+    private HorizontalAdapter horizontalAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_profile_);
+
+        //
+
+        bottomSheetLayout = (BottomSheetLayout) findViewById(R.id.bottom_sheet_layout);
+        bottomSheetLayout.setPeekOnDismiss(true);
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_arrow_back_white_24dp);
-        title_name = (TextView) findViewById(R.id.title_name);
-        txt1 = (TextView) findViewById(R.id.profiletext);
-        txt2 = (TextView) findViewById(R.id.nametext);
-        txt3 = (TextView) findViewById(R.id.statustext);
-        title_name.setText("Edit Profile");
-        Typeface tf1 = Typeface.createFromAsset(getAssets(), "Raleway-Regular.ttf");
-        tf2 = Typeface.createFromAsset(getAssets(), "OpenSans-Regular.ttf");
-        tf3 = Typeface.createFromAsset(getAssets(), "Raleway-SemiBold.ttf");
-        title_name.setTypeface(tf1);
-        editstatus = (EditText) findViewById(R.id.edit_status);
-        editText_name = (EditText) findViewById(R.id.edit_name);
-        prof_pic = (ImageView) findViewById(R.id.profile_picture);
+
+        initViews();
+
+        setListener();
+
+        permission();
 
 
-        language = (ImageView) findViewById(R.id.iv_language);
-        language_blue = (ImageView) findViewById(R.id.iv_bluelanguage);
+    }
 
-        chat = (ImageView) findViewById(R.id.iv_chat_footer);
-        chat_blue = (ImageView) findViewById(R.id.iv_chatbluefooter);
-        setting = (ImageView) findViewById(R.id.iv_setting);
-        setting_blue = (ImageView) findViewById(R.id.iv_bluesetting);
-        star = (ImageView) findViewById(R.id.iv_star);
-        star_blue = (ImageView) findViewById(R.id.iv_starblue);
-        user = (ImageView) findViewById(R.id.iv_user_footer);
-        user_blue = (ImageView) findViewById(R.id.iv_userbluefooter);
+    private void permission() {
 
-        setting_blue.setVisibility(View.VISIBLE);
-        setting.setVisibility(View.GONE);
+        Function.cameraPermisstion(EditProfile_Activity.this, 1);
+        DateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+        dateFormatter.setLenient(false);
+        Date today = new Date();
+        currentDateTimeString = dateFormatter.format(today);
+        Log.d("currentdatetime", currentDateTimeString);
 
+
+    }
+
+    private void setListener() {
 
         language.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -153,7 +181,6 @@ public class EditProfile_Activity extends AnimRootActivity {
             }
         });
 
-
         star.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -166,25 +193,6 @@ public class EditProfile_Activity extends AnimRootActivity {
             }
         });
 
-        if (AppPreferences.getTotf(EditProfile_Activity.this).equalsIgnoreCase("1")) {
-            user.setVisibility(View.VISIBLE);
-            user_blue.setVisibility(View.GONE);
-        }
-
-        if (AppPreferences.getTotf(EditProfile_Activity.this).equalsIgnoreCase("0")) {
-            user_blue.setVisibility(View.VISIBLE);
-            user.setVisibility(View.GONE);
-        }
-
-        if (user.getVisibility() == View.VISIBLE) {
-
-            AppPreferences.setTotf(EditProfile_Activity.this, "1");
-        }
-
-        if (user_blue.getVisibility() == View.VISIBLE) {
-
-            AppPreferences.setTotf(EditProfile_Activity.this, "0");
-        }
 
         user.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -206,21 +214,155 @@ public class EditProfile_Activity extends AnimRootActivity {
         });
 
 
+        editstatus.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                UpdatestatusDialog();
+            }
+        });
+
+        prof_pic.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //showMenuSheet(MenuSheetView.MenuType.LIST);
+                showMenuSheet(MenuSheetView.MenuType.GRID);
+            }
+        });
+
+        String getprofileImageArray = AppPreferences.getprofileImageArray(EditProfile_Activity.this);
+        Log.v(TAG, "Getting data from Prefrences :- " + getprofileImageArray);
+        if (!getprofileImageArray.equalsIgnoreCase(" ")) {
+            if (!AppPreferences.getprofileImageArray(EditProfile_Activity.this).equalsIgnoreCase("")) {
+                ArrayList<Image> imageArrayList = gson.fromJson(getprofileImageArray, new TypeToken<ArrayList<Image>>() {
+                }.getType());
+                Log.v(TAG, "if no null Arraylist after getting prefrences :- " + imageArrayList);
+                setAdapter(imageArrayList);
+            }
+        } else {
+            recyclerView.setVisibility(View.GONE);
+        }
+
+    }
+
+    private void showMenuSheet(final MenuSheetView.MenuType menuType) {
+        MenuSheetView menuSheetView =
+                new MenuSheetView(EditProfile_Activity.this, menuType, "Choose Action", new MenuSheetView.OnMenuItemClickListener() {
+                    @Override
+                    public boolean onMenuItemClick(MenuItem item) {
+                        Toast.makeText(EditProfile_Activity.this, item.getTitle(), Toast.LENGTH_SHORT).show();
+                        if (bottomSheetLayout.isSheetShowing()) {
+                            bottomSheetLayout.dismissSheet();
+                        }
+
+                        if (item.getItemId() == R.id.item_gallery_pp) {
+
+                            Intent intent = new Intent(getApplicationContext(), AlbumSelectActivity.class);
+                            startActivityForResult(intent, AppConstants.ALBUMSELECT_REQUEST_CODE);
+
+                        } else if (item.getItemId() == R.id.item_delete_pp) {
+
+                            Username = editText_name.getText().toString();
+                            Status = editstatus.getText().toString();
+
+                            //Toast.makeText(EditProfile_Activity.this, "Remove", Toast.LENGTH_SHORT).show();
+                            circular_progress_bar.setVisibility(View.GONE);
+                            String name = AppPreferences.getFirstUsername(EditProfile_Activity.this);
+                            if (recyclerView.getVisibility() == View.VISIBLE) {
+                                AppPreferences.clearprofileImageArray(EditProfile_Activity.this);
+                                AppPreferences.setFirstUsername(EditProfile_Activity.this, name);
+                                editText_name.setText(name);
+                                int size = horizontalAdapter.getItemCount();
+                                horizontalAdapter.notifyItemRangeRemoved(0, size);
+                                recyclerView.setAdapter(horizontalAdapter);
+                                recyclerView.setVisibility(View.GONE);
+                                Log.v(TAG, "NotifyitemRangeRemoved :--- " + horizontalAdapter.getItemCount());
+                            }
+
+                            prof_pic.setImageResource(R.drawable.profile_default);
+
+                            Bitmap myBitmap = ((BitmapDrawable) prof_pic.getDrawable()).getBitmap();
+                            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                            myBitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
+                            byte[] byteArray = byteArrayOutputStream.toByteArray();
+                            Encoded_userimage = Base64.encodeToString(byteArray, Base64.DEFAULT);
+
+                            if (Function.isConnectingToInternet(EditProfile_Activity.this)) {
+                                new UpdateprofileAsynch().execute();
+                            } else {
+                                Toast.makeText(getApplicationContext(), "Internet not Connected !", Toast.LENGTH_SHORT).show();
+                            }
+                            AppPreferences.setFirstUsername(EditProfile_Activity.this, editText_name.getText().toString());
+                            Log.v(TAG, "btn_remove username edt value : --- " + editText_name.getText().toString());
+                        }
+
+                        return true;
+                    }
+                });
+        menuSheetView.inflateMenu(R.menu.image_function);
+        bottomSheetLayout.showWithSheetView(menuSheetView);
+    }
+
+    private void initViews() {
+
+        Typeface tf1 = Typeface.createFromAsset(getAssets(), "Raleway-Regular.ttf");
+        tf2 = Typeface.createFromAsset(getAssets(), "OpenSans-Regular.ttf");
+        tf3 = Typeface.createFromAsset(getAssets(), "Raleway-SemiBold.ttf");
+
+        recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+        title_name = (TextView) findViewById(R.id.title_name);
+        txt2 = (TextView) findViewById(R.id.nametext);
+        txt3 = (TextView) findViewById(R.id.statustext);
+        title_name.setText("Edit Profile");
+        title_name.setTypeface(tf1);
+        editstatus = (TextView) findViewById(R.id.edit_status);
+        editText_name = (EditText) findViewById(R.id.edit_name);
+        prof_pic = (CircleImageView) findViewById(R.id.profile_picture);
+
+        language = (ImageView) findViewById(R.id.iv_language);
+        language_blue = (ImageView) findViewById(R.id.iv_bluelanguage);
+
+        chat = (ImageView) findViewById(R.id.iv_chat_footer);
+        chat_blue = (ImageView) findViewById(R.id.iv_chatbluefooter);
+        setting = (ImageView) findViewById(R.id.iv_setting);
+        setting_blue = (ImageView) findViewById(R.id.iv_bluesetting);
+        star = (ImageView) findViewById(R.id.iv_star);
+        star_blue = (ImageView) findViewById(R.id.iv_starblue);
+        user = (ImageView) findViewById(R.id.iv_user_footer);
+        user_blue = (ImageView) findViewById(R.id.iv_userbluefooter);
+
+        setting_blue.setVisibility(View.VISIBLE);
+        setting.setVisibility(View.GONE);
+
+
         editText_name.setTypeface(tf2);
         editstatus.setTypeface(tf2);
 
-        txt1.setTypeface(tf3);
         txt2.setTypeface(tf3);
         txt3.setTypeface(tf3);
 
-        Function.cameraPermisstion(EditProfile_Activity.this, 1);
-        DateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-        dateFormatter.setLenient(false);
-        Date today = new Date();
-        currentDateTimeString = dateFormatter.format(today);
-        Log.d("currentdatetime", currentDateTimeString);
+
+        if (AppPreferences.getTotf(EditProfile_Activity.this).equalsIgnoreCase("1")) {
+            user.setVisibility(View.VISIBLE);
+            user_blue.setVisibility(View.GONE);
+        }
+
+        if (AppPreferences.getTotf(EditProfile_Activity.this).equalsIgnoreCase("0")) {
+            user_blue.setVisibility(View.VISIBLE);
+            user.setVisibility(View.GONE);
+        }
+
+        if (user.getVisibility() == View.VISIBLE) {
+
+            AppPreferences.setTotf(EditProfile_Activity.this, "1");
+        }
+
+        if (user_blue.getVisibility() == View.VISIBLE) {
+
+            AppPreferences.setTotf(EditProfile_Activity.this, "0");
+        }
 
         editText_name.setText(AppPreferences.getFirstUsername(EditProfile_Activity.this));
+        Log.v(TAG, "Init View EDIT_TEXT_NAME :--- " + AppPreferences.getFirstUsername(EditProfile_Activity.this));
 
         if (AppPreferences.getUserstatus(EditProfile_Activity.this).equalsIgnoreCase("")) {
             editstatus.setText("Can't talk SpeakAme Only");
@@ -229,46 +371,21 @@ public class EditProfile_Activity extends AnimRootActivity {
         }
 
         if (AppPreferences.getUserprofile(EditProfile_Activity.this).equalsIgnoreCase("")) {
-            prof_pic.setBackgroundResource(R.drawable.add_pic);
 
         } else {
-            Picasso.with(getApplicationContext()).load(AppPreferences.getUserprofile(EditProfile_Activity.this)).placeholder(R.drawable.add_pic)
-                    .error(R.drawable.add_pic)
+            Picasso.with(getApplicationContext())
+                    .load(AppPreferences.getUserprofile(EditProfile_Activity.this))
+                    .placeholder(R.drawable.profile_default)
+                    .centerCrop()
+                    .error(R.drawable.profile_default)
                     .resize(200, 200)
                     .into(prof_pic);
         }
 
+        circular_progress_bar = (ProgressBar) findViewById(R.id.circular_progress_bar);
         System.out.println("profpic :- " + AppPreferences.getUserprofile(EditProfile_Activity.this));
 
-        editstatus.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                UpdatestatusDialog();
 
-            }
-        });
-
-        prof_pic.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                try {
-                    //use standard intent to capture an files
-
-                    Intent galleryIntent = new Intent(
-                            Intent.ACTION_PICK,
-                            android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-//                    Intent captureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                    //we will handle the returned data in onActivityResult
-                    startActivityForResult(galleryIntent, CAMERA_CAPTURE);
-                } catch (ActivityNotFoundException anfe) {
-                    //display an error message
-                    String errorMessage = "Whoops - your device doesn't support capturing images!";
-                    Toast toast = Toast.makeText(EditProfile_Activity.this, errorMessage, Toast.LENGTH_SHORT);
-                    toast.show();
-                }
-            }
-        });
     }
 
     @Override
@@ -280,18 +397,30 @@ public class EditProfile_Activity extends AnimRootActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
-
         switch (item.getItemId()) {
             case android.R.id.home:
 
-                Intent intent = new Intent(EditProfile_Activity.this, Setting_Activity.class);
-                startActivity(intent);
+               /* Intent intent = new Intent(EditProfile_Activity.this, Setting_Activity.class);
+                startActivity(intent);*/
                 finish();
                 break;
             case R.id.done:
                 Username = editText_name.getText().toString();
                 Status = editstatus.getText().toString();
 
+                Log.v(TAG, "Curent Profile Pic Position :- " + currentPosition);
+                Log.v(TAG, "Curent Profile Pic Position  Sizes :- " + imageListSize);
+
+                AppPreferences.setprofileImagePos(EditProfile_Activity.this, currentPosition, imageListSize);
+                Log.v(TAG, "AppPreference EDIT_TEXT_NAME :--- " + AppPreferences.getFirstUsername(EditProfile_Activity.this));
+                Log.v(TAG, "editText_name.getText() :--- " + Username);
+                if (mImageFile != null) {
+                    Bitmap myBitmap = BitmapFactory.decodeFile(mImageFile.getAbsolutePath());
+                    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                    myBitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
+                    byte[] byteArray = byteArrayOutputStream.toByteArray();
+                    Encoded_userimage = Base64.encodeToString(byteArray, Base64.DEFAULT);
+                }
                 if (Function.isConnectingToInternet(EditProfile_Activity.this)) {
                     new UpdateprofileAsynch().execute();
                 } else {
@@ -341,40 +470,10 @@ public class EditProfile_Activity extends AnimRootActivity {
 
     }
 
-
     @Override
     public void onBackPressed() {
         super.onBackPressed();
         finish();
-    }
-
-
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (resultCode == RESULT_OK) {
-            if (requestCode == CAMERA_CAPTURE) {
-                picUri = data.getData();
-                performCrop();
-            }//user is returning from cropping the files
-            else if (requestCode == PIC_CROP) {
-//get the returned data
-                Bundle extras = data.getExtras();
-//get the cropped bitmap
-                thePic = extras.getParcelable("data");
-                Log.d("pictureimage", String.valueOf(thePic));
-
-                prof_pic.setImageBitmap(thePic);
-
-                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                thePic.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
-                byte[] byteArray = byteArrayOutputStream.toByteArray();
-
-                Encoded_userimage = Base64.encodeToString(byteArray, Base64.DEFAULT);
-                Log.d("pictureimage", Encoded_userimage);
-
-
-            }
-
-        }
     }
 
     private void performCrop() {
@@ -564,6 +663,122 @@ public class EditProfile_Activity extends AnimRootActivity {
         }
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        super.onActivityResult(requestCode, resultCode, data);
+        ArrayList<Image> imageArrayList = new ArrayList<>();
+        Log.v(TAG, " On Activity Result ");
+
+        if (resultCode == RESULT_OK) {
+
+            if (requestCode == CAMERA_CAPTURE) {
+                picUri = data.getData();
+                performCrop();
+            }//user is returning from cropping the files
+            else if (requestCode == PIC_CROP) {
+//get the returned data
+                Bundle extras = data.getExtras();
+//get the cropped bitmap
+                thePic = extras.getParcelable("data");
+                Log.d("pictureimage", String.valueOf(thePic));
+
+                prof_pic.setImageBitmap(thePic);
+
+                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                thePic.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
+                byte[] byteArray = byteArrayOutputStream.toByteArray();
+
+                Encoded_userimage = Base64.encodeToString(byteArray, Base64.DEFAULT);
+                Log.v(TAG, "" + Encoded_userimage);
+                Log.d("pictureimage", Encoded_userimage);
+
+
+            }
+
+        }
+
+        if (requestCode == AppConstants.ALBUMSELECT_REQUEST_CODE && resultCode == RESULT_OK && data != null) {
+
+            Log.v(TAG, "On Activity Result : -- " + data);
+            imageArrayList.clear();
+            Log.v(TAG, "Image Array List Clear " + imageArrayList);
+            imageArrayList = data.getParcelableArrayListExtra(AppConstants.INTENT_EXTRA_IMAGES);//intent.getParcelableArrayListExtra(AppConstants.INTENT_EXTRA_IMAGES);
+            Log.v(TAG, "Image Array List Received :- " + imageArrayList);
+            for (int i = 0; i < imageArrayList.size(); i++) {
+                String path = imageArrayList.get(i).path;
+                Log.v(TAG, "Recevied Path of image from arraylist index : " + i + " " + path);
+            }
+            /*if (linearLayout != null){
+                linearLayout.removeAllViews();
+            }
+            scrollViewPagerAdapter = new ScrollViewPagerAdapter(this, imageArrayList);
+            viewPager.setAdapter(scrollViewPagerAdapter);
+            viewPager.setOffscreenPageLimit(10); // how many images to load into memory*/
+
+//            dsvvvvvvvvvvvvvvvvvvvvvvvvvv
+//                    sdvvvvvvvvvvvvvvvvvvvvv
+
+//            AppPreferences.setImageList();
+            String profilePicJson = gson.toJson(imageArrayList);
+
+            AppPreferences.setprofileImageArray(EditProfile_Activity.this, profilePicJson);
+
+            Log.v(TAG, "Arraylist before from prefrences :- " + imageArrayList);
+            Log.v(TAG, "Arraylist getting :- " + AppPreferences.getprofileImageArray(EditProfile_Activity.this));
+            setAdapter(imageArrayList);
+
+            try {
+                recyclerView.setAdapter(horizontalAdapter);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+
+            //---------------- ----------  SOMIL 27 FEB   -------------------------------
+            String getprofileImageArray = AppPreferences.getprofileImageArray(EditProfile_Activity.this);
+            Log.v(TAG, "Getting data from Prefrences :- " + getprofileImageArray);
+            if (!getprofileImageArray.equalsIgnoreCase(" ")) {
+                if (!AppPreferences.getprofileImageArray(EditProfile_Activity.this).equalsIgnoreCase("")) {
+
+                    ArrayList<Image> imageArrayLists = gson.fromJson(getprofileImageArray, new TypeToken<ArrayList<Image>>() {
+                    }.getType());
+                    Log.v(TAG, "if no null Arraylist after getting prefrences :- " + imageArrayLists);
+                    Log.v(TAG, "PAth : -- " + imageArrayLists.get(0).path);
+
+                    Username = editText_name.getText().toString();
+                    Status = editstatus.getText().toString();
+
+                    AppPreferences.setFirstUsername(EditProfile_Activity.this, Username);
+                    Bitmap myBitmap = BitmapFactory.decodeFile(String.valueOf(imageArrayLists.get(0).path));
+                    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                    myBitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
+                    byte[] byteArray = byteArrayOutputStream.toByteArray();
+                    Encoded_userimage = Base64.encodeToString(byteArray, Base64.DEFAULT);
+
+                    if (Function.isConnectingToInternet(EditProfile_Activity.this)) {
+                        new UpdateprofileAsynch().execute();
+                    } else {
+                        Toast.makeText(getApplicationContext(), "Internet not Connected !", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }
+
+        }
+    }
+
+    private void setAdapter(ArrayList<Image> imageArrayList) {
+
+        recyclerView.setVisibility(View.VISIBLE);
+        horizontalAdapter = new HorizontalAdapter(this, imageArrayList);
+        LinearLayoutManager horizontalLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
+        recyclerView.setLayoutManager(horizontalLayoutManager);
+        recyclerView.setAdapter(horizontalAdapter);
+    }
+
+
+    // ------------------------------   ADAPTER FOR IMAGE AND SCROLLVIEW  --------------------------------------
+
     private class UpdateprofileAsynch extends AsyncTask<Void, Void, String> {
         private AlertDialog mProgressDialog;
         private JSONObject jsonObj;
@@ -605,9 +820,9 @@ public class EditProfile_Activity extends AnimRootActivity {
                 jsonObj.put("userImage", Encoded_userimage);
                 jsonObj.put("userProfileStatus", Status);
                 jsonObj.put("username", Username);
+                Log.v(TAG, "JSoN.put username :--- " + Username);
                 jsonObj.put("userId", AppPreferences.getLoginId(EditProfile_Activity.this));
                 jsonObj.put("dateTime", currentDateTimeString);
-
 
                 JSONArray jsonArray = new JSONArray();
                 jsonArray.put(jsonObj);
@@ -650,12 +865,14 @@ public class EditProfile_Activity extends AnimRootActivity {
                     status = jsonObj.getString("status");
                     System.out.println("jsonstring------" + jsonString);
                     if (jsonObj.getString("status").equalsIgnoreCase("200")) {
+
                         JSONArray resultArray = jsonObj.getJSONArray("result");
                         for (int i = 0; i < resultArray.length(); i++) {
                             JSONObject jsonObject2 = resultArray.getJSONObject(i);
                             //AppPreferences.setLoginId(EditProfile_Activity.this, Integer.parseInt(jsonObject2.getString("userId")));
                             //AppPreferences.setMobileuser(EditProfile_Activity.this, jsonObject2.getString("mobile"));
                             AppPreferences.setFirstUsername(EditProfile_Activity.this, jsonObject2.getString("username"));
+                            Log.v(TAG, "Json se username :-- " + jsonObject2.getString("username"));
                             AppPreferences.setUserprofile(EditProfile_Activity.this, jsonObject2.getString("userImage"));
                             //AppPreferences.setEmail(EditProfile_Activity.this, jsonObject2.getString("email"));
                             //AppPreferences.setCountrycode(EditProfile_Activity.this, jsonObject2.getString("countrycode"));
@@ -696,7 +913,8 @@ public class EditProfile_Activity extends AnimRootActivity {
         @Override
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
-            mProgressDialog.dismiss();
+            if (mProgressDialog != null)
+                mProgressDialog.dismiss();
             Log.d(TAG, "status :- " + status + "");
 
             if (!status.equalsIgnoreCase(null) || !status.equalsIgnoreCase("null") || !status.equalsIgnoreCase("")) {
@@ -704,15 +922,21 @@ public class EditProfile_Activity extends AnimRootActivity {
                 if (status.equalsIgnoreCase("200")) {
                     Snackbar.make(findViewById(android.R.id.content), "Profile updated successfully.", Snackbar.LENGTH_LONG).setAction("Action", null).show();
                     senduseriD();
-                    Intent intent = new Intent(EditProfile_Activity.this, Setting_Activity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    startActivity(intent);
+                    //Intent intent = new Intent(EditProfile_Activity.this, EditProfile_Activity.class);
+                    //intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    //intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    //startActivity(intent);
+                    Picasso.with(getApplicationContext())
+                            .load(AppPreferences.getUserprofile(EditProfile_Activity.this))
+                            .placeholder(R.drawable.profile_default)
+                            .centerCrop()
+                            .error(R.drawable.profile_default)
+                            .resize(200, 200)
+                            .into(prof_pic);
                 } else {
 
                     Snackbar.make(findViewById(android.R.id.content), "Check network connection", Snackbar.LENGTH_LONG)
                             .setAction("Action", null).show();
-
                 }
 
             } else {
@@ -720,6 +944,127 @@ public class EditProfile_Activity extends AnimRootActivity {
                 Snackbar.make(findViewById(android.R.id.content), "Server not responding.", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
 
+            }
+        }
+    }
+
+    public class HorizontalAdapter extends RecyclerView.Adapter<HorizontalAdapter.MyViewHolder> {
+
+        ArrayList<Image> horizontalList;
+        Context context;
+
+        public HorizontalAdapter(Context context, ArrayList<Image> horizontalList) {
+            this.context = context;
+            this.horizontalList = horizontalList;
+        }
+
+        @Override
+        public HorizontalAdapter.MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.pager_gallery_item, parent, false);
+
+            return new HorizontalAdapter.MyViewHolder(itemView);
+        }
+
+        @Override
+        public void onBindViewHolder(final HorizontalAdapter.MyViewHolder holder, final int position) {
+
+            File imgFile = new File(horizontalList.get(position).path);
+
+            if (imgFile.exists()) {
+                Bitmap myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+                Bitmap mBitmap = ThumbnailUtils.extractThumbnail(myBitmap, 64, 64);
+                ;
+                holder.imageView.setImageBitmap(mBitmap);
+            } else {
+                Log.v(TAG, "selected File not exists");
+                Toast.makeText(context, "File Not Exists", Toast.LENGTH_SHORT).show();
+            }
+            //holder.imageView.setImageResource(horizontalList.get(position).path);
+            int pos = AppPreferences.getprofileImagePos(EditProfile_Activity.this);
+
+            /*horizontalList.get(pos).isSelected = true;
+
+            if (horizontalList.get(position).isSelected) {
+                holder.view.setAlpha(0.5f);
+                ((FrameLayout) holder.view).setForeground(context.getResources().getDrawable(R.drawable.ic_done_green));
+
+            } else {
+                holder.view.setAlpha(0.0f);
+                ((FrameLayout) holder.view).setForeground(null);
+            }*/
+
+
+            holder.imageView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    circular_progress_bar.setVisibility(View.VISIBLE);
+                    final ObjectAnimator objanim = ObjectAnimator.ofInt(circular_progress_bar, "progress", 0, 100);
+                    objanim.setDuration(15000);
+                    objanim.setInterpolator(new DecelerateInterpolator());
+                    objanim.start();
+
+                    currentPosition = position;
+                    imageListSize = horizontalList.size();
+                    String list = horizontalList.get(position).path;
+
+
+                    Log.v(TAG, "Getting profile position :- " + AppPreferences.getprofileImagePos(EditProfile_Activity.this));
+                    Log.v(TAG, "Getting profile size :- " + AppPreferences.getprofileImageSize(EditProfile_Activity.this));
+
+                    mImageFile = new File(horizontalList.get(position).path);
+
+                    Picasso.with(context)
+                            .load(mImageFile)
+                            .into(prof_pic, new Callback() {
+                                @Override
+                                public void onSuccess() {
+//                                    prof_pic.setImageBitmap(myBitmap);
+                                    objanim.cancel();
+
+                                }
+
+                                @Override
+                                public void onError() {
+                                    objanim.end();
+                                    circular_progress_bar.setVisibility(View.GONE);
+                                }
+                            });
+
+
+                   /* Glide.with(context)
+                            .load(list)
+                            .asBitmap()
+                            .into(new SimpleTarget<Bitmap>() {
+                                @Override
+                                public void onResourceReady(Bitmap bitmap, GlideAnimation anim) {
+//                                    objanim.cancel();
+                                    objanim.end();
+
+                                    //imageViewCircle.setImage(ImageSource.bitmap(bitmap));
+                                    //RoundedBitmapDrawable drawable = RoundedBitmapDrawableFactory.create(context.getResources(),
+                                    //      Bitmap.createScaledBitmap(bitmap, 50, 50, false));
+                                    prof_pic.setImageBitmap(bitmap);
+                                }
+                            });*/
+                }
+            });
+        }
+
+        @Override
+        public int getItemCount() {
+            return horizontalList != null ? horizontalList.size() : 0;
+        }
+
+        public class MyViewHolder extends RecyclerView.ViewHolder {
+
+            View view;
+            ImageView imageView;
+
+            public MyViewHolder(View view) {
+                super(view);
+                this.view = view;
+                imageView = (ImageView) view.findViewById(R.id.image_view);
             }
         }
     }

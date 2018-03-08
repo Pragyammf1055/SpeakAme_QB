@@ -71,12 +71,10 @@ import com.quickblox.chat.listeners.QBChatDialogTypingListener;
 import com.quickblox.chat.listeners.QBMessageStatusListener;
 import com.quickblox.chat.listeners.QBRosterListener;
 import com.quickblox.chat.listeners.QBSubscriptionListener;
-import com.quickblox.chat.listeners.QBSystemMessageListener;
 import com.quickblox.chat.model.QBChatDialog;
 import com.quickblox.chat.model.QBChatMessage;
 import com.quickblox.chat.model.QBDialogType;
 import com.quickblox.chat.model.QBPresence;
-import com.quickblox.chat.utils.DialogUtils;
 import com.quickblox.content.model.QBFile;
 import com.quickblox.core.QBEntityCallback;
 import com.quickblox.core.exception.BaseServiceException;
@@ -97,7 +95,6 @@ import com.speakameqb.Classes.AnimRootActivity;
 import com.speakameqb.Database.DatabaseHelper;
 import com.speakameqb.QuickBlox.ChatHelper;
 import com.speakameqb.QuickBlox.DialogsManager;
-import com.speakameqb.QuickBlox.QbChatDialogMessageListenerImp;
 import com.speakameqb.QuickBlox.QbDialogHolder;
 import com.speakameqb.QuickBlox.QbDialogUtils;
 import com.speakameqb.QuickBlox.QbEntityCallbackImpl;
@@ -161,7 +158,6 @@ public class TwoTab_Activity extends AnimRootActivity implements VolleyCallback,
     private static final int REQUEST_DIALOG_ID_FOR_UPDATE = 165;
     private static final int REQUEST_READ_PHONE_STATE = 100;
     public static BroadcastnewgroupAdapter adapter;
-    public static TwoTab_Activity instance = null;
     public static CallBackUi callBackUi;
     public static QBChatService chatService;
     public static QBRoster сhatRoster;
@@ -170,10 +166,11 @@ public class TwoTab_Activity extends AnimRootActivity implements VolleyCallback,
     public static TextView messageCountTextView, messageCountTextView_group;
     public static TextView toolbartext;
     public static QBSystemMessagesManager systemMessagesManager;
-    public static SystemMessagesListener systemMessagesListener;
+    public static TwoTab_Activity instance = null;
     static ListView chatlist;
     static List<ChatMessage> chatMessageList;
 
+    //cvxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
     static {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
             AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
@@ -298,26 +295,6 @@ public class TwoTab_Activity extends AnimRootActivity implements VolleyCallback,
 
     }
 
-    public static void initChatService() {
-
-        chatService = QBChatService.getInstance();
-
-        QBChatService.setDebugEnabled(true); // enable chat logging
-        QBChatService.setDefaultPacketReplyTimeout(10000);
-
-        QBChatService.getInstance().setUseStreamManagement(true);
-
-        QBChatService.ConfigurationBuilder builder = new QBChatService.ConfigurationBuilder();
-        builder.setAutojoinEnabled(true);
-        builder.setSocketTimeout(60); //Sets chat socket's read timeout in seconds
-        builder.setKeepAlive(true); //Sets connection socket's keepAlive option.
-        builder.setUseTls(true);
-        QBChatService.setConfigurationBuilder(builder);
-//        chatService.setUseStreamManagement(true);
-//        chatService.startAutoSendPresence(10);
-
-    }
-
     public static QBChatMessage buildSystemMessageAboutCreatingGroupDialog(QBChatDialog dialog) {
 
         QBChatMessage qbChatMessage = new QBChatMessage();
@@ -363,7 +340,6 @@ public class TwoTab_Activity extends AnimRootActivity implements VolleyCallback,
 //        initChatService();
 //        chatLogin();
 
-
         /* 24 jan 2018 Code Added for image sharing from gallery to my application froom Ravi's method */
 
         getIntentfromGallery();
@@ -373,11 +349,11 @@ public class TwoTab_Activity extends AnimRootActivity implements VolleyCallback,
         instance = this;
         checkMarshmallowPermission();
         gson = new Gson();
-
         //  }
         initViews();
 
 //        initChatService();
+//        loginUserToQuickBlox(AppPreferences.getQB_LoginId(TwoTab_Activity.this), "12345678");
 //        chatLogin();
         setListener();
 
@@ -403,9 +379,6 @@ public class TwoTab_Activity extends AnimRootActivity implements VolleyCallback,
 
         Log.v(TAG, "Mobile no :- " + AppPreferences.getMobileuser(TwoTab_Activity.this));
 
-        allDialogsMessagesListener = new AllDialogsMessageListener();
-        systemMessagesListener = new SystemMessagesListener();
-
 //        Log.v(TAG, "user is logged in Quick BloX or not :- " + chatService.isLoggedIn());
 
 //        initRosterListener();
@@ -426,7 +399,7 @@ public class TwoTab_Activity extends AnimRootActivity implements VolleyCallback,
 
         Log.d(TAG, " AppController.privateMessageCountravi  " + AppController.privateMessageCount);
 
-//        getting_UserImage();
+//        getting_UserImage();\
 
     }
 
@@ -802,8 +775,9 @@ public class TwoTab_Activity extends AnimRootActivity implements VolleyCallback,
 
                                 downLoadFile(message);
                             }*/
-                            ChatActivity.mRecyclerView.scrollToPosition(chatAdapter.getItemCount() - 1);
+//                            ChatActivity.mRecyclerView.scrollToPosition(chatAdapter.getItemCount() - 1);
                             // ChatActivity.mLayoutManager.scrollToPosition(ChatActivity.chatlist.size());
+
                             MediaPlayer mp = MediaPlayer.create(TwoTab_Activity.this, R.raw.steamchat);
                             if (AppPreferences.getConvertTone(TwoTab_Activity.this).equalsIgnoreCase("false")) {
                                 mp.stop();
@@ -1143,7 +1117,6 @@ public class TwoTab_Activity extends AnimRootActivity implements VolleyCallback,
 
                 user.setId(qbSession.getUserId());
                 chatLogin();
-                registerQbChatListeners();
                 messageStatusesManager = QBChatService.getInstance().getMessageStatusesManager();
                 initRoster(QBChatService.getInstance());
 
@@ -1188,7 +1161,6 @@ public class TwoTab_Activity extends AnimRootActivity implements VolleyCallback,
             public void onSuccess(Object o, Bundle bundle) {
                 Log.v(TAG, "Login to chat service done ");
 
-                registerQbChatListeners();
                 incomingMessage();
 //                getting_UserImage();
                 messageStatusesManager = QBChatService.getInstance().getMessageStatusesManager();
@@ -1250,42 +1222,6 @@ public class TwoTab_Activity extends AnimRootActivity implements VolleyCallback,
 //            Toast.makeText(getApplicationContext(), "User " + qbUserId + " is offline", Toast.LENGTH_SHORT).show();
         }
 
-    }
-
-    public void registerQbChatListeners() {
-
-        Log.v(TAG, "Inside registerQbChatListeners");
-        dialogsManager = new DialogsManager();
-        incomingMessagesManager = chatService.getIncomingMessagesManager();
-        systemMessagesManager = chatService.getSystemMessagesManager();
-
-        if (incomingMessagesManager != null) {
-            incomingMessagesManager.addDialogMessageListener(allDialogsMessagesListener != null
-                    ? allDialogsMessagesListener : new AllDialogsMessageListener());
-        }
-
-        if (systemMessagesManager != null) {
-
-            Log.v(TAG, "Inside systemMessagesManager ");
-//            systemMessagesManager.addSystemMessageListener(systemMessagesListener != null
-//                    ? systemMessagesListener : new SystemMessagesListener());
-            systemMessagesManager.addSystemMessageListener(systemMessagesListener = new SystemMessagesListener());
-        }
-
-        dialogsManager.addManagingDialogsCallbackListener(this);
-    }
-
-    private void unregisterQbChatListeners() {
-
-        if (incomingMessagesManager != null) {
-            incomingMessagesManager.removeDialogMessageListrener(allDialogsMessagesListener);
-        }
-
-        if (systemMessagesManager != null) {
-            systemMessagesManager.removeSystemMessageListener(systemMessagesListener);
-        }
-
-        dialogsManager.removeManagingDialogsCallbackListener(this);
     }
 
     public void loginUserToQuickBlox(String mobile_no, String pwd) {
@@ -1783,7 +1719,6 @@ public class TwoTab_Activity extends AnimRootActivity implements VolleyCallback,
         if (resultCode == RESULT_OK) {
 
             if (requestCode == REQUEST_SELECT_PEOPLE) {
-
                 int qb_id1 = data.getExtras().getInt("recipient_qb_id");
                 int qb_id = data.getIntExtra("recipient_qb_id", 0);
                 Log.v(TAG, "Recipient User id :- " + qb_id1);
@@ -1798,9 +1733,6 @@ public class TwoTab_Activity extends AnimRootActivity implements VolleyCallback,
                 Log.v(TAG, "get Parcable data 1 :- " + allBeans1);
 
                 /*getUserIdByIds(qb_id, allBeans);*/
-
-                createDialogQuickBlox(qb_id, allBeans);
-                registerQbChatListeners();
 
                 /*
 
@@ -1958,131 +1890,12 @@ public class TwoTab_Activity extends AnimRootActivity implements VolleyCallback,
 
     }
 
-    private void createDialogQuickBlox(int qb_id, final AllBeans allBeans) {
-
-        Log.v(TAG, "All beans data 1 :- " + allBeans.getFriendname());
-        Log.v(TAG, "All beans data 2 :- " + allBeans.getFriendmobile());
-        Log.v(TAG, "All beans data 3 :- " + allBeans.getFriendStatus());
-
-        Log.v(TAG, "Message sent :- " + qb_id);
-        List<Integer> occupants_id = new ArrayList<>();
-        occupants_id.add(qb_id);
-
-        QBChatDialog privateDialog = DialogUtils.buildPrivateDialog(qb_id);
-        privateDialog.setOccupantsIds(occupants_id);
-        Log.v(TAG, "privateDialog 1:-  " + privateDialog);
-
-        QBRestChatService.createChatDialog(privateDialog).performAsync(new QBEntityCallback<QBChatDialog>() {
-            @Override
-            public void onSuccess(QBChatDialog result, Bundle params) {
-
-                Log.v(TAG, "deserialized dialog 1 = " + result);
-//                qbChatDialog = (QBChatDialog) result;
-//                Log.v(TAG, "deserialized dialog 2 = " + qbChatDialog);
-//                qbChatDialog.initForChat(QBChatService.getInstance());
-                qbChatDialog = result;
-
-                byte[] data = SerializationUtils.serialize(qbChatDialog);
-                Log.v(TAG, "QB Serialize dialog to data :- " + data);
-                QBChatDialog yourObject = SerializationUtils.deserialize(data);
-                Log.v(TAG, "QB Serialize data to dialog :- " + yourObject);
-
-                Log.v(TAG, "User is logged in or not :- " + chatService.isLoggedIn());
-                chatService.isLoggedIn();
-
-                if (chatService.isLoggedIn()) {
-
-                } else {
-                    createSession(AppPreferences.getMobileuser(TwoTab_Activity.this), "12345678");
-                }
-//                createSession(AppPreferences.getMobileuser(TwoTab_Activity.this), "12345678");
-
-                if (Function.isConnectingToInternet(TwoTab_Activity.this)) {
-                    sendSystemMessageAboutCreatingDialog(systemMessagesManager, result);
-                } else {
-                    Toast.makeText(getApplicationContext(), "Check internet connection.", Toast.LENGTH_SHORT).show();
-                }
-
-                /*
-                String qbDialogString = qbChatDialog.toString();
-                Class c = object.getClass();
-                String cn = c.toString();*/
-/*
-
-                QBChatDialog qbChat = qbChatDialog;
-                Class QBChatDialog = qbChat.getClass();
-                String cn = QBChatDialog.toString();
-
-                Class abc  = Class.forName(cn);
-*/
-
-/*
-                Gson gson = new Gson();
-                String jsonString = gson.toJson(qbChatDialog);
-                String jsonString123 = qbChatDialog.toString();
-
-                Log.v(TAG, "Json Conversion String from QbChatDialog pragya 1 :- " + jsonString);
-                Gson gson1 = new Gson();
-                QBChatDialog qbObject = gson1.fromJson(jsonString123 , QBChatDialog.class);
-*/
-
-
-                Bundle bundle = new Bundle();
-                bundle.putSerializable("EXTRA_CHAT_MESSAGE", mQbChatMessage);
-
-                Intent intent = new Intent(TwoTab_Activity.this, ChatActivity.class);
-                intent.setAction("");
-                intent.putExtra("value", allBeans);
-                intent.putExtra("groupName", "");
-                intent.putExtra(ChatActivity.EXTRA_DIALOG_ID, result);
-                startActivityForResult(intent, REQUEST_DIALOG_ID_FOR_UPDATE);
-//                intent.putExtras(bundle);
-//                startActivity(intent);
-            }
-
-            @Override
-            public void onError(QBResponseException responseException) {
-
-                Log.v(TAG, "Error Occures sendChatMessage()");
-                Log.v(TAG, "send ChatMessage Error :- " + responseException.getMessage());
-
-            }
-        });
-    }
-
-    //Let's notify occupants
-    public void sendSystemMessageAboutCreatingDialog(QBSystemMessagesManager systemMessagesManager, QBChatDialog dialog) {
-
-        registerQbChatListeners();
-        QBChatMessage systemMessageCreatingDialog = buildSystemMessageAboutCreatingGroupDialog(dialog);
-
-        Log.v(TAG, "Two tab Activity  self id:- " + AppPreferences.getQBUserId(TwoTab_Activity.this));
-        Log.v(TAG, "Two tab Activity  freind id 1 :- " + dialog.getOccupants());
-        Log.v(TAG, "Two tab Activity  freind id 2 :- " + dialog.getRecipientId());
-
-        for (Integer recipientId : dialog.getOccupants()) {
-
-            Log.v(TAG, "Two tab Activity  friend id inside loop:- " + recipientId);
-            try {
-                if (!recipientId.equals(AppPreferences.getQBUserId(TwoTab_Activity.this))) {
-
-                    systemMessageCreatingDialog.setRecipientId(recipientId);
-                    systemMessagesManager.sendSystemMessage(systemMessageCreatingDialog);
-
-                }
-            } catch (SmackException.NotConnectedException e) {
-                e.printStackTrace();
-                Log.e(TAG, "Two tab Activity Error :- " + e.getMessage());
-            }
-        }
-    }
-
     @Override
     protected void onPostResume() {
         super.onPostResume();
 
 //        Toast.makeText(getApplicationContext(), "On Post resume method called", Toast.LENGTH_SHORT).show();
-        Log.v(TAG, "On Post resume method called" + chatService.isLoggedIn());
+//        Log.v(TAG, "On Post resume method called" + chatService.isLoggedIn());
 //        chatLogout();
     }
 
@@ -2094,10 +1907,11 @@ public class TwoTab_Activity extends AnimRootActivity implements VolleyCallback,
         Log.v(TAG, "User is loggin to chat or not :- " + QBChatService.getInstance().isLoggedIn());
         Log.v(TAG, "User is loggin to chat or not :- " + chatService.isLoggedIn());
 
+        AppPreferences.setAppTerminated(TwoTab_Activity.this, true);
 //        unregisterQbChatListeners();
         if (QBChatService.getInstance().isLoggedIn()) {
             Log.v(TAG, "on destroy called :- TwoTab ");
-//                      chatLogout(chatService);
+            chatLogout(chatService);
         }
     }
 
@@ -2161,7 +1975,6 @@ public class TwoTab_Activity extends AnimRootActivity implements VolleyCallback,
         toolbartext.setText("SpeakAme");
         Typeface tf1 = Typeface.createFromAsset(getAssets(), "Raleway-Regular.ttf");
         toolbartext.setTypeface(tf1);
-
     }
 
     private void initViews() {
@@ -2822,85 +2635,6 @@ xxxxxxxxxxxx*/
         };
     }
 
-    private void onGroupMessageReceived(ChatMessage chatMessage, String dialog_id) {
-
-        Log.v(TAG, "10kfjjjjjjjjjjnmsdbvvbfsbvbvkvb :-" + chatMessage);//body='9754051431 added you '
-//body='9511204189 added in group by 9754051431'
-        String msg = chatMessage.body;
-        String[] number = msg.split(" ");
-        String stringFinal = "";
-        for (int i = 0; i < number.length; i++) {
-            Log.d(TAG, " ArrayStringBody : -- " + number[i] + " : : " + i);
-
-            if (i > 0) {
-                stringFinal += number[i] + " ";
-                if (i == 5) {
-                    String userNameAdmin = getContactName(number[5]);
-                    stringFinal += userNameAdmin;
-                }
-            }
-
-        }
-        Log.d(TAG, " getNumberFromsplet 1200: -- " + number[1] + " : " + stringFinal);
-
-        if (number[0].trim().equalsIgnoreCase("Hi")) {
-            Log.d(TAG, " getNumberFromsplet 11: -- " + number[0]);
-            Log.d(TAG, " getNumberFromsplet 12: -- " + number[1]);
-            Log.d(TAG, " chatMessageBodySplite 11: == " + chatMessage.body);
-
-        } else {
-            Log.d(TAG, " getNumberFromsplet 22: -- " + number[0]);
-            Log.d(TAG, " getNumberFromsplet 23: -- " + number[1]);
-            String userName = getContactName(number[0]);
-            chatMessage.body = userName + " " + stringFinal;
-            Log.d(TAG, " chatMessageBodySplite 22: == " + chatMessage.body + " :: " + stringFinal);
-        }
-
-        chatMessage.isOtherMsg = 1;
-        chatMessage.dialog_id = dialog_id;
-
-        Log.v(TAG, "QB Serialize Group dialog to data " + chatMessage.qbChatDialogBytes);
-        Log.d(TAG, " chatMessageBodySplite 44: == " + chatMessage);
-
-        getQBChatDialogByDialogID(dialog_id, chatMessage);
-
-    }
-
-    private void getQBChatDialogByDialogID(final String dialog_id, final ChatMessage chatMessage) {
-
-        String abc = "+91 9074900690";
-
-        Log.v(TAG, "abc 123 :- " + abc.contains("9074900690"));
-
-        Log.v(TAG, " inside creating dialog when receiving group creation dialog :- " + dialog_id);
-
-        QBRestChatService.getChatDialogById(dialog_id).performAsync(new QBEntityCallback<QBChatDialog>() {
-
-            @Override
-            public void onSuccess(final QBChatDialog res, Bundle bundle) {
-
-                Log.v(TAG, "SQLITE QB group Chat dialog :- " + res);
-                byte[] ser_QBByteData = SerializationUtils.serialize(res);
-
-                Log.v(TAG, "Updating dialog into bytes :- " + ser_QBByteData);
-//dsvvvvvvvvvvvvvvvvvvvvvvdssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss
-//                DatabaseHelper.getInstance(TwoTab_Activity.this).UpdateQBChatDialog(dialog_id, ser_QBByteData);
-
-                chatMessage.qbChatDialogBytes = ser_QBByteData;
-                DatabaseHelper.getInstance(TwoTab_Activity.this).insertQbIdQbChatPrivateDialoge(0, dialog_id, chatMessage.qbChatDialogBytes, "Group");
-                qbService.createGroupWindows(chatMessage, TwoTab_Activity.this, " Two Tab while receiving created GROUP notification ...");
-
-            }
-
-            @Override
-            public void onError(QBResponseException e) {
-
-                Log.v(TAG, "Error in getting QBChatDialog from dialod id " + e.getMessage());
-
-            }
-        });
-
-    }
 
     private void initRoster(QBChatService chatService) {
 
@@ -3071,9 +2805,9 @@ xxxxxxxxxxxx*/
 
         Log.v(TAG, "Internet connection :- " + isConnected);
         if (isConnected) {
-            Toast.makeText(getApplicationContext(), "Connected to internet two tab", Toast.LENGTH_LONG).show();
+//            Toast.makeText(getApplicationContext(), "Connected to internet two tab", Toast.LENGTH_LONG).show();
         } else {
-            Toast.makeText(getApplicationContext(), "not Connected to internet two tab", Toast.LENGTH_LONG).show();
+//            Toast.makeText(getApplicationContext(), "not Connected to internet two tab", Toast.LENGTH_LONG).show();
         }
     }
 
@@ -3218,91 +2952,6 @@ xxxxxxxxxxxx*/
         public void getItemOffsets(Rect outRect, View view, RecyclerView parent,
                                    RecyclerView.State state) {
             outRect.bottom = mVerticalSpaceHeight;
-        }
-    }
-
-    private class SystemMessagesListener implements QBSystemMessageListener {
-        @Override
-        public void processMessage(final QBChatMessage qbChatMessage) {
-
-            gson = new Gson();
-
-            Log.v(TAG, "Inside systemMessagesManager 1");
-            Log.v(TAG, "Inside systemMessagesManager 1 newww " + qbChatMessage);
-            Log.v(TAG, "Inside message incoming listener 1");
-
-            Log.v(TAG, "Message body Receive 1:- " + qbChatMessage.getBody());
-            Log.v(TAG, "2. :-" + qbChatMessage.getDialogId());
-            Log.v(TAG, "3. :-" + qbChatMessage.getRecipientId());
-            Log.v(TAG, "4. :-" + qbChatMessage.getSenderId());
-            Log.v(TAG, "5. :-" + qbChatMessage.getSmackMessage());
-            Log.v(TAG, "6. :-" + qbChatMessage.getProperties());
-
-            String dialog_type = qbChatMessage.getProperties().get("dialog_type");
-
-            Log.v(TAG, "7. :-" + dialog_type);
-
-//          if (dialog_type))
-            /*
-            *  PRIVATE ---- 3
-            *  GROUP   ---- 2
-            * */
-
-            if (dialog_type.equalsIgnoreCase("2")) { // if dialog type not == PRIVATE
-
-                final ChatMessage chatMessage = gson.fromJson(qbChatMessage.getProperties().get("custom_body"), ChatMessage.class);
-
-                Log.v(TAG, "8. :-" + chatMessage);
-
-                TimeZone timezone = TimeZone.getDefault();
-                TimeZone timeZomeSender = TimeZone.getTimeZone(chatMessage.timeZone);
-                SimpleDateFormat dateFormat_sender = new SimpleDateFormat("yyyy-MM-dd hh:mm aa");
-                dateFormat_sender.setTimeZone(timeZomeSender);
-                Calendar cal_sender = Calendar.getInstance(TimeZone.getTimeZone(chatMessage.timeZone));
-                cal_sender.setTimeInMillis(chatMessage.dateInLong);
-                Date date_sender = cal_sender.getTime();
-
-                Log.v(TAG, "TimeZONE Sender :- " + dateFormat_sender.format(date_sender));
-                Log.v(TAG, "Time 2 :- " + date_sender.getTime());
-
-                Calendar calander_receiver = Calendar.getInstance(timezone);
-                SimpleDateFormat sdf_receiver = new SimpleDateFormat("yyyy-MM-dd hh:mm a");
-                sdf_receiver.setTimeZone(timezone);
-                Date date_receiver = calander_receiver.getTime();
-                Log.v(TAG, "TimeZONE Receiver current:- " + sdf_receiver.format(date_receiver));
-
-                calander_receiver.setTimeInMillis(chatMessage.dateInLong);
-
-                Date date_receiver_send = calander_receiver.getTime();
-                Log.v(TAG, "TimeZONE Receiver sender :- " + sdf_receiver.format(date_receiver_send));
-
-                String current_time = sdf_receiver.format(date_receiver_send);
-                String time[] = current_time.toString().split(" ");
-                String send_time = time[1];
-
-                chatMessage.Date = time[0];
-                chatMessage.Time = send_time + " " + time[2];
-                onGroupMessageReceived(chatMessage, qbChatMessage.getDialogId());
-
-                Log.v(TAG, "9. :-" + chatMessage);
-
-            }
-            dialogsManager.onSystemMessageReceived(qbChatMessage);
-        }
-
-        @Override
-        public void processError(QBChatException e, QBChatMessage qbChatMessage) {
-
-            Log.e(TAG, "Error in getting system group message :-" + e.getMessage());
-        }
-    }
-
-    private class AllDialogsMessageListener extends QbChatDialogMessageListenerImp {
-        @Override
-        public void processMessage(final String dialogId, final QBChatMessage qbChatMessage, Integer senderId) {
-            if (!senderId.equals(ChatHelper.getCurrentUser().getId())) {
-                dialogsManager.onGlobalMessageReceived(dialogId, qbChatMessage);
-            }
         }
     }
 

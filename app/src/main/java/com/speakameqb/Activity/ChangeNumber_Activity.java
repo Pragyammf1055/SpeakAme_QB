@@ -17,6 +17,10 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.quickblox.core.QBEntityCallback;
+import com.quickblox.core.exception.QBResponseException;
+import com.quickblox.users.QBUsers;
+import com.quickblox.users.model.QBUser;
 import com.speakameqb.Classes.AnimRootActivity;
 import com.speakameqb.R;
 import com.speakameqb.utils.AppConstants;
@@ -35,7 +39,7 @@ public class ChangeNumber_Activity extends AnimRootActivity {
     private static final String TAG = "ChangeNumberAcivity";
     TextView toolbartext, txt1, txt2;
     EditText stdedit, numberedit, newstdedit, newnumedit;
-    String OldNumber, NewNumber;
+    String OldNumber, NewNumber, countrycode;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -124,6 +128,8 @@ public class ChangeNumber_Activity extends AnimRootActivity {
         if (id == R.id.done) {
             OldNumber = numberedit.getText().toString();
             NewNumber = newnumedit.getText().toString();
+            countrycode = newstdedit.getText().toString();
+
             dismissKeyboard(ChangeNumber_Activity.this);
 
             if (OldNumber.length() == 0) {
@@ -141,8 +147,6 @@ public class ChangeNumber_Activity extends AnimRootActivity {
 
             return true;
         }
-
-
         return super.onOptionsItemSelected(item);
     }
 
@@ -157,7 +161,6 @@ public class ChangeNumber_Activity extends AnimRootActivity {
         JSONObject jsonObject = new JSONObject();
         JSONArray jsonArray = new JSONArray();
         try {
-
             jsonObject.put("method", "changeNumber");
             jsonObject.put("current_number", OldNumber);
             jsonObject.put("new_number", NewNumber);
@@ -165,7 +168,7 @@ public class ChangeNumber_Activity extends AnimRootActivity {
             jsonObject.put("mobile_uniquekey", Function.getAndroidID(ChangeNumber_Activity.this));
 
             jsonArray.put(jsonObject);
-            System.out.println("send>json--" + jsonArray);
+            Log.v(TAG, "send json for chnage number :--" + jsonArray);
 
         } catch (JSONException e) {
             e.printStackTrace();
@@ -175,8 +178,7 @@ public class ChangeNumber_Activity extends AnimRootActivity {
             @Override
             public void backResponse(String response) {
 
-
-                Log.d("response>>>>>", response);
+                Log.v(TAG, "response for chnage number :-- " + response);
                 //  mProgressDialog.dismiss();
                 if (response != null) {
                     try {
@@ -189,14 +191,25 @@ public class ChangeNumber_Activity extends AnimRootActivity {
                                 JSONObject topObject = orderArray.getJSONObject(i);
 
                             }
-                            Toast.makeText(getApplicationContext(), "Otp send", Toast.LENGTH_LONG).show();
-                            senduserId();
+                            final String login = AppPreferences.getQB_LoginId(ChangeNumber_Activity.this);
+                            Log.v(TAG, "QB LoginID : =====  " + login);
+                            QBUsers.getUserByLogin(login).performAsync(new QBEntityCallback<QBUser>() {
+                                @Override
+                                public void onSuccess(QBUser qbUser, Bundle bundle) {
+                                    Log.v(TAG, " user found by QB User ID :=== " + login);
 
-                            Intent intent = new Intent(ChangeNumber_Activity.this, ConfirmChangeNumberActivity.class);
-                            intent.putExtra("newnumber", NewNumber);
-                            startActivity(intent);
-                            finish();
+                                    Intent intent = new Intent(ChangeNumber_Activity.this, ConfirmChangeNumberActivity.class);
+                                    intent.putExtra("newnumber", NewNumber);
+                                    intent.putExtra("countrycode", countrycode);
+                                    startActivity(intent);
+                                    finish();
+                                }
 
+                                @Override
+                                public void onError(QBResponseException e) {
+                                    Log.v(TAG, "onError getUserByLogin " + e.getMessage());
+                                }
+                            });
 
                         } else if (mainObject.getString("status").equalsIgnoreCase("400")) {
 
@@ -216,67 +229,10 @@ public class ChangeNumber_Activity extends AnimRootActivity {
         System.out.println("jsonObject" + jsonObject);
     }
 
-
-    private void senduserId() {
-
-        JSONObject jsonObject = new JSONObject();
-        JSONArray jsonArray = new JSONArray();
-        try {
-
-            jsonObject.put("method", "changeNumberOtp");
-            jsonObject.put("user_id", AppPreferences.getLoginId(ChangeNumber_Activity.this));
-            jsonObject.put("new_number", NewNumber);
-
-            jsonArray.put(jsonObject);
-            System.out.println("send>json--" + jsonArray);
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        JSONParser jsonParser = new JSONParser(ChangeNumber_Activity.this);
-        jsonParser.parseVollyJsonArray(AppConstants.DEMOCOMMONURL, 1, jsonArray, new VolleyCallback() {
-            @Override
-            public void backResponse(String response) {
-
-
-                Log.d("response>>>>>", response);
-                //  mProgressDialog.dismiss();
-                if (response != null) {
-                    try {
-                        JSONObject mainObject = new JSONObject(response);
-
-                        if (mainObject.getString("status").equalsIgnoreCase("200")) {
-                            JSONArray orderArray = mainObject.getJSONArray("result");
-
-                            for (int i = 0; orderArray.length() > i; i++) {
-                                JSONObject topObject = orderArray.getJSONObject(i);
-
-
-                            }
-
-
-                        } else if (mainObject.getString("status").equalsIgnoreCase("400")) {
-
-                        } else if (mainObject.getString("status").equalsIgnoreCase("100")) {
-                            Toast.makeText(getApplicationContext(), "Check network connection", Toast.LENGTH_LONG).show();
-                        }
-
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-            }
-        });
-        System.out.println("AppConstants.COMMONURL---------" + AppConstants.DEMOCOMMONURL);
-        System.out.println("jsonObject" + jsonObject);
-    }
-
     public void dismissKeyboard(Activity activity) {
         InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
         if (null != activity.getCurrentFocus())
             imm.hideSoftInputFromWindow(activity.getCurrentFocus()
                     .getApplicationWindowToken(), 0);
     }
-
 }
