@@ -247,6 +247,7 @@ Log.d(TAG, " handleSendImage fileName : -- " + fileName);
                     startActivity(intent);
                     finish();
                 } else {
+
                     initChatService();
                     loginUserToQuickBlox(AppPreferences.getQB_LoginId(Splash_Activity.this), "12345678");
                 }

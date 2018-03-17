@@ -299,6 +299,7 @@ public class EditProfile_Activity extends AnimRootActivity {
                     }
                 });
         menuSheetView.inflateMenu(R.menu.image_function);
+        menuSheetView.setColumnWidthDp(110);
         bottomSheetLayout.showWithSheetView(menuSheetView);
     }
 

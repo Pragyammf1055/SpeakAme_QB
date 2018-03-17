@@ -862,7 +862,6 @@ boolean isSave = getContactNameNew(contactList.get(i));
                         }
                         //  videoDialog(uri);
                     }
-
                     return false;
                 }
             });
@@ -978,6 +977,7 @@ boolean isSave = getContactNameNew(contactList.get(i));
                         Log.d(TAG, "Color.GRAY message Dhakad 33 null" + message.type + " :  " + Message.Type.chat.name());
 
                         vh1.layout.setBackgroundResource(R.drawable.balloon_outgoing_normal);
+//                        vh1.layout.setM
                         vh1.parent_layout.setGravity(Gravity.RIGHT);
                         vh1.msg.setTextColor(Color.BLACK);
                         vh1.originalmsg.setTextColor(Color.BLACK);

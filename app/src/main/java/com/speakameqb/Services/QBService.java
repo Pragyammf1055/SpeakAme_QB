@@ -66,7 +66,6 @@ import com.speakameqb.Adapter.BroadcastnewgroupAdapter;
 import com.speakameqb.AppController;
 import com.speakameqb.Beans.AllBeans;
 import com.speakameqb.Beans.Image;
-import com.speakameqb.Beans.User;
 import com.speakameqb.Database.DatabaseHelper;
 import com.speakameqb.QuickBlox.ChatHelper;
 import com.speakameqb.QuickBlox.DialogsManager;
@@ -103,7 +102,6 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -162,13 +160,13 @@ public class QBService extends Service implements DialogsManager.ManagingDialogs
         @Override
         protected void onHandleIntent(@Nullable Intent intent) {
 
-        }*/
+    }*/
+
     private QBSystemMessagesManager systemMessagesManager;
     private SystemMessagesListener systemMessagesListener;
     private QBChatDialogMessageListener allDialogsMessagesListener;
     private String ImageStringUrl = "";
     private String Encoded_userimage = "";
-
 
     public QBService() {
     }
@@ -203,18 +201,13 @@ public class QBService extends Service implements DialogsManager.ManagingDialogs
 
         Log.w(TAG, "~~~~~~~~~~~~~~~~~~~~~ ON CREATE ~~~~~~~~~~~~~~~~~~~~~ ");
         Count++;
-
         dialogsManager = new DialogsManager();
         Log.v(TAG, "Inside on create QB Service !!!!!!!! ------ " + Count + " ````````");
         /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Code started on 15 February 2018 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-
         initChatService();
         Log.w(TAG, "~~~~~~~~~~~~~~~~~~~~~ chatLogin() from On create () ~~~~~~~~~~~~~~~~~~~~~ ");
-
 //        chatLogin();
-
         /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Code started on 15 February 2018 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-
     }
 
     private void initListener() {
@@ -474,7 +467,6 @@ public class QBService extends Service implements DialogsManager.ManagingDialogs
     }
 
     private void processMessages(final ChatMessage chatMessage, String msgId, final String dialogId, final QBChatMessage qbChatMessage) {
-
 
         TimeZone timeZomeSender = TimeZone.getTimeZone(chatMessage.timeZone);
         SimpleDateFormat dateFormat_sender = new SimpleDateFormat("yyyy-MM-dd hh:mm aa");
@@ -937,9 +929,7 @@ xxxxxxxxxxxx*/
                     Log.v(TAG, "Chat Message for group message listener :-=  " + chatMessage);
 
                     processGroupMessage(chatMessage, qbChatMessage.getId(), qbChatMessage.getDialogId());
-
                 }
-
             }
 
             @Override
@@ -949,16 +939,7 @@ xxxxxxxxxxxx*/
         });
     }
 
-    private void initRoster(QBChatService chatService) {
-
-        сhatRoster = chatService.getRoster(QBRoster.SubscriptionMode.mutual, new QBSubscriptionListener() {
-            @Override
-            public void subscriptionRequested(int userId) {
-
-                Log.v(TAG, "inside initRoster subscriptionRequested :- " + userId);
-                confirmSubscription(userId);
-            }
-        });
+    private void initRoster(final QBChatService chatService) {
 
         сhatRoster.addRosterListener(new QBRosterListener() {
             @Override
@@ -979,101 +960,7 @@ xxxxxxxxxxxx*/
             @Override
             public void presenceChanged(QBPresence presence) {
 
-                Log.v(TAG, "presence :- QB presenceChanged :- " + presence);
 
-                Log.v(TAG, "QB presence status presence chages getType:- " + presence.getType());
-                Log.v(TAG, "QB presence status presence chages getUserId:- " + presence.getUserId());
-
-                String statusOnline = presence.getType().toString();
-
-                if (statusOnline.equalsIgnoreCase("online")) {
-
-                    Log.v(TAG, "QB status online :- " + statusOnline);
-
-                    User user = new User();
-                    user.setFriend_id(presence.getUserId());
-                    user.setStatus("Online");
-                    DatabaseHelper.getInstance(QBService.this).InsertStatus(user);
-//            lastSeen = DatabaseHelper.getInstance(QBService.this).getLastSeenQB(user.getFriend_id());
-                    Log.v(TAG, "QB status online from database 111111111 :- " + DatabaseHelper.getInstance(QBService.this).getLastSeenQB(user.getFriend_id()));
-//                    ChatActivity.status.setText(lastSeen);
-
-                } else if (statusOnline.equalsIgnoreCase("offline")) {
-
-                    Log.v(TAG, "QB status offline :- " + statusOnline);
-
-                    User user = new User();
-                    user.setFriend_id(presence.getUserId());
-
-                    Log.v(TAG, "QB status offile time 1:- " + Function.getCurrentDateTime());
-                    String currentTime = Function.getCurrentDateTime();
-                    String time = "";
-                    try {
-                        time = Function.formatToYesterdayOrToday(currentTime);
-                        Log.v(TAG, "QB status offile time 2 :- " + " last seen at " + time);
-                    } catch (ParseException e) {
-                        e.printStackTrace();
-                        Log.v(TAG, "QB Error status offile time :- " + e.getMessage());
-                    }
-                    user.setStatus("last seen at " + time);
-                    DatabaseHelper.getInstance(QBService.this).InsertStatus(user);
-
-                    Log.v(TAG, "QB status online from database 2222222222222222 :- " + DatabaseHelper.getInstance(QBService.this).getLastSeenQB(user.getFriend_id()));
-
-//            lastSeen = DatabaseHelper.getInstance(QBService.this).getLastSeenQB(user.getFriend_id());
-                }
-
-                // TODO  : get image when any other user changes profile picture
-                if (presence.getStatus() == null || presence.getStatus().equalsIgnoreCase("null")) {
-//DVSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS
-                    Log.v(TAG, "If conditon true for the presence in null " + presence.getStatus());
-
-                } else {
-                    Log.v(TAG, "Else conditon true for the presence in not null " + presence.getStatus());
-                    Log.v(TAG, "ELSE QB Chat Message systemMessageCreatingDialog tis is spp :- " + presence);
-
-                    /* {"chat_Type":"singleChat", "status":"Can't talk SpeakAme Only" ,"profile_name":"Ravi","profile_language":"",
-                    "profile_image":"http:\/\/fxpips.co.uk\/SpeakAme\/user\/images\/5a3a4b4712544.png", "sender_id":155}*/
-
-                    int QbUserID = presence.getUserId();
-
-                    try {
-                        JSONObject jsonObject = new JSONObject(presence.getStatus());
-                        String profile_image = jsonObject.getString("profile_image");
-                        String status = jsonObject.getString("status");
-                        String profile_name = jsonObject.getString("profile_name");
-                        String chat_Type = jsonObject.getString("chat_Type");
-
-                        Log.v(TAG, "PresenceSendService :- " + " profile image for friends" + profile_image);
-                        //   DatabaseHelper.getInstance(TwoTab_Activity.this).UpdateUserImage(presence.getStatus(), String.valueOf(QbUserID));
-                        //**************************************************************************************************//
-                        DatabaseHelper.getInstance(QBService.this).UpdateFriendPro(profile_image, status, String.valueOf(QbUserID));
-                        String userImage = DatabaseHelper.getUsetImage(QbUserID);
-
-                        if (!userImage.equalsIgnoreCase("")) {
-                            Log.d(TAG, " Friend Image get from DataBase : - " + userImage);
-                            adapter.notifyDataSetChanged();
-                            if (ChatActivity.instance != null) {
-                                Picasso.with(QBService.this).load(userImage).error(R.drawable.profile_default)
-                                        .resize(200, 200)
-                                        .into(conversationimage);
-                            }
-
-                        }
-                        //**************************************************************************************************//
-
-                        if (TwoTab_Activity.instance != null) {
-                            if (chat_Type.equalsIgnoreCase("singleChat"))
-                                TwoTab_Activity.updateList("");
-                            else if (chat_Type.equalsIgnoreCase("Group")) {
-                                TwoTab_Activity.updateList("Group");
-                            }
-                        }
-
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
 
             }
         });
@@ -1099,12 +986,14 @@ xxxxxxxxxxxx*/
                 QBSubscriptiondevice();
                 initListener();
 
-                incomingMessage();
+//                incomingMessage();
                 initPrivateChatMessageListener();
                 initGroupChatMessageListener();
 
                 initIsTypingListener();
                 initMessageSentListener();
+
+                initChatRoaster(chatService);
 
                 Log.v(TAG, "App terminated before :- " + AppPreferences.getAppTerminated(QBService.this));
                 changeProfilePicDynamically();
@@ -1119,8 +1008,14 @@ xxxxxxxxxxxx*/
         });
     }
 
-    private void initGroupChatMessageListener() {
+    private void initChatRoaster(QBChatService chatService) {
 
+        сhatRoster = chatService.getRoster(QBRoster.SubscriptionMode.mutual, QBService.this);
+        сhatRoster.addRosterListener(QBService.this);
+    }
+
+
+    private void initGroupChatMessageListener() {
 
         allDialogsMessagesListener = new AllDialogsMessageListener();
         systemMessagesListener = new SystemMessagesListener();
@@ -1278,12 +1173,13 @@ xxxxxxxxxxxx*/
         Log.v(TAG, "Inside registerQbChatListeners");
         dialogsManager = new DialogsManager();
         incomingMessagesManager = chatService.getIncomingMessagesManager();
+        incomingMessagesManager.addDialogMessageListener(this);
         systemMessagesManager = chatService.getSystemMessagesManager();
 
-        if (incomingMessagesManager != null) {
+       /* if (incomingMessagesManager != null) {
             incomingMessagesManager.addDialogMessageListener(allDialogsMessagesListener != null
                     ? allDialogsMessagesListener : new AllDialogsMessageListener());
-        }
+        }*/
 
         if (systemMessagesManager != null) {
 
@@ -1296,7 +1192,7 @@ xxxxxxxxxxxx*/
     }
 
     public void initChatMessageDatabase(Context context, String groupName, String groupId, String groupImagePicture, QBChatDialog groupChatDialog) {
-
+//        gson = new Gson();
         timezone = TimeZone.getDefault();
         List<Integer> occupantIdsList = groupChatDialog.getOccupants();
 
@@ -1748,42 +1644,6 @@ xxxxxxxxxxxx*/
 
         String statusOnline = presence.getType().toString();
 
-        if (statusOnline.equalsIgnoreCase("online")) {
-
-            Log.v(TAG, "QB status online :- " + statusOnline);
-
-            User user = new User();
-            user.setFriend_id(presence.getUserId());
-            user.setStatus("Online");
-            DatabaseHelper.getInstance(QBService.this).InsertStatus(user);
-//            lastSeen = DatabaseHelper.getInstance(QBService.this).getLastSeenQB(user.getFriend_id());
-            Log.v(TAG, "QB status online from database 111111111 :- " + DatabaseHelper.getInstance(QBService.this).getLastSeenQB(user.getFriend_id()));
-//                    ChatActivity.status.setText(lastSeen);
-
-        } else if (statusOnline.equalsIgnoreCase("offline")) {
-
-            Log.v(TAG, "QB status offline :- " + statusOnline);
-
-            User user = new User();
-            user.setFriend_id(presence.getUserId());
-
-            Log.v(TAG, "QB status offile time 1:- " + Function.getCurrentDateTime());
-            String currentTime = Function.getCurrentDateTime();
-            String time = "";
-            try {
-                time = Function.formatToYesterdayOrToday(currentTime);
-                Log.v(TAG, "QB status offile time 2 :- " + " last seen at " + time);
-            } catch (ParseException e) {
-                e.printStackTrace();
-                Log.v(TAG, "QB Error status offile time :- " + e.getMessage());
-            }
-            user.setStatus("last seen at " + time);
-            DatabaseHelper.getInstance(QBService.this).InsertStatus(user);
-
-            Log.v(TAG, "QB status online from database 2222222222222222 :- " + DatabaseHelper.getInstance(QBService.this).getLastSeenQB(user.getFriend_id()));
-
-//            lastSeen = DatabaseHelper.getInstance(QBService.this).getLastSeenQB(user.getFriend_id());
-        }
 
         // TODO  : get image when any other user changes profile picture
         if (presence.getStatus() == null || presence.getStatus().equalsIgnoreCase("null")) {
@@ -1840,7 +1700,139 @@ xxxxxxxxxxxx*/
     }
 
     @Override
-    public void processMessage(String s, QBChatMessage qbChatMessage, Integer integer) {
+    public void processMessage(String dialogId, final QBChatMessage qbChatMessage, Integer senderId) {
+
+        final HashMap<String, QBChatDialog> opponentsDialogMap = new HashMap<>();
+
+        getQBChatDialogByDialogID(dialogId, senderId /*, message, chatMessage.sender*/);
+
+        TimeZone timezone = TimeZone.getDefault();
+
+        String TimeZoneName = timezone.getDisplayName();
+
+        int TimeZoneOffset = timezone.getRawOffset() / (60 * 60 * 1000);
+
+        Log.v(TAG, "TimeZoneName :- " + TimeZoneName);
+        Log.v(TAG, "TimeZoneOffset :- " + TimeZoneOffset);
+
+        Log.v(TAG, "Inside incomming message listener");
+        Log.v(TAG, "Message body Receive :- " + qbChatMessage.getBody());
+        Log.v(TAG, "2 Dialog id :- " + qbChatMessage.getDialogId());
+        Log.v(TAG, "2-1 Message id :- " + qbChatMessage.getId());
+        Log.v(TAG, "3. :- " + qbChatMessage.getRecipientId());
+        Log.v(TAG, "4. :- " + qbChatMessage.getSenderId());
+        Log.v(TAG, "5. :- " + qbChatMessage.getSmackMessage());
+        Log.v(TAG, "6. :- " + qbChatMessage.getDateSent());
+
+        final String mDialogId = qbChatMessage.getDialogId();
+        final String mMessageId = qbChatMessage.getId();
+
+        final ChatMessage chatMessage = gson.fromJson(qbChatMessage.getProperties().get("custom_body"), ChatMessage.class);
+
+        Log.v(TAG, "Dialog in bytes from receiving message after conversation :- " + chatMessage.qbChatDialogBytes);
+        Log.v(TAG, "Getting Difference in timezone 1 (Date sent) :- " + chatMessage.dateInLong);
+        Log.v(TAG, "Getting timeZone in timezone :- " + chatMessage.timeZone);
+
+        if (chatMessage.groupName.equalsIgnoreCase("")) {
+
+            Log.v(TAG, "for private message listener");
+            mQbChatMessage = qbChatMessage;
+//                  asccccccccccccccccccccccccccccccccccccccc
+            Log.v(TAG, "mQbChatMessage is not null 1:- " + mQbChatMessage);
+
+            final String sender_lang = chatMessage.senderlanguages;
+            final String my_language = AppPreferences.getUSERLANGUAGE(QBService.this);
+//                    sdvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+            ListCountry country = new ListCountry();
+            String sorcountrycode = country.getCode(QBService.this, sender_lang.trim());
+            if (sorcountrycode.equalsIgnoreCase("")) {
+                sorcountrycode = "en";
+            }
+            String descountrycode = country.getCode(QBService.this, my_language.trim());
+            if (descountrycode.equalsIgnoreCase("")) {
+                descountrycode = "en";
+            }
+
+            if (sender_lang.equalsIgnoreCase("no translate")) {
+                new Handler(Looper.getMainLooper()).post(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        Log.d("Languagesss", "inside  no traslate !!!!!!");
+//                                    processMessages(chatMessage);
+//                        processMessages(chatMessage, qbChatMessage.getId(), qbChatMessage.getDialogId(), qbChatMessage);
+                    }
+                });
+
+            } else {
+                try {
+
+                    Log.d(TAG, "Inside  Traslate else !!!!!!");
+                    TextTranslater.getInstance().translate(QBService.this, sorcountrycode, descountrycode, chatMessage.body, new VolleyCallback() {
+                        @Override
+                        public void backResponse(String response) {
+                            if (!response.equalsIgnoreCase("") && AppPreferences.getTotf(QBService.this).equalsIgnoreCase("1")) {
+                                // if (!langu.equalsIgnoreCase(Mylangu)) {
+
+                                if (chatMessage.Contact.equalsIgnoreCase("")) {
+                                    chatMessage.body = (chatMessage.body + "~" + sender_lang + "~" + response);
+                                }
+
+                                Log.d(TAG, "TOTF MESSAGE Mesasage after translation 1:-  " + chatMessage.body);
+                                Log.d(TAG, "TOTF MESSAGE Inside TOTF enabled.. ");
+                                //}
+                            } else if (!response.equalsIgnoreCase("") && AppPreferences.getTotf(QBService.this).equalsIgnoreCase("0")) {
+
+                                Log.d(TAG, "TOTF MESSAGEInside TOTF disabled.. ");
+
+                                chatMessage.body = response;
+                                Log.d(TAG, "TOTF MESSAGE Mesasage after translation 0:-  " + chatMessage.body);
+                                // chatMessage.body = (chatMessage.body + "\n" + Mylangu + ":\n" + response);
+                            }
+                            new Handler(Looper.getMainLooper()).post(new Runnable() {
+
+                                @Override
+                                public void run() {
+
+//                                            Log.d(TAG,  "TOTF MESSAGE Inside process disabled.. ");
+                                    Log.d(TAG, "TOTF MESSAGE Mesasage send meesgae:-  " + chatMessage.body);
+
+//                                    processMessages(chatMessage, qbChatMessage.getId(), qbChatMessage.getDialogId(), qbChatMessage);
+
+                                }
+                            });
+
+                        }
+
+                    });
+                } catch (Exception e) {
+                }
+            }
+
+            if (!opponentsDialogMap.containsKey(dialogId)) {
+                QBChatDialog opponentDialog = new QBChatDialog();
+                ArrayList<Integer> occupantIds = new ArrayList<>();
+                occupantIds.add(qbChatMessage.getSenderId());
+                opponentDialog.setOccupantsIds(occupantIds);
+                //init Dialog for chatting
+                opponentDialog.initForChat(dialogId, QBDialogType.PRIVATE, chatService);
+
+                //add message listener on this Dialog
+//                    opponentDialog.addMessageListener(opponentDialogMsgListener);
+
+                //put Dialog in cache
+                opponentsDialogMap.put(dialogId, opponentDialog);
+
+//                    ChatMessage chatMessage = qbChatMessage.getBody().toString();
+
+//                    DatabaseHelper.getInstance(ChatActivity.this).insertChat(chatMessage);
+//                    DatabaseHelper.getInstance(ChatActivity.this).UpdateMsgRead("1", chatMessage.receiver);
+//                    chatAdapter.add(chatMessage, chatAdapter.getItemCount() - 1);
+//                    mRecyclerView.scrollToPosition(chatAdapter.getItemCount() - 1);
+
+            }
+
+        }
 
     }
 
@@ -2345,7 +2337,7 @@ xxxxxxxxxxxx*/
         public void onReceive(Context context, Intent intent) {
 
             QBService qbService = new QBService();
-            qbService.incomingMessage();
+//            qbService.incomingMessage();
             Log.i(IncomingMessageReceiver.class.getSimpleName(), "Service Stops! Oooooooooooooppppssssss!!!!");
             context.startService(new Intent(context, QBService.class));
             ;

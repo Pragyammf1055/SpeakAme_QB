@@ -137,6 +137,7 @@ public class GroupMemberList_Adapter extends RecyclerView.Adapter<GroupMemberLis
                         groupJid, groupJid,
                         Groupname, "",
                         "" + random.nextInt(1000), "", false);
+
                 chatMessage.setMsgID();
                 chatMessage.Date = CommonMethods.getCurrentDate();
                 chatMessage.Time = CommonMethods.getCurrentTime();
@@ -147,7 +148,6 @@ public class GroupMemberList_Adapter extends RecyclerView.Adapter<GroupMemberLis
                 chatMessage.reciverlanguages = reciverlanguages;
                 chatMessage.formID = String.valueOf(AppPreferences.getLoginId(context));
                 chatMessage.lastseen = new DatabaseHelper(context).getLastSeen(groupJid);
-
 
                 if (selectedText.contains("Make")) {
                     chatMessage.body = "Make " + allBeans.getFriendname() + " Subadmin :";

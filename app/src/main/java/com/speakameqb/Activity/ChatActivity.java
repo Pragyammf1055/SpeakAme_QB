@@ -125,7 +125,6 @@ import com.squareup.picasso.Picasso;
 import org.apache.commons.lang3.SerializationUtils;
 import org.jivesoftware.smack.ConnectionListener;
 import org.jivesoftware.smack.SmackException;
-import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smackx.muc.DiscussionHistory;
@@ -156,7 +155,8 @@ import io.codetail.animation.ViewAnimationUtils;
 
 
 public class ChatActivity extends AnimRootActivity implements View.OnClickListener, EmojiconGridFragment.OnEmojiconClickedListener, DialogsManager.ManagingDialogsCallbacks,
-        EmojiconsFragment.OnEmojiconBackspaceClickedListener, RecyclerView.OnItemTouchListener, ActionMode.Callback, ChatAdapter.OnLongClickPressListener {
+        EmojiconsFragment.OnEmojiconBackspaceClickedListener, RecyclerView.OnItemTouchListener, ActionMode.Callback, ChatAdapter.OnLongClickPressListener,
+        QBChatDialogMessageListener {
     public static final String EXTRA_DIALOG_ID = "dialogId";
     public static final String NEWGROUPNAMEBACK = "newGroupNameback";
     private static final String TAG = "ChatActivity";
@@ -562,74 +562,6 @@ public class ChatActivity extends AnimRootActivity implements View.OnClickListen
         }
     }
 
-    private void getLastSeen() {
-
-       /* handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                //Do something after 100ms
-
-                Log.v(TAG, "QB status online from database QB_Friend_Id 9 dec :- " + QB_Friend_Id);
-                lastSeen = DatabaseHelper.getInstance(ChatActivity.this).getLastSeenQB(QB_Friend_Id);
-                Log.v(TAG, "QB status online from database new 9 dec :- " + lastSeen);
-                status.setText(lastSeen);
-            }
-        }, 100);
-
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-
-                final Handler handler = new Handler();
-                handler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        //add your code here
-
-                        Log.v(TAG, "QB status online from database QB_Friend_Id 9 dec 2:- " + QB_Friend_Id);
-                        lastSeen = DatabaseHelper.getInstance(ChatActivity.this).getLastSeenQB(QB_Friend_Id);
-                        Log.v(TAG, "QB status online from database new 9 dec 2:- " + lastSeen);
-                        status.setText(lastSeen);
-                    }
-                }, 1000);
-            }
-        });
-*/
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                // TODO : Code for get last seen after every 1 secs
-                while (true) {
-                    try {
-                        Thread.sleep(1000);
-                        handler.post(new Runnable() {
-                            @Override
-                            public void run() {
-
-                                Log.v(TAG, "QB status online from database QB_Friend_Id 9 dec 3:- " + QB_Friend_Id);
-                                lastSeen = DatabaseHelper.getInstance(ChatActivity.this).getLastSeenQB(QB_Friend_Id);
-
-
-                                Log.v(TAG, "QB status online from database new 9 dec 4:- " + lastSeen);
-                                if (isUserBlocked) {
-                                    status.setText("");
-                                } else {
-                                    if (lastSeen.equalsIgnoreCase("offline") || lastSeen.contains("offline")) {
-                                        status.setText("");
-                                    } else {
-                                        status.setText(lastSeen);
-                                    }
-                                }
-                            }
-                        });
-                    } catch (Exception e) {
-
-                    }
-                }
-            }
-        }).start();
-    }
-
     public void callAdapter() {
 
         if (groupName.equalsIgnoreCase("")) {
@@ -666,8 +598,6 @@ public class ChatActivity extends AnimRootActivity implements View.OnClickListen
                             sendTextMessage(message, "", "", 0, "0", "", null);
                             sendStopTypingInPrivateChat();
 
-//                            }
-
                         } else {
                             sendGroupMessage(message, "", "", 0, "", "", null);
                         }
@@ -699,187 +629,8 @@ public class ChatActivity extends AnimRootActivity implements View.OnClickListen
                 }
             }
         });
-
     }
 
-    /*
-
-        private void QBInit1(String groupName) {
-
-            chatService = QBChatService.getInstance();
-
-            initGlobalMessageListener();
-
-            Log.v(TAG, "onCreate ChatActivity on Thread ID = " + Thread.currentThread().getId());
-
-            QBChatMessage qbChatMessage = null;
-
-            if (getIntent().getAction().equalsIgnoreCase("PrivateChatClick")) {
-
-              */
-/*  privateChatDialog = (QBChatDialog) getIntent().getSerializableExtra(EXTRA_DIALOG_ID);
-
-            Log.v(TAG, "QB Chat Dialog otuside :- 1233   --- " + privateChatDialog);
-
-
-            List<Integer> occupants_id = new ArrayList<>();
-            occupants_id.add(QB_Friend_Id);
-
-//            onPresenceChanged();
-//            readDeliverdStatus();
-
-            privateChatDialog.setOccupantsIds(occupants_id);*//*
-
-
-
-            Toast.makeText(getApplicationContext(), "Inside Private chat click", Toast.LENGTH_SHORT).show();
-
-            String dialog_id = getIntent().getStringExtra(EXTRA_DIALOG_ID);
-            Log.v(TAG, "ChatActivity dialog _id while click on ONE-TO-ONE chat :- " + dialog_id);
-
-            getQBChatDialogByDialogID(dialog_id, "ONE-TO-ONE chat");
-
-//            privateChatDialog = SerializationUtils.deserialize(qbChatDialogBytes);
-
-            Log.v(TAG, "QB Chat Dialog otuside :- 1233 deserialized  lunch --- " + privateChatDialog);
-
-//            privateChatDialog = (QBChatDialog) getIntent().getSerializableExtra(EXTRA_DIALOG_ID);
-//            qbChatMessage = (QBChatMessage) getIntent().getExtras().getSerializable("EXTRA_CHAT_MESSAGE");
-
-        } else if (getIntent().getAction().equalsIgnoreCase("GroupChatClick")) {
-
-            Toast.makeText(getApplicationContext(), "Inside Group chat click", Toast.LENGTH_SHORT).show();
-
-            String dialog_id = getIntent().getStringExtra(EXTRA_DIALOG_ID);
-            Log.v(TAG, "ChatActivity dialog _id while click on GROUP chat :- " + dialog_id);
-
-            getQBChatDialogByDialogID(dialog_id, "GROUP chat");
-
-        }
-
-        */
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ *//*
-
-        */
-/*   Created by me if two tab send dialdg id then this code will be used *//*
-
-
-        else if (getIntent().getAction().equalsIgnoreCase("fromContact")) {
-
-            Toast.makeText(getApplicationContext(), "Inside create dialog from contact click ...", Toast.LENGTH_SHORT).show();
-            Log.v(TAG, " INSIDE from contact creating dialog ");
-
-            privateChatDialog = (QBChatDialog) getIntent().getSerializableExtra(EXTRA_DIALOG_ID);
-
-            Log.v(TAG, "TEST 2 QB Chat Dialog from :- " + privateChatDialog);
-
-            if (privateChatDialog.getType().getCode() == 3) {
-
-                Log.v(TAG, " INSIDE CHAT ACTIVITY FOR PRIVATE CHAT ");
-
-                List<Integer> occupants_id = new ArrayList<>();
-                occupants_id.add(QB_Friend_Id);
-
-                onPresenceChanged();
-//                readDeliverdStatus();
-
-                privateChatDialog.setOccupantsIds(occupants_id);
-
-            } else if (privateChatDialog.getType().getCode() == 2) {
-
-                Log.v(TAG, "INSIDE CHAT ACTIVITY FOR GROUP CHAT");
-
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        joinGroupChat(privateChatDialog);
-                    }
-                });
-
-//            groupDialodId = privateChatDialog.getDialogId();
-
-//            getQBChatDialogByDialogID(groupDialodId, "", null);
-
-                Log.v(TAG, "TEST 3  Group dialog ID 1:- " + privateChatDialog.getId());
-                Log.v(TAG, " Group dialog ID 2:- " + groupDialodId);
-            }
-
-            Log.v(TAG, "TEST 4 deserialized dialog = " + privateChatDialog);
-
-            privateChatDialog.initForChat(QBChatService.getInstance());
-
-            chatMessageListener = new ChatMessageListener();
-//
-            privateChatDialog.addMessageListener(chatMessageListener);
-        }
-//        initChatConnectionListener();
-    }
-
-    private void getQBChatDialogByDialogID(String dialog_id, final String from) {
-
-        Log.v(TAG, "inside creating QBChatDialog in 1234 from:- " + from);
-
-        QBRestChatService.getChatDialogById(dialog_id).performAsync(new QBEntityCallback<QBChatDialog>() {
-            @Override
-            public void onSuccess(final QBChatDialog qbChatDialog, Bundle bundle) {
-
-                Log.v(TAG, "QB group Chat dialog in Chat Activity 1234:- " + qbChatDialog);
-
-                qbChatDialogBytes = SerializationUtils.serialize(qbChatDialog);
-
-                Log.v(TAG, "QBChatdialog TYPE in Chat Activity 1234:- " + privateChatDialog.getType());
-
-                Log.v(TAG, "TEST 5 privateChatDialog " + privateChatDialog);
-//                Log.v(TAG, "QB ChatMessage PrivateChat :- " + qbChatMessage);
-
-                if (privateChatDialog.getType().getCode() == 3) {
-
-                    Log.v(TAG, " INSIDE CHAT ACTIVITY FOR PRIVATE CHAT 1234 ");
-
-                    List<Integer> occupants_id = new ArrayList<>();
-                    occupants_id.add(QB_Friend_Id);
-
-                    privateChatDialog.setOccupantsIds(occupants_id);
-
-                    onPresenceChanged();
-
-                } else if (privateChatDialog.getType().getCode() == 2) {
-
-                    Log.v(TAG, "INSIDE CHAT ACTIVITY FOR GROUP CHAT");
-
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            joinGroupChat(privateChatDialog);
-                        }
-                    });
-
-                    Log.v(TAG, "TEST 6  Group dialog ID 1:- " + privateChatDialog.getDialogId());
-                    Log.v(TAG, " Group dialog ID 2:- " + groupDialodId);
-                }
-
-                Log.v(TAG, "TEST 7 deserialized dialog 1234 :- " + privateChatDialog);
-
-                privateChatDialog.initForChat(QBChatService.getInstance());
-
-                chatMessageListener = new ChatMessageListener();
-//
-                privateChatDialog.addMessageListener(chatMessageListener);
-            }
-
-            @Override
-            public void onError(QBResponseException e) {
-
-                Log.v(TAG, "Error in getting QBChatDialog from dialod id " + e.getMessage());
-
-            }
-        });
-
-        initIsTypingListener();
-        initPrivateChatMessageListener();
-
-    }
-*/
     private void QBInit(String groupName, final QBChatDialog privateChatDialog) {
 
         // TODO: QBInit() iniitalize Quick blox data
@@ -967,9 +718,7 @@ public class ChatActivity extends AnimRootActivity implements View.OnClickListen
 //        privateChatDialog.initForChat(QBChatService.getInstance());
 
         chatMessageListener = new ChatMessageListener();
-//
 //        privateChatDialog.addMessageListener(chatMessageListener);
-
 //        initChatConnectionListener();
     }
 
@@ -1230,7 +979,6 @@ public class ChatActivity extends AnimRootActivity implements View.OnClickListen
 
     private void initChatConnectionListener() {
 
-
         chatConnectionListener = new VerboseQbChatConnectionListener(findViewById(android.R.id.content)) {
             @Override
             public void reconnectionSuccessful() {
@@ -1339,6 +1087,8 @@ public class ChatActivity extends AnimRootActivity implements View.OnClickListen
             Log.e(TAG, "privateChatDialog while sending message to prsonal chat :- " + privateChatDialog);
             Log.e(TAG, "Messsage body sendQB CHAT Message :- " + qbChatMessage);
             privateChatDialog.sendMessage(qbChatMessage);  // msg send to all online / offline users
+
+            privateChatDialog.addMessageListener(this);
 
             if (chatMessage.groupName.equalsIgnoreCase("")) {
 
@@ -1487,12 +1237,15 @@ public class ChatActivity extends AnimRootActivity implements View.OnClickListen
             } else if (fileExte.equalsIgnoreCase("png") || fileExte.equalsIgnoreCase("jpg") || fileExte.equalsIgnoreCase("jpeg")) {
                 folderType = "SpeakAme Image";
                 chatMessage.Image = file;
+//                chatMessage.Image = qbFileUid;
             } else if (fileExte.equalsIgnoreCase("mp4") || fileExte.equalsIgnoreCase("3gp")) {
                 folderType = "SpeakAme Video";
                 chatMessage.Video = file;
+//                chatMessage.Video = qbFileUid;
             } else if (fileExte.equalsIgnoreCase("pdf")) {
                 folderType = "SpeakAme Document";
                 chatMessage.Document = file;
+//                chatMessage.Document = qbFileUid;
             } else {
                 folderType = "SpeakAme Test";
             }
@@ -1756,48 +1509,6 @@ Log.v(TAG, "data[1]..........." + data[1]);
 
     }
 
-    private void initConnectionListener() {
-
-        chatConnectionListener = new ConnectionListener() {
-            @Override
-            public void connected(XMPPConnection xmppConnection) {
-                Log.i(TAG, "connected()");
-            }
-
-            @Override
-            public void authenticated(XMPPConnection xmppConnection, boolean b) {
-                Log.i(TAG, "authenticated()");
-            }
-
-            @Override
-            public void connectionClosed() {
-                Log.i(TAG, "connectionClosed()");
-            }
-
-            @Override
-            public void connectionClosedOnError(Exception e) {
-
-            }
-
-            @Override
-            public void reconnectionSuccessful() {
-
-            }
-
-            @Override
-            public void reconnectingIn(int i) {
-
-            }
-
-            @Override
-            public void reconnectionFailed(Exception e) {
-
-            }
-        };
-
-        chatService.addConnectionListener(chatConnectionListener);
-    }
-
     private void initViews() {
 
         // TODO: initViews() views initialization
@@ -1973,7 +1684,8 @@ Log.v(TAG, "data[1]..........." + data[1]);
                 intent.setType("image*//*");
                 //intent.setAction(Intent.ACTION_GET_CONTENT);
                 startActivityForResult(Intent.createChooser(intent, "Select Picture"), GALLARY_CAPTURE);
-*/
+                */
+
                 Intent intent = new Intent(ChatActivity.this, SendImageActivity.class);
                 intent.setAction("gallary");
                 intent.putExtra("user1", user1);
@@ -4272,7 +3984,7 @@ chatlist.remove();
         Toast.makeText(getApplicationContext(), "Block clicked .  " + QB_Friend_Id, Toast.LENGTH_SHORT).show();
         BlockUserDataBaseHelper blockUserDataBaseHelper = new BlockUserDataBaseHelper(ChatActivity.this);
         String s = BlockUserDataBaseHelper.CREATE_TBL_BLOCK;
-        Log.d(TAG, " FriendName : " + FriendName + " FriendMobile : " + FriendMobile + " FriendOcupantId : " + QB_Friend_Id + " Query for block : " + s);
+        Log.d(TAG, " FriendName : " + FriendName + " F riendMobile : " + FriendMobile + " FriendOcupantId : " + QB_Friend_Id + " Query for block : " + s);
         ArrayList<Integer> allBlockedUsers = blockUserDataBaseHelper.getAllBlockedUsers();
         Log.d(TAG, " GetAllBlokedUsers .. " + allBlockedUsers.toString());
         if (allBlockedUsers.contains(QB_Friend_Id)) {
@@ -4503,6 +4215,22 @@ chatlist.remove();
 
             }
         });
+    }
+
+    @Override
+    public void processMessage(String s, QBChatMessage qbChatMessage, Integer integer) {
+
+        Log.v(TAG, "QBChatDialogMessageListener :- " + qbChatMessage);
+        Log.v(TAG, "QBChatDialogMessageListener integer :- " + integer);
+        Log.v(TAG, "QBChatDialogMessageListener integer :- " + s);
+    }
+
+    @Override
+    public void processError(String s, QBChatException e, QBChatMessage qbChatMessage, Integer integer) {
+        Log.e(TAG, "QBChatDialogMessageListener :- " + qbChatMessage);
+        Log.e(TAG, "QBChatDialogMessageListener integer :- " + integer);
+        Log.e(TAG, "QBChatDialogMessageListener integer :- " + s);
+        Log.e(TAG, "QBChatDialogMessageListener QBChatException :- " + e.getMessage());
     }
 
 //...................................................................................//

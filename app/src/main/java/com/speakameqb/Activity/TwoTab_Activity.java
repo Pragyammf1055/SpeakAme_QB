@@ -248,9 +248,11 @@ public class TwoTab_Activity extends AnimRootActivity implements VolleyCallback,
     }
 
     public static Object deserialize(byte[] data) throws IOException, ClassNotFoundException {
+
         ByteArrayInputStream in = new ByteArrayInputStream(data);
         ObjectInputStream is = new ObjectInputStream(in);
         return is.readObject();
+
     }
 
     private static void updateMessageCount(List<ChatMessage> chatMessageList, String groupName) {
@@ -1902,7 +1904,6 @@ public class TwoTab_Activity extends AnimRootActivity implements VolleyCallback,
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
         Log.v(TAG, "on destroy called :- TwoTab ");
         Log.v(TAG, "User is loggin to chat or not :- " + QBChatService.getInstance().isLoggedIn());
         Log.v(TAG, "User is loggin to chat or not :- " + chatService.isLoggedIn());

@@ -410,7 +410,6 @@ public class ContactImport_Activity extends AnimRootActivity {
                 jsonParserMethod(response, "Api_Calling", mProgress);
 
                /* mProgressDialog.dismiss();
-
                 Log.v(TAG, "JSON RESPONSE GETCHECKLIST :- " + response);
                 //  mProgressDialog.dismiss();
                 if (response != null) {
@@ -649,7 +648,6 @@ public class ContactImport_Activity extends AnimRootActivity {
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setAdapter(importcontactAdapter);
         importcontactAdapter.notifyDataSetChanged();
-
     }
 
     public void add_Removefaviroute(String mobileno, String fav_code) {

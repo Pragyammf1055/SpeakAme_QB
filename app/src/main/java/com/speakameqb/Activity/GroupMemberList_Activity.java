@@ -438,7 +438,7 @@ public class GroupMemberList_Activity extends AnimRootActivity implements Volley
 
     public void createGroupInQuickBlox(final Context context, final ArrayList<Integer> occupantIdsList, final String GroupName, final String GroupId, final String groupImagePicture) {
 
-        qbService.registerQbChatListeners();
+//        qbService.registerQbChatListeners();
         Log.v(TAG, "Inside Group create using QB service :- " + occupantIdsList + " -- Name :-  " + GroupName);
         QBChatDialog dialog = new QBChatDialog();
         dialog.setName(GroupName);
@@ -770,6 +770,7 @@ public class GroupMemberList_Activity extends AnimRootActivity implements Volley
                         }
                     }
                 }
+
                 Log.d(TAG, " newGroupMember_adapter.stringArrayList 44: -- " + newGroupMember_adapter.stringArrayList);
 
                 updateGroupMemberOnServer(newGroupMember_adapter.stringArrayList);
@@ -781,9 +782,7 @@ public class GroupMemberList_Activity extends AnimRootActivity implements Volley
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
-//jjjjjjjjjjjjjjjjjj
             }
-
 
             @Override
             public void onError(QBResponseException e) {

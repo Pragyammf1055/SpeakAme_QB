@@ -134,7 +134,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                         Log.d(TAG, " If S is not null " + s + " : ");
                         sendNotificationNormal(s, qb_sender_no);
                     }
-                }/* else if (ChatActivity.instance != null) {
+                } else if (ChatActivity.instance != null) {
 
                     Log.d(TAG, " ChatActivity.instance 123 :- " + ChatActivity.FriendMobileTWO + " :  1234");
                     Log.d(TAG, " ChatActivity.instance qb_sender_no 123 :-  " + qb_sender_no + " :  1234");
@@ -144,8 +144,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                     } else {
                         sendNotificationNormal(s, qb_sender_no);
                     }
-                }*/
-
+                }
             }
         }
     }

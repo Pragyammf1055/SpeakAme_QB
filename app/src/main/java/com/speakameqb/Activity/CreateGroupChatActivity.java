@@ -186,7 +186,6 @@ public class CreateGroupChatActivity extends AnimRootActivity implements VolleyC
 
                 } else {
 
-
                     mProgressDialog = new SpotsDialog(CreateGroupChatActivity.this);
                     mProgressDialog.setMessage("Please wait...");
                     mProgressDialog.setCancelable(false);
