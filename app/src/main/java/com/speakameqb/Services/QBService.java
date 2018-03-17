@@ -996,6 +996,9 @@ xxxxxxxxxxxx*/
                 initChatRoaster(chatService);
 
                 Log.v(TAG, "App terminated before :- " + AppPreferences.getAppTerminated(QBService.this));
+                Log.v(TAG, "App terminated before :- " + AppPreferences.getAppTerminated(QBService.this));
+                Log.v(TAG, "App terminated before :- " + AppPreferences.getAppTerminated(QBService.this));
+                Log.v(TAG, "App terminated before :- " + AppPreferences.getAppTerminated(QBService.this));
                 changeProfilePicDynamically();
             }
 
