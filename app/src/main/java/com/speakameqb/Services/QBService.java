@@ -980,7 +980,7 @@ xxxxxxxxxxxx*/
             public void onSuccess(Object o, Bundle bundle) {
                 Log.v(TAG, "Login to chat service done ");
 
-                initRoster(chatService);
+//                initRoster(chatService);
                 registerQbChatListeners();
 
                 QBSubscriptiondevice();
